@@ -1,0 +1,47 @@
+#/etc/gconf/schemas/*.schemas
+/usr/bin/gnumeric*
+/usr/bin/ssconvert*
+/usr/bin/ssgrep*
+#/usr/bin/ssindex*
+/usr/lib/goffice/*/plugins/*/*.la
+/usr/lib/goffice/*/plugins/*/*.so
+/usr/lib/goffice/*/plugins/*/*.xml
+/usr/lib/gnumeric/*/plugins/*/*.la
+/usr/lib/gnumeric/*/plugins/*/*.so
+/usr/lib/gnumeric/*/plugins/*/*.xml
+/usr/lib/libspreadsheet-*.so*
+/usr/lib/libspreadsheet.so
+/usr/share/gnumeric/*/HILDON_Gnumeric-gtk.xml
+#/usr/share/gnumeric/*/GNOME_Gnumeric-gtk.xml
+#/usr/share/gnumeric/*/Gnumeric-embed.xml
+#/usr/share/man/man*/*
+/usr/share/gnumeric/*.md5sum
+/usr/share/gnumeric/*/autoformat-templates/*/*.xml
+/usr/share/gnumeric/*/autoformat-templates/*/.category
+#/usr/share/gnumeric/*/glade/*.glade
+#/usr/share/gnumeric/*/glade/*.ui
+/usr/share/gnumeric/*/ui/*.ui
+/usr/share/gnumeric/*/templates/*.gnumeric
+/usr/share/locale/*/LC_MESSAGES/*.mo
+# /usr/share/mime-info/gnumeric.*
+/usr/share/pixmaps/*
+/usr/share/icons/
+
+# extra icons for app menu
+../new_icons/document_prop.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/edit_paste.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_chart.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_column.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_row.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_sheet.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/general_sort_ascending.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_cell.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/insert_link.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/space.png /usr/share/icons/hicolor/48x48/hildon/
+../new_icons/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/hildon/
+
+
+../gnumeric.desktop usr/share/applications/hildon/
+../com.nokia.gnumeric.service usr/share/dbus-1/services/
+#../gnumeric_mime.xml usr/share/mime/packages/
+

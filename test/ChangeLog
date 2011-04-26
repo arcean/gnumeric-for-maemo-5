@@ -1,0 +1,336 @@
+2011-03-24  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.14
+
+2011-02-09  Morten Welinder  <terra@gnome.org>
+
+	* t8003-valgrind-pdf.supp: Small work-around for old OpenSuSE.
+
+2011-02-02  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.13
+
+2010-11-25  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.12
+
+2010-11-19  Morten Welinder  <terra@gnome.org>
+
+	* commondots.supp: Be more aggressive about ignoring fontconfig
+	leaks.  Move stuff from common.supp and use "..." more.
+
+2010-10-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.11
+
+2010-09-28  Morten Welinder  <terra@gnome.org>
+
+	* t9100-number-match.pl: New test for GUI's number matching.
+
+2010-09-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.10
+
+2010-08-18  Morten Welinder <terra@gnome.org>
+
+	* fuzzzip: Avoid warning on exit.
+
+2010-08-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.9
+
+2010-08-11  Morten Welinder  <terra@gnome.org>
+
+	* test/zzufit: Add new --ods option.
+	* fuzzzip: New fuzzer that works inside zip files.
+
+2010-08-06  Morten Welinder  <terra@gnome.org>
+
+	* zzufit: Log the name of the corrupted file.
+
+	* fuzzxml: Write empty tags in the short form.  Carry over xml
+	declaration, at least as far as encoding goes.
+
+2010-07-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.8
+
+2010-06-28  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.7
+
+2010-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.6
+
+2010-05-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.5
+
+2010-05-20  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.4
+
+2010-05-07  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.3
+
+2010-04-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.2
+
+2010-03-08  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.1
+
+2010-02-13  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.0
+
+2010-01-19  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.18
+
+2009-12-15  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.17
+
+2009-12-10  Morten Welinder <terra@gnome.org>
+
+	* normalize-gnumeric: Blank creation date.
+
+2009-11-29  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.16
+
+2009-11-28  Morten Welinder <terra@gnome.org>
+
+	* GnumericTest.pm: Handle out-of-tree build.
+
+2009-11-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.15
+
+2009-10-30  Morten Welinder <terra@gnome.org>
+
+	* t5904-mps.pl: New test.
+
+2009-10-11  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.14
+
+2009-09-20  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.13
+
+2009-09-05  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.12
+
+2009-08-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.11
+
+2009-08-15  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.10
+
+2009-06-20  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.9
+
+2009-05-23  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.8
+
+2009-05-18  Morten Welinder  <terra@gnome.org>
+
+	* t9000-ssindex.pl (compare_items): Update to match improves
+	ssindex.
+
+2009-05-09  Morten Welinder <terra@gnome.org>
+
+	* GnumericTest.pm (EXPORT): Fix $sstest.
+	* t8050-valgrind-sstest.pl: New test.
+
+2009-05-06  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.7
+
+2009-05-01  Morten Welinder  <terra@gnome.org>
+
+	* t5903-sylk.pl: Add app_b2.sylk in order to test R1C1 parsing.
+
+2009-04-25  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.6
+
+2009-03-22  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.5
+
+2009-02-22  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.4
+
+2009-02-22  Morten Welinder  <terra@gnome.org>
+
+	* t81*.pl: Skip if checker is not available, such as in distcheck
+	tree.
+
+2009-01-06  Morten Welinder  <terra@gnome.org>
+
+	* t8003-valgrind-pdf.pl: Skip if Cairo is 1.8.0.
+
+2008-12-28  Morten Welinder  <terra@gnome.org>
+
+	* t9999-epilogue.pl: If we haven't installed Gnumeric [to the
+	prefix that gconftool-2 was built with] then we're in trouble with
+	things like default fontname.
+
+	* GnumericTest.pm (test_valgrind): Skip test if valgrind is not
+	found.  Don't totally clear out the environment.
+
+2008-12-14  Morten Welinder  <terra@gnome.org>
+
+	* t8103-gtk.pl: New test.
+
+2008-12-08  Morten Welinder  <terra@gnome.org>
+
+	* test/GnumericTest.pm (test_valgrind): Set resident-modules too.
+
+	* common.supp: Add a few more variants for OpenSuSE 11.  Valgrind
+	needs to get that "..." enhancement distributed.
+
+2008-10-18  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.9.3
+
+2008-08-29  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.9.2
+
+2008-06-25  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.9.1
+
+2008-05-04  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.9.0
+
+2008-01-14  Morten Welinder  <terra@gnome.org>
+
+	* Makefile.am (TESTS): Use $(wildcard ...) and screw the automake
+	complaint.
+
+2008-01-10  Morten Welinder  <terra@gnome.org>
+
+	* GnumericTest.pm (test_valgrind): Handle older valgrinds.
+	(test_importer): Skip if source file is missing.
+
+2007-12-21  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.8.0
+
+2007-12-03  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.91
+
+2007-11-19  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.90
+
+2007-11-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.14
+
+2007-10-28  Jon K Hellan  <hellan@acm.org>
+
+	* t8003-valgrind-pdf.supp: More suppressions for Debian
+
+2007-10-26  Jon K Hellan  <hellan@acm.org>
+
+	* common.supp: Add suppressions for Debian
+
+2007-10-21  Morten Welinder  <terra@gnome.org>
+
+	* test/t8000-valgrind.supp: Make a little more generic to also fit
+	OpenSUSE 10.3
+
+2007-10-21  Morten Welinder  <terra@gnome.org>
+
+	* Makefile.am (TESTS): Try to please newer automakes.
+
+2007-10-21  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.13
+
+2007-09-04  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.12
+
+2007-08-31  Morten Welinder  <terra@gnome.org>
+
+	* t1900-array.pl: Specify sheet name for cell to test too.
+
+2007-08-06  Morten Welinder  <terra@gnome.org>
+
+	* t1900-array.pl: Check the correct cell.
+
+2007-07-24  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.11
+
+2007-05-03  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.10
+
+2007-04-21  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.9
+
+2007-03-04  Jody Goldberg <jody@gnome.org>
+
+	* t5902-applix.pl : new.
+
+2007-03-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.8
+
+2007-02-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.7.7
+
+2006-12-17  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.6
+
+2006-12-12  Morten Welinder  <terra@gnome.org>
+
+	* t9000-ssindex.pl: New test.
+
+	* GnumericTest.pm: Turn on fatal_criticals.
+	(test_ssindex): New test helper for ssindex.
+
+2006-12-04  Jody Goldberg <jody@gnome.org>
+
+	* Release 1.7.5
+
+2006-11-28  Morten Welinder  <terra@gnome.org>
+
+	* GnumericTest.pm (test_sheet_calc): Allow options to ssconvert.
+
+2006-11-22  Morten Welinder  <terra@gnome.org>
+
+	* t8000-valgrind.supp: Add ORBit_gconf_ping_writev_i686_sym.
+
+2006-11-21  Morten Welinder  <terra@gnome.org>
+
+	* t8101-gfree.pl: New checker.
+
+	* t8100-null-false.pl: New checker.
+
+2006-11-20  Morten Welinder  <terra@gnome.org>
+
+	* test/GnumericTest.pm (test_importer): Grep out version node when
+	doing sha1sum.

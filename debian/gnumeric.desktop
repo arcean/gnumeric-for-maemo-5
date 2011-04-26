@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=Gnumeric
+StartupWMClass=Gnumeric
+Exec=/usr/bin/gnumeric %F
+Icon=gnumeric
+X-Window-Icon=gnome-gnumeric
+X-Window-Icon-Dimmed=gnome-gnumeric
+X-Osso-Type=application/x-executable
+X-Osso-Service=com.nokia.gnumeric
+MimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/x-gnumeric;text/csv;text/x-comma-separated-values;application/vnd.ms-excel;application/x-excel;application/x-ms-excel;application/x-msexcel;application/x-xls;application/x-dos_ms_excel;zz-application/zz-winassoc-xls;application/vnd.sun.xml.calc;application/vnd.sun.xml.calc.template;application/x-applix;application/x-applix-spreadsheet;application/vnd.lotus-1-2-3;application/x-123;text/tab-separated-values;application/x-mps;application/x-oleo;application/x-planperfect;application/x-quattropro;application/x-sc;application/x-sylk;application/x-xbase;

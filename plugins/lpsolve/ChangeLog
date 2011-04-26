@@ -1,0 +1,111 @@
+2011-03-24  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.14
+
+2011-02-26  Morten Welinder  <terra@gnome.org>
+
+	* lpsolve-write.c (lpsolve_affine_func): Fix writing of affine
+	part.
+
+2011-02-02  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.13
+
+2010-11-25  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.12
+
+2010-10-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.11
+
+2010-09-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.10
+
+2010-08-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.9
+
+2010-07-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.8
+
+2010-06-28  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.7
+
+2010-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.6
+
+2010-05-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.5
+
+2010-05-20  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.4
+
+2010-05-07  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.3
+
+2010-04-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.2
+
+2010-03-08  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.1
+
+2010-02-13  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.0
+
+2010-01-19  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.18
+
+2009-12-15  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.17
+
+2009-11-29  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.16
+
+2009-11-16  Morten Welinder  <terra@gnome.org>
+
+	* gnm-lpsolve.c (gnm_lpsolve_start): Handle automatic scaling.
+
+2009-11-15  Morten Welinder  <terra@gnome.org>
+
+	* gnm-lpsolve.c (gnm_lpsolve_stop): Fix precondition.
+
+2009-11-12  Morten Welinder  <terra@gnome.org>
+
+	* lpsolve-write.c (lpsolve_affine_func): Add cst argument and
+	handle the no-cell case.  All callers changed.
+
+2009-11-11  Morten Welinder  <terra@gnome.org>
+
+	* lpsolve-write.c (lpsolve_affine_func): Zero all input cells
+	initially to ensure consistent results.
+
+2009-11-06  Morten Welinder  <terra@gnome.org>
+
+	* lpsolve-write.c (lpsolve_file_save): Add progress reporting.
+
+2009-11-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.15
+
+2009-10-27  Morten Welinder  <terra@gnome.org>
+
+	* lpsolve-write.c (lpsolve_create_program): Plug leak.
+	(lpsolve_affine_func): Use new gnm_string_add_number.
+
+2009-10-26  Morten Welinder  <terra@gnome.org>
+
+	* Initial Implementation

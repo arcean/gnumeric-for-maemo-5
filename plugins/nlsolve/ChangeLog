@@ -1,0 +1,64 @@
+2011-03-24  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.14
+
+2011-02-02  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.13
+
+2010-11-25  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.12
+
+2010-10-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.11
+
+2010-09-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.10
+
+2010-08-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.9
+
+2010-07-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.8
+
+2010-06-28  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.7
+
+2010-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.6
+
+2010-06-01  Morten Welinder  <terra@gnome.org>
+
+	* gnm-nlsolve.c (rosenbrock_iter): Only allow first newton
+	improvement step to increase objective value.
+
+2010-05-31  Morten Welinder  <terra@gnome.org>
+
+	* gnm-nlsolve.c (rosenbrock_iter): Add safety against
+	non-determinisitic object functions.
+
+2010-05-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.5
+
+2010-05-29  Morten Welinder  <terra@gnome.org>
+
+	* gnm-nlsolve.c (get_value, gnm_nlsolve_set_solution): Flip sign
+	for maximize.
+	(check_program): Don't reject maximize.
+
+2010-05-23  Morten Welinder  <terra@gnome.org>
+
+	* gnm-nlsolve.c (gnm_nlsolve_idle): Use the axis-method even if
+	the Hessian is singular.  Restore x0 if we fail to improve.
+
+2010-05-21  Morten Welinder  <terra@gnome.org>
+
+	* Initial Implementation

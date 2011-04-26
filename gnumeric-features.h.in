@@ -1,0 +1,53 @@
+#ifndef _LIBSPREADSHEET_CONFIG_H_
+#define _LIBSPREADSHEET_CONFIG_H_
+
+/* Manually maintained to hold any compile time flags necessary to use the ABI
+ * of libspreadsheet */
+
+/* The Epoch of this release */
+#undef GNM_VERSION_EPOCH
+/* Extra, possibly empty tag for this release */
+#undef GNM_VERSION_EXTRA
+/* The Major version number of this release */
+#undef GNM_VERSION_MAJOR
+/* The Minor version number of this release */
+#undef GNM_VERSION_MINOR
+/* The version number of this release, with optional extra suffix */
+#undef GNM_VERSION_FULL
+
+/* Define if GNOME extensions are available */
+#undef GNM_WITH_GNOME
+/* Define if UI is built */
+#undef GNM_WITH_GTK
+/* Build with Maemo/Hildon support */
+#undef GNM_USE_HILDON
+/* Define if the long double type is to be used */
+#undef GNM_WITH_LONG_DOUBLE
+/* Define if SOLVER is compiled */
+#undef GNM_ENABLE_SOLVER
+
+/* Define to 1 if you have the <ieeefp.h> header file. */
+#undef HAVE_IEEEFP_H
+
+/* Define to 1 if you have the <ieee754.h> header file. */
+#undef HAVE_IEEE754_H
+
+/* Define to 1 if you have the <sunmath.h> header file. */
+#undef HAVE_SUNMATH_H
+
+/* Define to 1 if you have the `lgamma' function. */
+#undef HAVE_LGAMMA
+
+/* Define if the lgamma_r function is available */
+#undef HAVE_LGAMMA_R
+
+/* Define to 1 if you have the `erfl' function. */
+#undef HAVE_ERFL
+
+/* Define to 1 if you have the `erfcl' function. */
+#undef HAVE_ERFCL
+
+/* Define to 1 if you have the `ynl' function. */
+#undef HAVE_YNL
+
+#endif  /* _LIBSPREADSHEET_CONFIG_H_ */

@@ -1,0 +1,459 @@
+/* gnumeric-config.h.in.  Generated from configure.in by autoheader.  */
+
+/* always defined to indicate that i18n is enabled */
+#undef ENABLE_NLS
+
+/* The package name, for gettext */
+#undef GETTEXT_PACKAGE
+
+/* Define if SOLVER is compiled */
+#undef GNM_ENABLE_SOLVER
+
+/* Build with Maemo/Hildon support */
+#undef GNM_USE_HILDON
+
+/* The Epoch of this release */
+#undef GNM_VERSION_EPOCH
+
+/* Extra, possibly empty tag for this release */
+#undef GNM_VERSION_EXTRA
+
+/* The version number of this release, with optional extra suffix */
+#undef GNM_VERSION_FULL
+
+/* The Major version number of this release */
+#undef GNM_VERSION_MAJOR
+
+/* The Minor version number of this release */
+#undef GNM_VERSION_MINOR
+
+/* Define if GNOME extensions are available */
+#undef GNM_WITH_GNOME
+
+/* Define if UI is built */
+#undef GNM_WITH_GTK
+
+/* Define if the long double type is to be used */
+#undef GNM_WITH_LONG_DOUBLE
+
+/* Define to 1 if you have the `acoshl' function. */
+#undef HAVE_ACOSHL
+
+/* Define to 1 if you have the `acosl' function. */
+#undef HAVE_ACOSL
+
+/* Define to 1 if you have the `asinhl' function. */
+#undef HAVE_ASINHL
+
+/* Define to 1 if you have the `asinl' function. */
+#undef HAVE_ASINL
+
+/* Define to 1 if you have the `atan2l' function. */
+#undef HAVE_ATAN2L
+
+/* Define to 1 if you have the `atanhl' function. */
+#undef HAVE_ATANHL
+
+/* Define to 1 if you have the `atanl' function. */
+#undef HAVE_ATANL
+
+/* Define to 1 if you have the `bind_textdomain_codeset' function. */
+#undef HAVE_BIND_TEXTDOMAIN_CODESET
+
+/* Define to 1 if you have the `ceill' function. */
+#undef HAVE_CEILL
+
+/* Define to 1 if you have the `coshl' function. */
+#undef HAVE_COSHL
+
+/* Define to 1 if you have the `cosl' function. */
+#undef HAVE_COSL
+
+/* Define to 1 if you have the `dcgettext' function. */
+#undef HAVE_DCGETTEXT
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the `erfcl' function. */
+#undef HAVE_ERFCL
+
+/* Define to 1 if you have the `erfl' function. */
+#undef HAVE_ERFL
+
+/* Define to 1 if you have the `expl' function. */
+#undef HAVE_EXPL
+
+/* Define to 1 if you have the `expm1l' function. */
+#undef HAVE_EXPM1L
+
+/* Define to 1 if you have the `fabsl' function. */
+#undef HAVE_FABSL
+
+/* Define to 1 if you have the `finitel' function. */
+#undef HAVE_FINITEL
+
+/* Define to 1 if you have the `floorl' function. */
+#undef HAVE_FLOORL
+
+/* Define to 1 if you have the `fmodl' function. */
+#undef HAVE_FMODL
+
+/* Define to 1 if you have the `gdk_cairo_set_source_rgba' function. */
+#undef HAVE_GDK_CAIRO_SET_SOURCE_RGBA
+
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#undef HAVE_GETTEXT
+
+/* Define if the gettimeofday function is available */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the `go_render_generall' function. */
+#undef HAVE_GO_RENDER_GENERALL
+
+/* Define to 1 if you have the `gsf_infile_msvba_steal_modules' function. */
+#undef HAVE_GSF_INFILE_MSVBA_STEAL_MODULES
+
+/* Define to 1 if you have the `gsf_open_pkg_foreach_rel' function. */
+#undef HAVE_GSF_OPEN_PKG_FOREACH_REL
+
+/* Define to 1 if you have the `gtk_adjustment_configure' function. */
+#undef HAVE_GTK_ADJUSTMENT_CONFIGURE
+
+/* Define to 1 if you have the `gtk_adjustment_get_lower' function. */
+#undef HAVE_GTK_ADJUSTMENT_GET_LOWER
+
+/* Define to 1 if you have the `gtk_adjustment_get_page_increment' function.
+   */
+#undef HAVE_GTK_ADJUSTMENT_GET_PAGE_INCREMENT
+
+/* Define to 1 if you have the `gtk_adjustment_get_page_size' function. */
+#undef HAVE_GTK_ADJUSTMENT_GET_PAGE_SIZE
+
+/* Define to 1 if you have the `gtk_adjustment_get_step_increment' function.
+   */
+#undef HAVE_GTK_ADJUSTMENT_GET_STEP_INCREMENT
+
+/* Define to 1 if you have the `gtk_adjustment_get_upper' function. */
+#undef HAVE_GTK_ADJUSTMENT_GET_UPPER
+
+/* Define to 1 if you have the `gtk_adjustment_set_lower' function. */
+#undef HAVE_GTK_ADJUSTMENT_SET_LOWER
+
+/* Define to 1 if you have the `gtk_adjustment_set_page_increment' function.
+   */
+#undef HAVE_GTK_ADJUSTMENT_SET_PAGE_INCREMENT
+
+/* Define to 1 if you have the `gtk_adjustment_set_step_increment' function.
+   */
+#undef HAVE_GTK_ADJUSTMENT_SET_STEP_INCREMENT
+
+/* Define to 1 if you have the `gtk_adjustment_set_upper' function. */
+#undef HAVE_GTK_ADJUSTMENT_SET_UPPER
+
+/* Define to 1 if you have the `gtk_cell_renderer_get_alignment' function. */
+#undef HAVE_GTK_CELL_RENDERER_GET_ALIGNMENT
+
+/* Define to 1 if you have the `gtk_cell_renderer_get_padding' function. */
+#undef HAVE_GTK_CELL_RENDERER_GET_PADDING
+
+/* Define to 1 if you have the `gtk_cell_renderer_text_get_background_set'
+   function. */
+#undef HAVE_GTK_CELL_RENDERER_TEXT_GET_BACKGROUND_SET
+
+/* Define to 1 if you have the `gtk_cell_renderer_text_get_editable' function.
+   */
+#undef HAVE_GTK_CELL_RENDERER_TEXT_GET_EDITABLE
+
+/* Define to 1 if you have the `gtk_cell_renderer_text_get_foreground_set'
+   function. */
+#undef HAVE_GTK_CELL_RENDERER_TEXT_GET_FOREGROUND_SET
+
+/* Define to 1 if you have the `gtk_dialog_get_action_area' function. */
+#undef HAVE_GTK_DIALOG_GET_ACTION_AREA
+
+/* Define to 1 if you have the `gtk_dialog_get_content_area' function. */
+#undef HAVE_GTK_DIALOG_GET_CONTENT_AREA
+
+/* Define to 1 if you have the `gtk_entry_get_buffer' function. */
+#undef HAVE_GTK_ENTRY_GET_BUFFER
+
+/* Define to 1 if you have the `gtk_entry_get_overwrite_mode' function. */
+#undef HAVE_GTK_ENTRY_GET_OVERWRITE_MODE
+
+/* Define to 1 if you have the `gtk_entry_get_text_area' function. */
+#undef HAVE_GTK_ENTRY_GET_TEXT_AREA
+
+/* Define to 1 if you have the `gtk_entry_get_text_length' function. */
+#undef HAVE_GTK_ENTRY_GET_TEXT_LENGTH
+
+/* Define to 1 if you have the `gtk_entry_set_editing_cancelled' function. */
+#undef HAVE_GTK_ENTRY_SET_EDITING_CANCELLED
+
+/* Define to 1 if you have the `gtk_entry_set_icon_from_stock' function. */
+#undef HAVE_GTK_ENTRY_SET_ICON_FROM_STOCK
+
+/* Define if GtkEntry::text_area exists */
+#undef HAVE_GTK_ENTRY_TEXT_AREA
+
+/* Define if GtkHandleBox::float_window exists */
+#undef HAVE_GTK_HANDLE_BOX_FLOAT_WINDOW
+
+/* Define to 1 if you have the `gtk_layout_get_bin_window' function. */
+#undef HAVE_GTK_LAYOUT_GET_BIN_WINDOW
+
+/* Define to 1 if you have the `gtk_orientable_set_orientation' function. */
+#undef HAVE_GTK_ORIENTABLE_SET_ORIENTATION
+
+/* Define to 1 if you have the `gtk_selection_data_get_data' function. */
+#undef HAVE_GTK_SELECTION_DATA_GET_DATA
+
+/* Define to 1 if you have the `gtk_selection_data_get_length' function. */
+#undef HAVE_GTK_SELECTION_DATA_GET_LENGTH
+
+/* Define to 1 if you have the `gtk_selection_data_get_target' function. */
+#undef HAVE_GTK_SELECTION_DATA_GET_TARGET
+
+/* Define to 1 if you have the `gtk_table_get_size' function. */
+#undef HAVE_GTK_TABLE_GET_SIZE
+
+/* Define if GtkTable::nrows exists */
+#undef HAVE_GTK_TABLE_NROWS
+
+/* Define if GtkTreeViewColumn::button exists */
+#undef HAVE_GTK_TREE_VIEW_COLUMN_BUTTON
+
+/* Define to 1 if you have the `gtk_tree_view_column_get_button' function. */
+#undef HAVE_GTK_TREE_VIEW_COLUMN_GET_BUTTON
+
+/* Define to 1 if you have the `gtk_widget_get_allocation' function. */
+#undef HAVE_GTK_WIDGET_GET_ALLOCATION
+
+/* Define to 1 if you have the `gtk_widget_get_can_focus' function. */
+#undef HAVE_GTK_WIDGET_GET_CAN_FOCUS
+
+/* Define to 1 if you have the `gtk_widget_get_realized' function. */
+#undef HAVE_GTK_WIDGET_GET_REALIZED
+
+/* Define to 1 if you have the `gtk_widget_get_state' function. */
+#undef HAVE_GTK_WIDGET_GET_STATE
+
+/* Define to 1 if you have the `gtk_widget_get_style' function. */
+#undef HAVE_GTK_WIDGET_GET_STYLE
+
+/* Define to 1 if you have the `gtk_widget_get_visible' function. */
+#undef HAVE_GTK_WIDGET_GET_VISIBLE
+
+/* Define to 1 if you have the `gtk_widget_get_window' function. */
+#undef HAVE_GTK_WIDGET_GET_WINDOW
+
+/* Define to 1 if you have the `gtk_widget_has_focus' function. */
+#undef HAVE_GTK_WIDGET_HAS_FOCUS
+
+/* Define to 1 if you have the `gtk_widget_is_sensitive' function. */
+#undef HAVE_GTK_WIDGET_IS_SENSITIVE
+
+/* Define to 1 if you have the `gtk_widget_is_toplevel' function. */
+#undef HAVE_GTK_WIDGET_IS_TOPLEVEL
+
+/* Define to 1 if you have the `gtk_widget_set_can_default' function. */
+#undef HAVE_GTK_WIDGET_SET_CAN_DEFAULT
+
+/* Define to 1 if you have the `gtk_widget_set_can_focus' function. */
+#undef HAVE_GTK_WIDGET_SET_CAN_FOCUS
+
+/* Define to 1 if you have the `gtk_widget_set_visible' function. */
+#undef HAVE_GTK_WIDGET_SET_VISIBLE
+
+/* Define to 1 if you have the `gtk_window_get_default_widget' function. */
+#undef HAVE_GTK_WINDOW_GET_DEFAULT_WIDGET
+
+/* Define to 1 if you have the `g_hash_table_get_keys' function. */
+#undef HAVE_G_HASH_TABLE_GET_KEYS
+
+/* Define to 1 if you have the `g_option_context_set_delocalize' function. */
+#undef HAVE_G_OPTION_CONTEXT_SET_DELOCALIZE
+
+/* Define if the g_settings_new function is available */
+#undef HAVE_G_SETTINGS_NEW
+
+/* Define to 1 if you have the `hypotl' function. */
+#undef HAVE_HYPOTL
+
+/* Define to 1 if you have the <ieee754.h> header file. */
+#undef HAVE_IEEE754_H
+
+/* Define to 1 if you have the <ieeefp.h> header file. */
+#undef HAVE_IEEEFP_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `isnanl' function. */
+#undef HAVE_ISNANL
+
+/* Define to 1 if you have the <langinfo.h> header file. */
+#undef HAVE_LANGINFO_H
+
+/* Define if your <locale.h> file defines LC_MESSAGES. */
+#undef HAVE_LC_MESSAGES
+
+/* Define to 1 if you have the `lgamma' function. */
+#undef HAVE_LGAMMA
+
+/* Define to 1 if you have the `lgammal' function. */
+#undef HAVE_LGAMMAL
+
+/* Define to 1 if you have the `lgammal_r' function. */
+#undef HAVE_LGAMMAL_R
+
+/* Define if the lgamma_r function is available */
+#undef HAVE_LGAMMA_R
+
+/* Define if libgnomedb support is compiled in */
+#undef HAVE_LIBGNOMEDB
+
+/* Define to 1 if you have the `intl' library (-lintl). */
+#undef HAVE_LIBINTL
+
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
+
+/* Define to 1 if you have the `log10l' function. */
+#undef HAVE_LOG10L
+
+/* Define to 1 if you have the `log1pl' function. */
+#undef HAVE_LOG1PL
+
+/* Define to 1 if you have the `logl' function. */
+#undef HAVE_LOGL
+
+/* Define to 1 if the type `long double' works and has more range or precision
+   than `double'. */
+#undef HAVE_LONG_DOUBLE
+
+/* Define to 1 if the type `long double' works and has more range or precision
+   than `double'. */
+#undef HAVE_LONG_DOUBLE_WIDER
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `mkdtemp' function. */
+#undef HAVE_MKDTEMP
+
+/* Define to 1 if you have the `mkfifo' function. */
+#undef HAVE_MKFIFO
+
+/* Define if OO_NS_CHART_OOO is available */
+#undef HAVE_OO_NS_CHART_OOO
+
+/* Define to 1 if you have the `pango_font_map_create_context' function. */
+#undef HAVE_PANGO_FONT_MAP_CREATE_CONTEXT
+
+/* Define if PANGO_WEIGHT_THIN etc are available */
+#undef HAVE_PANGO_WEIGHT_THIN_ETC
+
+/* Define to 1 if you have the `powl' function. */
+#undef HAVE_POWL
+
+/* Define to 1 if you have the `sinhl' function. */
+#undef HAVE_SINHL
+
+/* Define to 1 if you have the `sinl' function. */
+#undef HAVE_SINL
+
+/* Define to 1 if you have the `sqrtl' function. */
+#undef HAVE_SQRTL
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sunmath.h> header file. */
+#undef HAVE_SUNMATH_H
+
+/* Define to 1 if you have the `sysconf' function. */
+#undef HAVE_SYSCONF
+
+/* Define to 1 if you have the <sys/resource.h> header file. */
+#undef HAVE_SYS_RESOURCE_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the `tanhl' function. */
+#undef HAVE_TANHL
+
+/* Define to 1 if you have the `tanl' function. */
+#undef HAVE_TANL
+
+/* Define to 1 if you have the `times' function. */
+#undef HAVE_TIMES
+
+/* Define to 1 if you have the `uname' function. */
+#undef HAVE_UNAME
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define if GTK_WIDGET_REALIZED exists and works */
+#undef HAVE_WORKING_GTK_WIDGET_REALIZED
+
+/* Define to 1 if you have the `ynl' function. */
+#undef HAVE_YNL
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
+   `char[]'. */
+#undef YYTEXT_POINTER
+
+/* Don't include gnumeric-features.h, it's a subset of gnumeric-config.h. */
+#define GNUMERIC_FEATURES_H

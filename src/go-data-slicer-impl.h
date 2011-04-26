@@ -1,0 +1,44 @@
+/* vim: set sw=8: -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+/*
+ * go-data-slicer-impl.h :
+ *
+ * Copyright (C) 2008 Jody Goldberg (jody@gnome.org)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of version 2 of the GNU General Public
+ * License as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ */
+#ifndef GO_DATA_SLICER_IMPL_H
+#define GO_DATA_SLICER_IMPL_H
+
+#include <goffice/goffice.h>
+#include <go-data-slicer.h>
+#include <glib-object.h>
+
+G_BEGIN_DECLS
+
+struct _GODataSlicer {
+	GObject		base;
+
+	GODataCache	*cache;
+	GOString	*name;
+	GPtrArray	*all_fields;	/* holds the ref */
+	GArray		*fields[GDS_FIELD_TYPE_MAX];	/* ordered */
+};
+typedef struct {
+	GObjectClass base;
+} GODataSlicerClass;
+
+G_END_DECLS
+
+#endif /* GO_DATA_SLICER_IMPL_H */

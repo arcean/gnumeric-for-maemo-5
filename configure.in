@@ -1,0 +1,1218 @@
+-*- mode: m4 -*-
+dnl We require Automake 1.7.2, which requires Autoconf 2.54.
+dnl (It needs _AC_AM_CONFIG_HEADER_HOOK, for example.)
+AC_PREREQ(2.54)
+
+m4_define([gnumeric_version_epoch], [1])
+m4_define([gnumeric_version_major], [10])
+m4_define([gnumeric_version_minor], [14])
+m4_define([gnumeric_version_extra], [])
+m4_define([gnumeric_version_full],
+    [gnumeric_version_epoch.gnumeric_version_major.gnumeric_version_minor[]gnumeric_version_extra])
+
+dnl Emphasize some of the checks.
+m4_define([BIG_CHECKING], [AC_MSG_CHECKING([
+======== $1])])
+
+AC_INIT([gnumeric], [gnumeric_version_full],
+	[http://bugzilla.gnome.org/enter_bug.cgi?product=gnumeric])
+
+AC_CONFIG_SRCDIR(src/sheet.h)
+AM_INIT_AUTOMAKE([dist-bzip2])
+
+dnl Version info for libraries = CURRENT:REVISION:AGE
+dnl
+dnl Within each x.y.*, ABI is maintained backward and _forward_ compatible.
+dnl (As a consequence, no exported function may be added.)
+dnl So it's enough to have one interface number per each x.y.* branch.
+dnl
+dnl OTOH, we are not able to keep ABI strictly backward compatible throughout
+dnl the whole x.*.*.
+dnl The easiest way is to declare no ABI compatibility, ie. AGE is always 0.
+dnl
+m4_define([version_iface],
+	m4_eval(100 * gnumeric_version_epoch + gnumeric_version_major))
+
+AC_SUBST([VERSION_INFO], [version_iface:gnumeric_version_minor:0])
+AC_SUBST([VERSION_IFACE], [version_iface])
+
+dnl Almost like epoch.major but development versions look forward to the next
+dnl stable release.
+AC_SUBST([GNUMERIC_API_VER], [1.10])
+
+dnl This one is created by autoheader, ...
+AC_CONFIG_HEADERS(gnumeric-config.h)
+
+dnl ... and this one is a small subset, maintained manually,
+dnl which will be installed.
+AC_CONFIG_HEADERS(gnumeric-features.h)
+dnl
+dnl Make sure these two won't clash.  Put the following to gnumeric-config.h:
+AH_BOTTOM([/* Don't include gnumeric-features.h, it's a subset of gnumeric-config.h. */
+#define GNUMERIC_FEATURES_H])
+
+AM_MAINTAINER_MODE
+
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+
+# Make --disable-static the default
+AC_DISABLE_STATIC
+
+dnl We use a LINGUAS file, so we need intltool >= 0.35:
+IT_PROG_INTLTOOL([0.35.0])
+IT_PO_SUBDIR(po-functions)
+
+if test `expr gnumeric_version_major % 2` -eq 1; then
+    AC_MSG_NOTICE([NOTE: This is a development release])
+    gnumeric_devel=yes
+else
+    gnumeric_devel=no
+fi
+
+dnl We use $host and $host_os:
+AC_CANONICAL_HOST
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_PROG_YACC
+AM_PROG_LEX
+AC_PROG_LN_S
+AM_PROG_LIBTOOL
+DOLT
+AC_HEADER_STDC
+
+dnl Propagate Gnome-specific variable ACLOCAL_FLAGS to Makefile.
+AC_SUBST(ACLOCAL_AMFLAGS, $ACLOCAL_FLAGS)
+
+dnl *****************************
+# Check for zlib.
+dnl
+dnl zlib is needed for the excel plugin; see plugins/excel/Makefile.am
+dnl
+_cppflags="${CPPFLAGS}"
+_ldflags="${LDFLAGS}"
+
+AC_ARG_WITH(zlib,
+	AS_HELP_STRING([--with-zlib=DIR], [use libz in DIR]),
+	[case $withval in
+	 yes|no) ;;
+	 *)	Z_DIR=$withval
+		CPPFLAGS="${CPPFLAGS} -I$withval/include"
+		LDFLAGS="${LDFLAGS} -L$withval/lib"
+		;;
+	 esac])
+
+if test "x$with_zlib" != xno; then
+	with_zlib=no
+	AC_CHECK_HEADER(zlib.h, [AC_CHECK_LIB(z, gzread, [with_zlib=yes])])
+fi
+
+if test "$with_zlib" = no; then
+	AC_MSG_ERROR([*** zlib is required])
+fi
+
+if test "x${Z_DIR}" != "x"; then
+	Z_CPPFLAGS="-I${Z_DIR}/include"
+	case ${host} in
+	*-*-solaris*)	Z_LIBS="-L${Z_DIR}/lib -R${Z_DIR}/lib -lz" ;;
+	*)		Z_LIBS="-L${Z_DIR}/lib -lz" ;;
+	esac
+else
+	Z_LIBS="-lz"
+fi
+AC_SUBST(Z_CPPFLAGS)
+AC_SUBST(Z_LIBS)
+
+CPPFLAGS=${_cppflags}
+LDFLAGS=${_ldflags}
+
+dnl **********
+dnl * Goffice 
+dnl **********
+# Goffice releases are parallel installable, which do we depend on
+GOFFICE_API_VER="0.8"
+AC_SUBST(GOFFICE_API_VER)
+# Components
+GOFFICE_PLUGINS_DIR=`pkg-config --variable=PluginDir libgoffice-${GOFFICE_API_VER}`
+AC_SUBST(GOFFICE_PLUGINS_DIR)
+GOFFICE_VERSION=`pkg-config --modversion libgoffice-${GOFFICE_API_VER}`
+AC_SUBST(GOFFICE_VERSION)
+
+
+dnl PKG_PROG_PKG_CONFIG is expanded just before the first occurrence of
+dnl PKG_CHECK_MODULES.  Since this is inside an `if,' it can escape
+dnl execution.  Thus we need an explicit call:
+PKG_PROG_PKG_CONFIG(0.18)
+
+dnl *****************************
+libspreadsheet_reqs="
+	libgoffice-${GOFFICE_API_VER}	>= 0.8.10
+	libgsf-1		>= 1.14.18
+	libxml-2.0		>= 2.4.12
+"
+gnumeric_reqs="$libspreadsheet_reqs
+	glib-2.0		>= 2.12.0
+	gobject-2.0		>= 2.10.0
+	gmodule-2.0		>= 2.10.0
+	gthread-2.0		>= 2.10.0
+	pango			>= 1.12.0
+	pangocairo		>= 1.10.0
+"
+libspreadsheet_gtk_reqs="
+	gtk+-2.0		>= 2.12.0
+"
+
+gnumeric_gtk_reqs="$libspreadsheet_gtk_reqs"
+
+libspreadsheet_gnome_reqs="
+	libbonobo-2.0		>= 2.2.0
+"
+
+gnumeric_gnome_reqs="$libspreadsheet_gnome_reqs
+	libgnomeui-2.0		>= 2.0.0
+	libbonoboui-2.0		>= 2.2.0
+	libgnome-2.0		>= 2.0.0
+	libgsf-gnome-1		>= 1.14.2
+"
+
+ui_msg=
+
+with_win32=no
+case $host_os in
+mingw* | pw32* | cygwin*)
+    with_win32=yes
+    ;;
+esac
+
+dnl *******************
+dnl Should we use gtk ?
+dnl *******************
+gnumeric_with_gtk=true
+AC_ARG_WITH(gtk, AS_HELP_STRING([--without-gtk], [Build without UI]))
+if test "x$with_gtk" = xno; then
+	ui_msg="None (Gtk disabled by request)"
+	gnumeric_with_gtk=false
+else
+	dnl We shouldn't silently default to --without-gtk.
+	dnl If the requirements are not met, fail.
+	ui_msg="Gtk"
+	PKG_CHECK_MODULES(GTK, [$libspreadsheet_gtk_reqs])
+	PKG_CHECK_MODULES(GTK, [$gnumeric_gtk_reqs])
+fi 
+
+if test "x$gnumeric_with_gtk" = xtrue ; then
+	AC_DEFINE(GNM_WITH_GTK, 1, [Define if UI is built])
+	libspreadsheet_reqs="$libspreadsheet_reqs $libspreadsheet_gtk_reqs"
+	gnumeric_reqs="$gnumeric_reqs $gnumeric_gtk_reqs"
+fi
+
+gnumeric_with_gnome=false
+if test "x$gnumeric_with_gtk" = xtrue -a "x$with_win32" = xno ; then
+	dnl ************************************
+	dnl Are the GNOME extensions available ?
+	dnl ************************************
+
+	ui_msg="Gtk+ (Gnome disabled)"
+	AC_ARG_WITH(gnome,
+		AS_HELP_STRING([--with-gnome], [Use GNOME extensions]),
+		if test "x$withval" == xyes; then
+			ui_msg="Gnome"
+			gnumeric_with_gnome=true
+		fi
+	)
+	if test "x$gnumeric_with_gnome" = xtrue; then
+		PKG_CHECK_MODULES(GNOME, [$libspreadsheet_gnome_reqs],
+			[ui_msg="Gnome"],
+			[ui_msg="Gtk (missing Gnome dependencies)" ; gnumeric_with_gnome=false])
+		PKG_CHECK_MODULES(GNOME, [$gnumeric_gnome_reqs],
+			[ui_msg="Gnome"],
+			[ui_msg="Gtk (missing Gnome dependencies)" ; gnumeric_with_gnome=false])
+	fi
+
+	if test "x$gnumeric_with_gnome" = xtrue; then
+		AC_DEFINE(GNM_WITH_GNOME, 1, [Define if GNOME extensions are available])
+		libspreadsheet_reqs="$libspreadsheet_reqs $libspreadsheet_gnome_reqs"
+		gnumeric_reqs="$gnumeric_reqs $gnumeric_gnome_reqs"
+	fi
+fi
+AM_CONDITIONAL(WITH_GTK,   $gnumeric_with_gtk)
+AM_CONDITIONAL(WITH_GNOME, $gnumeric_with_gnome)
+
+dnl ****************************
+dnl now that we have selected out libraries the whole collection in one
+dnl shot so that we can have a nice neat compile/link line
+dnl ****************************
+
+PKG_CHECK_MODULES(LIBSPREADSHEET, $libspreadsheet_reqs)
+AC_SUBST(LIBSPREADSHEET_LIBS)
+AC_SUBST(LIBSPREADSHEET_CFLAGS)
+
+PKG_CHECK_MODULES(GNUMERIC, $gnumeric_reqs)
+AC_SUBST(GNUMERIC_LIBS)
+AC_SUBST(GNUMERIC_CFLAGS)
+
+with_native_win32=no
+case $host_os in
+mingw* | pw32*)
+    with_native_win32=yes
+    AC_ARG_VAR(WINDRES, [The windres executable (used by win32 builds only).])
+    AC_CHECK_TOOL(WINDRES, windres, :)
+    ;;
+esac
+AM_CONDITIONAL(WITH_WIN32, test $with_win32 = yes)
+AM_CONDITIONAL(WITH_NATIVE_WIN32, test $with_native_win32 = yes)
+AM_CONDITIONAL(CROSS_COMPILING, test x"$cross_compiling" != xno)
+
+if test "x$with_win32" = "xyes"; then
+    GNUMERIC_PLUGIN_LDFLAGS="-avoid-version -no-undefined $GNUMERIC_LIBS -Wl,--enable-runtime-pseudo-reloc,--export-all-symbols \$(top_builddir)/src/libspreadsheet.la -s"
+else
+    GNUMERIC_PLUGIN_LDFLAGS="-avoid-version"
+fi
+AC_SUBST(GNUMERIC_PLUGIN_LDFLAGS)
+
+dnl disable for in stable release, enable for development series
+if test $gnumeric_devel = yes; then
+    CFLAGS="$CFLAGS -DG_DISABLE_DEPRECATED"
+    CFLAGS="$CFLAGS -DPANGO_DISABLE_DEPRECATED"
+    if test "x$gnumeric_with_gtk" = xtrue; then
+	    CFLAGS="$CFLAGS -DGDK_PIXBUF_DISABLE_DEPRECATED"
+	    CFLAGS="$CFLAGS -DGDK_DISABLE_DEPRECATED"
+	    CFLAGS="$CFLAGS -DGDK_MULTIHEAD_SAFE"
+	    CFLAGS="$CFLAGS -DGTK_DISABLE_DEPRECATED"
+	    # CFLAGS="$CFLAGS -DGSEAL_ENABLE"
+    fi
+    if test "x$gnumeric_with_gnome" = xtrue; then
+	    CFLAGS="$CFLAGS -DGNOME_DISABLE_DEPRECATED"
+	    CFLAGS="$CFLAGS -DBONOBO_DISABLE_DEPRECATED"
+	    CFLAGS="$CFLAGS -DBONOBO_UI_DISABLE_DEPRECATED"
+    fi
+fi
+
+dnl ==============================================
+dnl Maemo/Hildon based User Interface
+
+AC_ARG_ENABLE(hildon,
+	AS_HELP_STRING([--enable-hildon],[Build with Maemo/Hildon support]),
+    enable_hildon="$enableval",
+    enable_hildon=no)
+
+if test "x$enable_hildon" = xyes ; then
+    PKG_CHECK_MODULES(HILDON,
+                      hildon-libs hildon-fm libosso,
+                      HAVE_HILDON=yes, HAVE_HILDON=no)
+fi
+
+if test "x$HAVE_HILDON" = xyes ; then
+    AC_DEFINE(GNM_USE_HILDON, 1, [Build with Maemo/Hildon support])
+fi
+
+AM_CONDITIONAL(USE_HILDON, test "x$HAVE_HILDON" = xyes)
+AC_SUBST(HILDON_CFLAGS)
+AC_SUBST(HILDON_LIBS)
+
+dnl The following conditional is set in AM_GCONF_SOURCE_2.
+dnl Because we may skip its execution, we have to set a default here.
+m4_pattern_allow([^AM_GCONF_SOURCE_2$])
+AM_CONDITIONAL([GCONF_SCHEMAS_INSTALL], [false])
+
+dnl *******************
+dnl Do we need gconf ?
+dnl *******************
+gnumeric_with_gconf=false
+if test ! -z "`echo $GNUMERIC_CFLAGS|grep gconf`"; then
+	dnl ==============================================
+	dnl Special GConf section  (stolen from libgnome)
+	dnl ==============================================
+
+	dnl Don't publish the GCONFTOOL variable, AM_GCONF_SOURCE_2 has ``gconftool-2'' hardwired.
+	GCONFTOOL=""
+	AC_CHECK_PROG(GCONFTOOL, gconftool-2, gconftool-2)
+	if test x"$GCONFTOOL" = x; then
+		AC_MSG_ERROR([gconftool-2 executable not found in your path - should be installed with GConf])
+	fi
+	AM_GCONF_SOURCE_2
+	gnumeric_with_gconf=true
+fi
+AM_CONDITIONAL(WITH_GCONF, $gnumeric_with_gconf)
+
+with_corba=false
+AM_CONDITIONAL(WITH_CORBA, $with_corba)
+
+
+dnl ****************************
+dnl prep the pixmap generator
+dnl ****************************
+
+AC_ARG_VAR(GLIB_GENMARSHAL, [The glib-genmarshal executable.])
+AC_CHECK_PROG(GLIB_GENMARSHAL, glib-genmarshal$ac_exeext, glib-genmarshal$ac_exeext)
+
+AC_ARG_VAR(GDK_PIXBUF_CSOURCE, [The gdk-pixbuf-csource executable.])
+AC_CHECK_PROG(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource$ac_exeext, gdk-pixbuf-csource$ac_exeext)
+
+## this should come after `AC_PROG_CC'
+ifdef([GNOME_COMPILE_WARNINGS],
+	[GNOME_COMPILE_WARNINGS] CFLAGS="$CFLAGS $WARN_CFLAGS",
+	[]
+)
+set_more_warnings=yes
+if test "$GCC" = yes -a "x$set_more_warnings" != xno; then
+	warning_options="-Wsign-compare -Wpointer-arith -Wnested-externs \
+			 -Wchar-subscripts -Wwrite-strings \
+			 -Wdeclaration-after-statement -Wnested-externs \
+			 -Wmissing-noreturn -Wmissing-prototypes \
+			 -Wmissing-declarations -Wno-pointer-sign \
+			 -Werror=format-security -Wbitwise -Wcast-to-as \
+			 -Wdefault-bitfield-sign -Wdo-while -Wparen-string \
+			 -Wptr-subtraction-blows -Wreturn-void -Wtypesign"
+	if test $gnumeric_devel = yes; then
+		dnl Avoid triggering a warning in gtk+ headers for stable.
+		warning_options="$warning_options -Wstrict-prototypes"
+	fi
+	for option in $warning_options ; do
+		SAVE_CFLAGS="$CFLAGS"
+		CFLAGS="$CFLAGS $option"
+		AC_MSG_CHECKING([whether gcc understands $option])
+		AC_TRY_COMPILE([], [],
+			has_option=yes,
+			has_option=no,)
+		if test $has_option = no; then
+		  CFLAGS="$SAVE_CFLAGS"
+		fi
+		AC_MSG_RESULT($has_option)
+		unset has_option
+		unset SAVE_CFLAGS
+	done
+	unset option
+fi
+AC_SUBST(WARN_CFLAGS)
+
+AC_ARG_ENABLE(ssconvert,
+  AS_HELP_STRING([--disable-ssconvert], [Do not build ssconvert (command line spreadsheet conversion tool)]),
+  [], [enable_ssconvert=yes])
+AM_CONDITIONAL(ENABLE_SSCONVERT, test x"$enable_ssconvert" = xyes)
+
+AC_ARG_ENABLE(ssindex,
+  AS_HELP_STRING([--disable-ssindex], [Do not build ssindex (spreadsheet indexer for beagle)]),
+  [], [enable_ssindex=yes])
+AM_CONDITIONAL(ENABLE_SSINDEX, test x"$enable_ssindex" = xyes)
+
+AC_ARG_ENABLE(ssgrep,
+  AS_HELP_STRING([--disable-ssgrep], [Do not build ssgrep (search for supplied strings in spreadsheet)]),
+  [], [enable_ssgrep=yes])
+AM_CONDITIONAL(ENABLE_SSGREP, test x"$enable_ssgrep" = xyes)
+
+AC_ARG_ENABLE(component,
+  AS_HELP_STRING([--disable-component], [Do not build the goffice component]),
+  [], [enable_component=yes])
+component_dir=""
+if test x"$enable_component" = xyes; then
+	component_dir="component"
+else
+	component_dir=""
+fi
+AC_SUBST(COMPONENT_DIR, $component_dir)
+
+dnl ****************************
+dnl GDA Plugin
+dnl ****************************
+try_gda=true
+gda_msg=yes
+gnomedb_msg=no
+AC_ARG_WITH(gda,
+	AS_HELP_STRING([--with-gda], [Compile the Gnome Database Access plugin]),
+	if test "x$withval" != xyes; then
+		try_gda=false
+		gda_msg="Disabled by request"
+	fi
+)
+if test "$try_gda" = true; then
+	PKG_CHECK_MODULES(GDA, [libgda-4.0 >= 4.1.1],
+		[gda_msg=yes],
+		[gda_msg="NO.  libgda problem"])
+	AC_CHECK_HEADER(libgda/control-center/gdaui-login-dialog.h,
+			[],
+			[gda_msg="NO.  libgda problem"])
+	if test "$gda_msg" = yes; then
+		PKG_CHECK_MODULES(GNOMEDB, [libgnomedb-4.0 >= 3.99.6],
+			[gnomedb_msg="yes"],
+			[gnomedb_msg="NO. libgnomedb problem"])
+		if test "$gnomedb_msg" = yes; then
+			AC_DEFINE(HAVE_LIBGNOMEDB, 1, [ Define if libgnomedb support is compiled in])
+		fi
+	fi
+fi
+AM_CONDITIONAL(WITH_GDA, test x"$gda_msg" = xyes)
+AC_SUBST(GDA_CFLAGS)
+AC_SUBST(GDA_LIBS)
+
+AM_CONDITIONAL(WITH_GNOMEDB, test x"$gnomedb_msg" = xyes)
+AC_SUBST(GNOMEDB_CFLAGS)
+AC_SUBST(GNOMEDB_LIBS)
+
+dnl ****************************
+
+AC_CHECK_DECL(fdopen, fdopen_works=yes, fdopen_works=no)
+
+if test $fdopen_works = no ; then
+	unset ac_cv_have_decl_fdopen
+	CFLAGS="$CFLAGS -D_POSIX_SOURCE"
+	AC_MSG_NOTICE([adding -D_POSIX_SOURCE to CFLAGS])
+	AC_CHECK_DECL(fdopen, fdopen_works=yes, fdopen_works=no)
+	if test $fdopen_works = no ; then
+		AC_MSG_ERROR([fdopen is not available])
+	fi
+fi
+
+# Unfortunately, -D_POSIX_SOURCE turns off struct timeval on Solaris
+AC_MSG_CHECKING([whether struct timeval is available])
+AC_TRY_COMPILE([#include <sys/time.h>], [struct timeval tv;], struct_timeval_works=yes, struct_timeval_works=no)
+AC_MSG_RESULT($struct_timeval_works)
+
+if test $struct_timeval_works = no ; then
+	CFLAGS="$CFLAGS -D__EXTENSIONS__"
+	AC_MSG_CHECKING([whether struct timeval is available with -D__EXTENSIONS__])
+	AC_TRY_COMPILE([#include <sys/time.h>], [struct timeval tv;], struct_timeval_works=yes, struct_timeval_works=no)
+	AC_MSG_RESULT($struct_timeval_works)
+	if test $struct_timeval_works = no ; then
+		AC_MSG_ERROR([struct timeval is not available])
+	fi
+fi
+
+AC_CHECK_FUNC(gettimeofday,
+	[AC_DEFINE(HAVE_GETTIMEOFDAY, 1,
+		[Define if the gettimeofday function is available]
+	)])
+
+dnl src/functions/fn-math.c uses M_PI
+
+AC_MSG_CHECKING([whether M_PI is available])
+AC_TRY_COMPILE([#include <math.h>], [double f = M_PI], works_without_bsd_source=yes, works_without_bsd_source=no)
+AC_MSG_RESULT($works_without_bsd_source)
+
+if test $works_without_bsd_source = no ; then
+	CFLAGS="$CFLAGS -D_BSD_SOURCE"
+	AC_MSG_CHECKING([whether M_PI is available with -D_BSD_SOURCE])
+	AC_TRY_COMPILE([#include <math.h>], [double f = M_PI], m_pi_works=yes, m_pi_works=no)
+	AC_MSG_RESULT($m_pi_works)
+	if test $m_pi_works = no ; then
+		AC_MSG_ERROR([M_PI is not available])
+	fi
+fi
+
+AC_SUBST(GUILE_LIBS)
+AC_SUBST(GUILE_INCS)
+
+dnl Comment out the guile block:
+ifelse([
+dnl check for guile 1.5
+try_guile=false
+guile_msg="disabled pending some guile developer interest"
+enable_guile=false
+AC_ARG_WITH(guile,
+	AS_HELP_STRING([--with-guile], [Compile with Guile support or without it]),
+	if test "x$withval" = xyes; then
+		try_guile=true
+	fi
+)
+if $try_guile; then
+	AC_MSG_CHECKING(for guile >= 1.5)
+	if test "`guile -c '(display (string>=? (version) "1.4.1"))'`" != "#t"; then
+  		AC_MSG_RESULT([Your Guile is too old.  You need Guile 1.5 or later.])
+	else
+	        AC_MSG_RESULT(found)
+		guile_msg="yes"
+		enable_guile=true
+	fi
+fi
+if $enable_guile; then
+	GNOME_CHECK_GUILE
+fi
+AM_CONDITIONAL(WITH_GUILE, $enable_guile)
+])
+
+dnl **************************************************
+dnl * psiconv support
+dnl **************************************************
+
+AC_ARG_WITH(psiconv,
+	AS_HELP_STRING([--without-psiconv], [Compile without Psiconv support]))
+AC_ARG_VAR(PSICONV_CONFIG, [The psiconv-config executable.])
+if test "x$with_psiconv" != xno; then
+    AC_CHECK_PROG(PSICONV_CONFIG,psiconv-config,psiconv-config)
+    if test x"$PSICONV_CONFIG" = x; then
+	psiconv_msg="missing dependencies"
+    else
+	AC_MSG_CHECKING(for psiconv >= 0.9.3)
+	if $PSICONV_CONFIG --version | awk -F. \
+		'{exit !($1 > 0 || $2 > 9 || ($2 == 9 && $3 >= 3))}'
+	then
+	    PSICONV_CFLAGS=`$PSICONV_CONFIG --cflags`
+            PSICONV_LIBS=`$PSICONV_CONFIG --libs`
+	    psiconv_msg=yes
+        else
+	    psiconv_msg=no
+        fi
+	AC_MSG_RESULT($psiconv_msg)
+    fi
+else
+    psiconv_msg=no
+fi
+AM_CONDITIONAL(WITH_PSICONV, test "x$psiconv_msg" = xyes)
+AC_SUBST(PSICONV_LIBS)
+AC_SUBST(PSICONV_CFLAGS)
+
+try_paradox=true
+enable_paradox=false
+AC_ARG_WITH(paradox,
+	AS_HELP_STRING([--without-paradox], [Compile without Paradox support]),
+	if test "x$withval" = xno; then
+		try_paradox=false
+	fi
+)
+
+if $try_paradox; then
+	PKG_CHECK_MODULES(PARADOX,
+		[pxlib >= 0.4.0],
+		[paradox_msg="yes"],
+		[paradox_msg="missing dependencies"])
+fi
+
+if test "x$paradox_msg" = xyes; then
+	enable_paradox=true
+fi
+AM_CONDITIONAL(WITH_PARADOX, $enable_paradox)
+AC_SUBST(PARADOX_LIBS)
+AC_SUBST(PARADOX_CFLAGS)
+
+AC_ARG_ENABLE(solver, AS_HELP_STRING([--disable-solver], [Don't compile the solver]))
+if test "x$enable_solver" = xno; then
+	enable_solver=false
+else
+	enable_solver=true
+	AC_DEFINE(GNM_ENABLE_SOLVER, 1, [Define if SOLVER is compiled])
+fi
+AM_CONDITIONAL(ENABLE_SOLVER, $enable_solver)
+
+plugin_list_given=false
+PLUGIN_LIST=""
+AC_ARG_ENABLE(plugins,
+	AS_HELP_STRING([--enable-plugins="text html"], [Compile only the listed plugins]),
+	[plugin_list_given=true
+	 test "x$enableval" != xno && PLUGIN_LIST=$enableval
+])
+AM_CONDITIONAL(PLUGIN_LIST_GIVEN, $plugin_list_given)
+AC_SUBST(PLUGIN_LIST)
+
+POFILES_FULL=
+for lang in $ALL_LINGUAS; do
+    POFILES_FULL="$POFILES_FULL \$(top_srcdir)/po/$lang.po"
+done
+AC_SUBST(POFILES_FULL)
+
+AC_SUBST(GETTEXT_PACKAGE, gnumeric)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
+	[The package name, for gettext])
+AM_GLIB_GNU_GETTEXT
+dnl
+dnl Code to handle po-functions/Makefile* and po-functions/POTFILES*
+dnl
+dnl First, let me document how the po/ directory is dealt with.
+dnl Dark mysteries here, so skip the next paragraph if you don't have enough
+dnl holy water at your hand.  You have been warned.
+dnl
+dnl AM_GLIB_GNU_GETTEXT creates an incorrect incarnation of po/POTFILES, as
+dnl glib-gettext.m4 doesn't know about intltool tags.  Later on, just before
+dnl config.status is created, a code originating from intltool.m4 creates
+dnl POTFILES again, this time correctly removing the intltool tags.
+dnl config.status then creates po/Makefile, again in two steps.  First,
+dnl po/Makefile.in is created from po/Makefile.in.in the usual way, and then
+dnl a code registered via the obsolete macro AC_OUTPUT_COMMANDS insterts the
+dnl contents of file POTFILES to po/Makefile.
+dnl
+dnl But both glib-gettext and intltool have the dirname "po/" hardwired, so
+dnl we are on our own with po-functions.
+dnl
+dnl We use a more straightforward approach for po-functions:
+dnl 1) We create POTFILES immediately here.
+dnl 2) We let config.status to create Makefile.in.
+dnl 3) We use AC_CONFIG_COMMANDS to create Makefile.
+dnl 
+[# Create po-functions/POTFILES:
+if test -d po-functions; then
+	rm -f po-functions/POTFILES
+else
+	mkdir po-functions
+fi
+case "$srcdir" in
+	.)  top_srcdir=.. ;;
+	[\\/]* | ?:[\\/]* )  # Absolute name.
+		top_srcdir="$srcdir" ;;
+	*)  top_srcdir="../$srcdir" ;;
+esac
+sed <$srcdir/po-functions/POTFILES.in -e '/^#/d' -e 's/^[[].*[]] *//' \
+	 -e '/^[   ]*$/d' -e "s,^,       $top_srcdir/," | \
+        sed -e '$!s/$/ \\/' >po-functions/POTFILES
+]
+dnl Finally, register for creation of po-functions/Makefile:
+dnl We do not currently do anything here.
+AC_CONFIG_COMMANDS(po-functions/Makefile,
+  [cp po-functions/Makefile.in po-functions/Makefile])
+
+SAVE_LIBS="$LIBS"
+LIBS="$LIBS $GNUMERIC_LIBS"
+AC_CHECK_FUNCS(mkfifo)
+LIBS="$SAVE_LIBS"
+unset SAVE_LIBS
+
+dnl Either of these seem to signal IEEE754 math, see mathfunc.c
+AC_CHECK_HEADERS(ieeefp.h ieee754.h)
+
+AC_HEADER_SYS_WAIT
+
+dnl Check for some functions
+AC_CHECK_FUNCS(memmove mkdtemp uname times sysconf)
+
+dnl FIXME: Does this really belong here?
+AC_CHECK_FUNC(bind_textdomain_codeset,,[AC_CHECK_LIB(intl,bind_textdomain_codeset)])
+
+dnl check for complete locale implementation
+AC_CHECK_HEADERS(langinfo.h)
+
+dnl check for rlimit
+AC_CHECK_HEADERS(sys/resource.h)
+
+SAVE_CFLAGS=$CFLAGS
+SAVE_LIBS=$LIBS
+CFLAGS="$CFLAGS $GNUMERIC_CFLAGS"
+LIBS="$GNUMERIC_LIBS $LIBS"
+
+AC_CHECK_FUNCS(g_option_context_set_delocalize g_hash_table_get_keys)
+AC_CHECK_FUNCS(gdk_cairo_set_source_rgba)
+AC_CHECK_FUNCS(gtk_adjustment_configure gtk_adjustment_get_page_increment gtk_adjustment_get_page_size gtk_adjustment_get_lower gtk_adjustment_get_upper gtk_adjustment_get_step_increment gtk_adjustment_set_lower gtk_adjustment_set_upper gtk_adjustment_set_page_increment gtk_adjustment_set_step_increment)
+AC_CHECK_FUNCS(gtk_cell_renderer_get_alignment gtk_cell_renderer_get_padding)
+AC_CHECK_FUNCS(gtk_cell_renderer_text_get_background_set gtk_cell_renderer_text_get_foreground_set gtk_cell_renderer_text_get_editable)
+AC_CHECK_FUNCS(gtk_dialog_get_content_area gtk_dialog_get_action_area)
+AC_CHECK_FUNCS(gtk_entry_get_text_length gtk_entry_set_icon_from_stock gtk_entry_get_buffer gtk_entry_get_text_area gtk_entry_set_editing_cancelled gtk_entry_get_overwrite_mode)
+AC_CHECK_FUNCS(gtk_layout_get_bin_window)
+AC_CHECK_FUNCS(gtk_orientable_set_orientation)
+AC_CHECK_FUNCS(gtk_selection_data_get_data gtk_selection_data_get_length gtk_selection_data_get_target)
+AC_CHECK_FUNCS(gtk_table_get_size)
+AC_CHECK_FUNCS(gtk_tree_view_column_get_button)
+AC_CHECK_FUNCS(gtk_widget_get_visible gtk_widget_set_visible gtk_widget_get_state gtk_widget_is_toplevel gtk_widget_get_window gtk_widget_get_can_focus gtk_widget_has_focus gtk_widget_get_style gtk_widget_get_allocation gtk_widget_is_sensitive gtk_widget_set_can_focus gtk_widget_set_can_default gtk_widget_get_realized)
+AC_CHECK_FUNCS(gtk_window_get_default_widget)
+AC_CHECK_FUNCS(gsf_infile_msvba_steal_modules gsf_open_pkg_foreach_rel )
+AC_CHECK_FUNCS(pango_font_map_create_context)
+
+AC_MSG_CHECKING([for working GTK_WIDGET_REALIZED.])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gtk/gtk.h>]],
+				[[GtkWidget *w = NULL;
+				(void)(GTK_WIDGET_REALIZED (w));]])],
+               [AC_DEFINE(HAVE_WORKING_GTK_WIDGET_REALIZED, 1, [Define if GTK_WIDGET_REALIZED exists and works])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for GtkEntry::text_area])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gtk/gtk.h>]],
+				[[GtkEntry *e = NULL;
+				(void)(e->text_area);]])],
+               [AC_DEFINE(HAVE_GTK_ENTRY_TEXT_AREA, 1, [Define if GtkEntry::text_area exists])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for GtkHandleBox::float_window])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gtk/gtk.h>]],
+				[[GtkHandleBox *hb = NULL;
+				(void)(hb->float_window);]])],
+               [AC_DEFINE(HAVE_GTK_HANDLE_BOX_FLOAT_WINDOW, 1, [Define if GtkHandleBox::float_window exists])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for GtkTable::nrows])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gtk/gtk.h>]],
+				[[GtkTable *t = NULL;
+				(void)(t->nrows == t->ncols);]])],
+               [AC_DEFINE(HAVE_GTK_TABLE_NROWS, 1, [Define if GtkTable::nrows exists])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for GtkTreeViewColumn::button])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gtk/gtk.h>]],
+				[[GtkTreeViewColumn *c = NULL;
+				(void)(c->button);]])],
+               [AC_DEFINE(HAVE_GTK_TREE_VIEW_COLUMN_BUTTON, 1, [Define if GtkTreeViewColumn::button exists])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for PANGO_WEIGHT_THIN etc.])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <pango/pango.h>]],
+				[[(void)(PANGO_WEIGHT_THIN == 42);
+				(void)(PANGO_WEIGHT_MEDIUM == 42);
+				(void)(PANGO_WEIGHT_ULTRAHEAVY == 42);]])],
+               [AC_DEFINE(HAVE_PANGO_WEIGHT_THIN_ETC, 1, [Define if PANGO_WEIGHT_THIN etc are available])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+AC_MSG_CHECKING([for OO_NS_CHART_OOO])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <gsf/gsf-opendoc-utils.h>]],
+				[[(void)((int)OO_NS_CHART_OOO == 42);]])],
+               [AC_DEFINE(HAVE_OO_NS_CHART_OOO, 1, [Define if OO_NS_CHART_OOO is available])
+		AC_MSG_RESULT(yes)],
+	       [AC_MSG_RESULT(no)])
+
+CFLAGS=$SAVE_CFLAGS
+LIBS=$SAVE_LIBS
+
+dnl We supply our own lgamma and lgamma_r when missing.
+AC_CHECK_FUNCS(lgamma_r)
+if test $ac_cv_func_lgamma_r = no; then
+  AC_CHECK_LIB(m, lgamma_r,
+        [AC_DEFINE(HAVE_LGAMMA_R, 1,
+		[Define if the lgamma_r function is available]
+	 )
+         LIBS="$LIBS -lm"])
+fi
+AC_CHECK_FUNCS(lgamma)
+
+AC_C_LONG_DOUBLE
+float_msg=double
+AC_ARG_WITH(long_double,
+	AS_HELP_STRING([--with-long-double], [Use long double for floating point]),
+	[if test "x$withval" = xyes; then
+		SAVE_CFLAGS="$CFLAGS"
+		SAVE_LIBS="$LIBS"
+		CFLAGS="$GNUMERIC_CFLAGS"
+		LIBS="$GNUMERIC_LIBS"
+
+		AC_CHECK_HEADERS(sunmath.h)
+
+		AC_CHECK_FUNCS(go_render_generall,
+			       ,
+			       AC_MSG_ERROR([libgoffice needs to be compiled with long double support.]))
+
+		AC_CHECK_FUNCS(fabsl sqrtl expl expm1l logl log10l log1pl ceill floorl powl hypotl \
+				sinl cosl tanl asinl acosl atanl atan2l fmodl lgammal lgammal_r \
+				sinhl coshl tanhl asinhl acoshl atanhl \
+				isnanl finitel,
+				,
+				AC_MSG_ERROR([Long doubles require the $ldfunc function.]))
+
+		AC_MSG_CHECKING([checking for working ynl])
+		AC_TRY_RUN([
+			#include <math.h>
+			#ifdef HAVE_SUNMATH_H
+			#include <sunmath.h>
+			#endif
+			int main ()
+			{
+				long double l = ynl (2, 4.0L);
+				return !(l >= 0.21 && l <= 0.22);
+			}],
+			[AC_DEFINE(HAVE_YNL)
+			AC_MSG_RESULT(yes)],
+			AC_MSG_RESULT(no),
+			[AC_CHECK_FUNCS(ynl)])
+
+		AC_MSG_CHECKING([checking for working erfl and erfcl])
+		AC_TRY_RUN([
+			#include <math.h>
+			#ifdef HAVE_SUNMATH_H
+			#include <sunmath.h>
+			#endif
+			int main ()
+			{
+				long double l1 = erfl (1.2L);
+				long double l2 = erfcl (1.2L);
+				return !(l1 >= 0.91 && l1 <= 0.92 &&
+					 l2 >= 0.08 && l2 <= 0.09);
+			}],
+			[AC_DEFINE(HAVE_ERFL)
+			 AC_DEFINE(HAVE_ERFCL)
+			AC_MSG_RESULT(yes)],
+			AC_MSG_RESULT(no),
+			[AC_CHECK_FUNCS(erfl erfcl)])
+
+		CFLAGS="$SAVE_CFLAGS"
+		LIBS="$SAVE_LIBS"
+
+		float_msg="long double (EXPERIMENTAL)"
+		AC_MSG_WARN([Long double support is experimental -- expect problems])
+		AC_DEFINE(GNM_WITH_LONG_DOUBLE, 1,
+			[Define if the long double type is to be used]
+		)
+	fi]
+)
+
+dnl **************************************************
+dnl * Check for GSettings
+dnl **************************************************
+have_gsettings=no
+AC_CHECK_LIB(gio-2.0,[g_settings_new],
+	[AC_DEFINE(HAVE_G_SETTINGS_NEW, 1,
+		[Define if the g_settings_new function is available])
+        GLIB_GSETTINGS
+        have_gsettings=yes],
+	[GSETTINGS_RULES=""
+	AC_SUBST(GSETTINGS_RULES)])
+AM_CONDITIONAL(HAVE_GSETTINGS, test $have_gsettings=yes)
+
+dnl **************************************************
+dnl * Check for Perl
+dnl **************************************************
+
+AC_ARG_VAR(PERL, [The Perl executable.])
+AC_CHECK_PROG(PERL, perl, perl)
+
+want_perl=auto
+have_perl=no
+perl_reason=""
+AC_ARG_WITH(perl, AS_HELP_STRING([--without-perl], [Do not build the Perl plugin loader]),
+	[case $withval in
+	yes) want_perl=yes;;
+	no) want_perl=no;;
+	esac])
+if test "x$want_perl" = xno ; then
+    perl_reason="disabled by request"
+else
+    if test "x$PERL" != x; then
+	BIG_CHECKING([for perl ExtUtils::Embed module])
+	if $PERL -e 'eval { require ExtUtils::Embed }; if ($@) { exit(1); } else { exit(0); }'
+	then
+	    AC_MSG_RESULT(yes)
+
+	    dnl Use ExtUtils::Embed to figure out the other options.
+	    PERL_CCCDLFLAGS=`$PERL -MConfig -e 'print $Config{cccdlflags},"\n";'`
+	    PERL_LDDLFLAGS=`$PERL -MConfig -e 'print $Config{lddlflags},"\n";'`
+	    PERL_CC=`$PERL -MConfig -e 'print $Config{cc},"\n";'`
+	    PERL_LD=`$PERL -MConfig -e 'print $Config{ld},"\n";'`
+	    PERL_CCOPTS=`$PERL -MExtUtils::Embed -e ccopts`
+	    PERL_LDOPTS=`$PERL -MExtUtils::Embed -e ldopts`
+
+	    AC_MSG_CHECKING([Checking for perl compiler, linker, libraries and headers])
+	    rm -f testperl$ac_exeext testperl.$ac_objext testperl.c testperl.err
+	    cat > testperl.c <<EOF
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+int main () { (void)&perl_construct; return 0; }
+EOF
+	    $PERL_CC $PERL_CCOPTS -c testperl.c >testperl.err 2>&1 &&
+	    $PERL_LD -o testperl testperl.o $PERL_LDOPTS >testperl.err 2>&1 &&
+	    test -x testperl &&
+	    have_perl=yes
+	    AC_MSG_RESULT($have_perl)
+
+	    if test "x$have_perl" != xyes; then
+		perl_reason="failed to compile test program"
+		cat testperl.err testperl.c >&AS_MESSAGE_LOG_FD
+	    fi
+
+	    rm -f testperl$ac_exeext testperl.$ac_objext testperl.c testperl.err
+
+	else
+	    AC_MSG_RESULT(no)
+	    perl_reason="missing parts of perl"
+	fi
+    else
+	perl_reason="missing perl"
+    fi
+fi
+
+if test "$want_perl" = xyes -a "x$have_perl" != xyes; then
+    AC_MSG_ERROR([Perl requested, but not available: $perl_reason])
+fi
+
+AM_CONDITIONAL(WITH_PERL, test "x$have_perl" = xyes)
+if test "x$have_perl" = xyes ; then
+    perl_msg="yes (using $PERL)"
+else
+    perl_msg="no ($perl_reason)"
+fi
+AC_SUBST(PERL_CCCDLFLAGS)
+AC_SUBST(PERL_LDDLFLAGS)
+AC_SUBST(PERL_CC)
+AC_SUBST(PERL_LD)
+AC_SUBST(PERL_CCOPTS)
+AC_SUBST(PERL_LDOPTS)
+
+dnl **************************************************
+dnl * Check for Python
+dnl **************************************************
+python_msg="yes"
+GNM_PY_CFLAGS=
+GNM_PY_LDFLAGS=
+GNM_PY_LIBADD=
+
+AC_ARG_WITH(python, AS_HELP_STRING([--without-python], [Do not build the Python plugin loader]))
+AC_ARG_VAR(PYTHON, [The Python executable.])
+case $with_python in
+yes|no) ;;
+?*) AC_MSG_ERROR([You cannot use --with-python with an argument.
+If you want to specify a path to your Python executable, use:
+	$srcdir/configure PYTHON=/path/to/your/python ...]);;
+esac
+if test "x$with_python" != xno; then
+    AC_CHECK_PROGS(PYTHON, python python2 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0)
+    if test "x$PYTHON" = x; then
+	python_msg="could not find python"
+    fi
+else
+    python_msg="Disabled by request"
+fi
+
+if test "x$python_msg" = xyes; then
+    BIG_CHECKING([for python = 2.x])
+    [PY_VERSION=`$PYTHON -c 'import sys ; sys.stdout.write(sys.version[0:3])'`
+     major_ver=`$PYTHON -c 'import sys ; sys.stdout.write(sys.version[0:1])'`]
+    if test "x$major_ver" = "x2"; then
+	AC_MSG_RESULT(yes)
+	if test "x$with_native_win32" = xyes ; then
+	    # 2.x on linux, 2x on win32
+	    PY_VERSION=`echo $PY_VERSION | sed -e 's/\\.//'`
+	fi
+    else
+	AC_MSG_RESULT(no)
+	python_msg="NO.  Python version \"${PY_VERSION}\" is too old."
+    fi
+fi
+
+if test "x$python_msg" = xyes; then
+    if test "x$PY_PREFIX" = x; then
+	PY_PREFIX=`$PYTHON -c 'import sys ; sys.stdout.write(sys.prefix)'`
+    fi
+    if test "x$PY_INCLUDE_DIR" = x; then
+	if test "x$with_native_win32" = xyes ; then
+	    PY_INCLUDE_DIR="$PY_PREFIX/include"
+	else
+	    PY_INCLUDE_DIR=`$PYTHON -c 'import sys ; import distutils.sysconfig ; sys.stdout.write(distutils.sysconfig.get_python_inc())'`
+	fi
+    fi
+
+    BIG_CHECKING(Look for $PY_INCLUDE_DIR/Python.h)
+    if test -f $PY_INCLUDE_DIR/Python.h; then
+	AC_MSG_RESULT(yes)
+    else
+	AC_MSG_RESULT(no)
+	python_msg="unable to find Python.h"
+    fi
+fi
+
+if test "x$python_msg" = xyes; then
+    m4_define([pygobject_required_version], [2.12.0])
+    PKG_CHECK_MODULES(PYGOBJECT, pygobject-2.0 >= pygobject_required_version,,
+      [python_msg="Missing pygobject"])
+fi
+
+AM_CONDITIONAL(WITH_PYTHON, test "x$python_msg" = xyes)
+if test "x$python_msg" = xyes; then
+    if test "x$PY_LIB_DIR" = x; then
+	if test "x$with_native_win32" = xyes ; then
+	    PY_LIB_DIR="$PY_PREFIX/libs"
+	else
+	    PY_LIB_DIR=`$PYTHON -c 'import sys ; import distutils.sysconfig ; sys.stdout.write(distutils.sysconfig.get_config_var("LIBPL"))'`
+	fi
+    fi
+
+    GNM_PY_CFLAGS="-I$PY_INCLUDE_DIR $PYGOBJECT_CFLAGS"
+    GNM_PY_LDFLAGS="-L$PY_LIB_DIR -lpython$PY_VERSION $PYGOBJECT_LIBS"
+    python_msg="yes (using $PYTHON)"
+fi
+AC_SUBST(GNM_PY_CFLAGS)
+AC_SUBST(GNM_PY_LDFLAGS)
+AC_SUBST(GNM_PY_LIBADD)
+
+# Support for PDF docs
+AC_ARG_ENABLE(pdfdocs,
+  AS_HELP_STRING([--enable-pdfdocs],[Generate documentation in Portable Document Format]),
+  [enable_pdfdocs=$enableval],
+  [enable_pdfdocs=no])
+pdf_msg="No, not requested.";
+if test x"$enable_pdfdocs" = xyes; then
+	pdfroute=""
+	AC_CHECK_PROG(DBCONTEXT, [dbcontext], [dbcontext], [])
+	AC_CHECK_PROG(DBLATEX, [dblatex], [dblatex], [])
+	if test x"$DBCONTEXT" = x"dbcontext"; then
+		pdfroute=dbcontext
+	else
+		if test x"$DBLATEX" = x"dblatex"; then
+			pdfroute=dblatex
+		fi
+	fi
+	if test x"$pdfroute" != x""; then
+		pdf_msg="Yes, through $pdfroute."
+	else
+		AC_MSG_ERROR([
+Did not find a suitable tool for generating Portable Document Format from
+DocBook XML - aborting.
+
+Both the DocBook to ConTeXt and the DocBook to LaTeX conversion tool can be
+obtained from
+	http://dblatex.sourceforge.net/
+])
+		exit 1
+	fi
+fi
+AM_CONDITIONAL(ENABLE_PDFDOCS, test x"$enable_pdfdocs" = xyes)
+AM_CONDITIONAL(ENABLE_PDF_VIA_DBCONTEXT, test x"$pdfroute" = x"dbcontext")
+AM_CONDITIONAL(ENABLE_PDF_VIA_DBLATEX, test x"$pdfroute" = x"dblatex")
+
+
+dnl A tricky way to comment out in m4:
+ifelse([
+dnl **************************************************
+dnl * Check for mono
+dnl **************************************************
+with_mono=no
+mono_msg="disabled, still experimental"
+
+AC_ARG_WITH(mono, AS_HELP_STRING([--with-mono], [Compile the mono scripting engine]))
+case $with_mono in
+no)	mono_msg="Disabled by request";;
+*)
+    PKG_CHECK_MODULES(MONO, mono,
+	[with_mono=yes
+	 AC_DEFINE(WITH_MONO, 1, [Define if mono .NET engine is available])],
+	[with_mono=no])
+    mono_msg=$with_mono
+    ;;
+esac
+AM_CONDITIONAL(WITH_MONO, test "x$with_mono" = xyes)
+AC_SUBST(MONO_CFLAGS)
+AC_SUBST(MONO_LIBS)
+])
+
+dnl **************************************************
+dnl * Config defaults (Must be after bonobo)
+dnl **************************************************
+dnl
+dnl These are changed in gutils.c for WIN32 packages
+AC_SUBST(gnumeric_datadir, '${datadir}/gnumeric/${VERSION}')
+AC_SUBST(gnumeric_libdir, '${libdir}/gnumeric/${VERSION}')
+AC_SUBST(gnumeric_icondir, '${datadir}/pixmaps/gnumeric')
+AC_SUBST(gnumeric_localedir, '${prefix}/${DATADIRNAME}/locale')
+dnl
+AC_SUBST(gnumeric_plugindir, '${gnumeric_libdir}/plugins')
+
+AC_SUBST(YYYYMMDD, `date +%Y%m%d`)
+
+dnl Export to gnumeric-config.h
+AC_DEFINE(GNM_VERSION_FULL, "gnumeric_version_full",
+	[The version number of this release, with optional extra suffix])
+AC_DEFINE(GNM_VERSION_EPOCH, gnumeric_version_epoch,
+	[The Epoch of this release])
+AC_DEFINE(GNM_VERSION_MAJOR, gnumeric_version_major,
+	[The Major version number of this release])
+AC_DEFINE(GNM_VERSION_MINOR, gnumeric_version_minor,
+	[The Minor version number of this release])
+AC_DEFINE(GNM_VERSION_EXTRA, "gnumeric_version_extra",
+	[Extra, possibly empty tag for this release])
+
+AC_OUTPUT([
+gnumeric.spec
+Makefile
+libspreadsheet.pc
+icons/Makefile
+icons/16x16/Makefile
+icons/22x22/Makefile
+icons/24x24/Makefile
+icons/32x32/Makefile
+icons/48x48/Makefile
+icons/scalable/Makefile
+src/Makefile
+src/dialogs/Makefile
+src/pixmaps/Makefile
+src/widgets/Makefile
+src/tools/Makefile
+src/cut-n-paste-code/Makefile
+doc/Makefile
+doc/C/Makefile
+doc/C/figures/Makefile
+doc/C/figures/icons/Makefile
+doc/developer/Makefile
+plugins/Makefile
+plugins/fn-christian-date/Makefile
+plugins/fn-complex/Makefile
+plugins/fn-database/Makefile
+plugins/fn-date/Makefile
+plugins/fn-derivatives/Makefile
+plugins/fn-eng/Makefile
+plugins/fn-erlang/Makefile
+plugins/fn-financial/Makefile
+plugins/fn-hebrew-date/Makefile
+plugins/fn-info/Makefile
+plugins/fn-logical/Makefile
+plugins/fn-lookup/Makefile
+plugins/fn-math/Makefile
+plugins/fn-numtheory/Makefile
+plugins/fn-r/Makefile
+plugins/fn-stat/Makefile
+plugins/fn-string/Makefile
+plugins/fn-random/Makefile
+plugins/fn-tsa/Makefile
+plugins/applix/Makefile
+plugins/corba/Makefile
+plugins/dif/Makefile
+plugins/excel/Makefile
+plugins/excelplugins/Makefile
+plugins/gda/Makefile
+plugins/gnome-db/Makefile
+plugins/gnome-glossary/Makefile
+plugins/html/Makefile
+plugins/lotus-123/Makefile
+plugins/lpsolve/Makefile
+plugins/nlsolve/Makefile
+plugins/glpk/Makefile
+plugins/mps/Makefile
+plugins/oleo/Makefile
+plugins/openoffice/Makefile
+plugins/paradox/Makefile
+plugins/perl-func/Makefile
+plugins/perl-loader/Makefile
+plugins/plan-perfect/Makefile
+plugins/psiconv/Makefile
+plugins/py-func/Makefile
+plugins/python-loader/Makefile
+plugins/qpro/Makefile
+plugins/sample_datasource/Makefile
+plugins/sc/Makefile
+plugins/sylk/Makefile
+plugins/uihello/Makefile
+plugins/xbase/Makefile
+po/Makefile.in
+po-functions/Makefile.in
+schemas/Makefile
+schemas/org.gnome.gnumeric.gschema.xml.in
+schemas/org.gnome.gnumeric.dialogs.gschema.xml.in
+schemas/org.gnome.gnumeric.plugin.gschema.xml.in
+templates/Makefile
+templates/english/Makefile
+templates/autoformat/Makefile
+test/Makefile
+tools/Makefile
+tools/win32/Makefile
+tools/win32/moduleset
+tools/win32/gnumeric.nsi
+component/Makefile
+])
+
+echo "
+
+Configuration:
+
+	Source code location:	${srcdir}
+	Compiler:		${CC}
+	Compiler flags:		${CFLAGS}
+	Floating point type:	${float_msg}
+
+	UI:			${ui_msg}
+
+	Perl Support:		${perl_msg}
+	Python Support:		${python_msg}
+
+	GDA support:		${gda_msg}
+	GNOME-DB support:	${gnomedb_msg}
+	Psiconv support:        ${psiconv_msg}
+
+	PDF documentation:	${pdf_msg}
+"
+#	Mono support:		${mono_msg}
+#	Guile Support:		${guile_msg}

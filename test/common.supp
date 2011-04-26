@@ -1,0 +1,332 @@
+{
+   ncsd_get_map_ref_i686
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:__nscd_get_map_ref
+}
+
+{
+   ncsd_get_map_ref_x64
+   Memcheck:Param
+   socketcall.sendto(msg)
+   fun:send
+   fun:get_mapping
+   fun:__nscd_get_map_ref
+}
+
+{
+   glibc_fseeko
+   Memcheck:Param
+   write(buf)
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:fseeko
+}
+
+{
+   glibc_fseeko64
+   Memcheck:Param
+   write(buf)
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:fseeko64
+}
+
+{
+   dlsym_debian_1
+   Memcheck:Addr4
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:_dl_sym
+}
+
+{
+   dlsym_debian_2
+   Memcheck:Addr4
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:__libc_dlsym
+}
+
+# -----------------------------------------------------------------------------
+
+{
+   Leak/ORBit_small_allocbuf
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:ORBit_alloc_tcval
+   fun:ORBit_small_allocbuf
+}
+
+{
+   Leak/ORBit_small_alloc
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:ORBit_alloc_by_tc
+   fun:ORBit_small_alloc
+}
+
+{
+   Leak/gnm_pre_parse_init/g_set_prgname
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_set_prgname
+   fun:gnm_pre_parse_init
+}
+
+{
+   Leak/gtk_page_setup_copy
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:*
+   fun:gtk_paper_size_new
+}
+
+{
+   Leak/gtk_page_setup_copy2
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:gtk_paper_size_new
+}
+
+{
+   Leak/font-config/FcStrCopy
+   Memcheck:Leak
+   fun:malloc
+   fun:FcStrCopy
+}
+
+{
+   Leak/font-config/FcConfigAllocExpr
+   Memcheck:Leak
+   fun:malloc
+   fun:FcConfigAllocExpr
+}
+
+{
+   Leak/font-config/FcTestCreate
+   Memcheck:Leak
+   fun:malloc
+   fun:FcTestCreate
+}
+
+{
+   Leak/font-config/FcEditCreate
+   Memcheck:Leak
+   fun:malloc
+   fun:FcEditCreate
+}
+
+{
+   Leak/font-config/FcMatrixCopy
+   Memcheck:Leak
+   fun:malloc
+   fun:FcMatrixCopy
+}
+
+{
+   Leak/font-config/FcConfigAddEdit
+   Memcheck:Leak
+   fun:malloc
+   fun:FcConfigAddEdit
+}
+
+{
+   Leak/FcStrStaticName
+   Memcheck:Leak
+   fun:malloc
+   fun:FcStrStaticName
+}
+
+{
+   Leak/FcPatternObjectInsertElt
+   Memcheck:Leak
+   fun:malloc
+   fun:FcPatternObjectInsertElt
+}
+
+{
+   Leak/FcPatternObjectInsertElt2
+   Memcheck:Leak
+   fun:realloc
+   fun:FcPatternObjectInsertElt
+}
+
+{
+   Leak/FcPatternObjectAddWithBinding
+   Memcheck:Leak
+   fun:malloc
+   fun:FcPatternObjectAddWithBinding
+}
+
+{
+   Leak/font-config/XML_ParseBuffer
+   Memcheck:Leak
+   fun:malloc
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:XML_ParseBuffer
+}
+
+{
+   fwrite_debian
+   Memcheck:Param
+   write(buf)
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:*
+   fun:fwrite
+}
+
+{
+   Leak/pango_find_map
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_class_ref
+   fun:g_type_class_ref
+   fun:pango_find_map
+}
+
+{
+   Leak/pango_find_map2
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_class_ref
+   fun:pango_find_map
+}
+
+{
+   Leak/pango_find_map3
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:pango_find_map
+}
+
+{
+   Leak/giop_connection_class_init
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_class_ref
+   fun:g_type_class_ref
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_pointer
+   fun:giop_connection_class_init
+}
+
+{
+   Leak/giop_connection_class_init2
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_type_class_ref
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:g_param_spec_pointer
+   fun:giop_connection_class_init
+}
+
+{
+   Leak/dbus
+   Memcheck:Leak
+   fun:malloc
+   fun:dbus_malloc
+}
+
+{
+   Leak/dbus2
+   Memcheck:Leak
+   fun:realloc
+   fun:dbus_realloc
+}
+
+{
+   Leak/ft_alloc
+   Memcheck:Leak
+   fun:malloc
+   fun:ft_alloc
+}
+
+{
+   Leak/ft_realloc
+   Memcheck:Leak
+   fun:realloc
+   fun:ft_realloc
+}
+
+{
+   Leak/FT_Outline_Decompose
+   Memcheck:Leak
+   fun:malloc
+   fun:_cairo_path_buf_create
+   fun:_cairo_path_fixed_add
+   fun:_cairo_path_fixed_curve_to
+   fun:_conic_to
+   fun:FT_Outline_Decompose
+}
+
+ {
+   Leak/pango_ot_info_get
+   Memcheck:Leak
+   fun:realloc
+   fun:_hb_ot_layout_set_glyph_class
+   fun:hb_ot_layout_build_glyph_classes
+   fun:pango_ot_info_get
+}
+
+{
+   Leak/_cairo_cache_create
+   Memcheck:Leak
+   fun:malloc
+   fun:_cairo_cache_create
+}
+
+{
+   Leak/_cairo_hash_table_create
+   Memcheck:Leak
+   fun:?alloc
+   fun:_cairo_hash_table_create
+}
+
+{
+   Leak/allocate_dtv
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+}

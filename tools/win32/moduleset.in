@@ -1,0 +1,378 @@
+<?xml version="1.0" ?>
+<!DOCTYPE doc [
+      <!ENTITY patch_dir "@abs_srcdir@/patches/">
+]>
+<moduleset>
+    <repository type="git" name="git.gnome.org" default="yes"
+		href="git://git.gnome.org/"/>
+    <repository type="tarball" name="gnome.org"
+		href="http://download.gnome.org"/>
+    <repository type="tarball" name="zlib.net"
+		href="http://www.zlib.net"/>
+    <repository type="tarball" name="savannah"
+		href="http://savannah.nongnu.org/download/"/>
+    <repository type="tarball" name="fontconfig"
+		href="http://fontconfig.org/release/"/>
+
+    <repository type="tarball" name="cairographics"
+		href="http://cairographics.org/releases/"/>
+
+    <repository type="tarball" name="debian"
+		href="http://ftp.debian.org/debian/pool/main/"/>
+    <repository type="tarball" name="sourceforge"
+		href="http://downloads.sourceforge.net/project/"/>
+    <repository type="tarball" name="simplesystems.org"
+		href="ftp://ftp.simplesystems.org/pub/libpng/png/src/"/>
+
+    <tarball id="gettext" version="0.17">
+	<source href="ftp://ftp.gnu.org/pub/gnu/gettext/gettext-0.17.tar.gz"
+	    md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
+	<patches>
+	    <patch file="http://www.gnome.org/~aruiz/gtk+/patches/gettext_0_17_crossbuild_override_tools_fix.patch"/>
+	</patches>
+	<dependencies>
+	</dependencies>
+    </tarball>
+
+<!--    <tarball id="pcre" version="8.12">
+	<source href="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.12.tar.bz2"/>
+    </tarball> -->
+
+<!-- Compression -->
+    <autotools id="zlib"
+	makeargs="-f win32/Makefile.gcc"
+	makeinstallargs="-f win32/Makefile.gcc -e install">
+	<branch repo="zlib.net" module="zlib-1.2.5.tar.gz"
+		version="1.2.5"
+		md5sum="c735eab2d659a96e5a594c9e8541ad63">
+	    <patch file="&patch_dir;zlib.patch" strip="1"/>
+	</branch>
+    </autotools>
+    <tarball id="libbz2" version="1.0.5">
+	<source href="http://www.bzip.org/1.0.5/bzip2-1.0.5.tar.gz"/>
+	<patches>
+	    <patch file="&patch_dir;libbz2.patch" strip="1"/>
+	</patches>
+    </tarball>
+
+    <autotools id="gtk-doc"
+	autogen-sh="autoreconf"  skip-autogen="never">
+	<branch repo="gnome.org" module="sources/gtk-doc/1.13/gtk-doc-1.13.tar.bz2" version="1.13">
+	    <patch file="&patch_dir;gtk-doc-disable-python.patch"/>
+	</branch>
+	<suggests>
+	    <dep package="libxslt"/>
+	</suggests>
+    </autotools>
+
+    <autotools id="glib">
+	<branch repo="gnome.org" module="sources/glib/2.26/glib-2.26.0.tar.bz2" version="2.26.0">
+	    <patch file="&patch_dir;glib-win32-cachefile.patch.gz"/>
+	    <patch file="&patch_dir;glib-goption-disable-localization.patch" strip="1"/>
+	    <patch file="&patch_dir;glib-disable-python.patch" strip="1"/>
+	    <patch file="&patch_dir;glib-gspawn-win32.patch" strip="1"/>
+	    <patch file="&patch_dir;glib-appinfo.patch" strip="1"/>
+	    <patch file="&patch_dir;glib-dns.patch" strip="1"/>
+	</branch>
+	<dependencies>
+	    <dep package="gettext"/>
+	    <dep package="iconv"/>
+	    <dep package="zlib"/>
+	    <dep package="gtk-doc"/>
+	</dependencies>
+    </autotools>
+
+<!-- Image formats  -->
+    <tarball id="jpeg" version="6b" checkoutdir="jpeg-6b">
+	<source href="http://www.ijg.org/files/jpegsrc.v7.tar.gz"/>
+	<patches>
+	    <patch file="http://gnome.org/~aruiz/gtk+/patches/jpeg_mingwport.patch" strip="1"/>
+	</patches>
+    </tarball>
+    <autotools id="png" autogen-sh="autogen.sh&amp;&amp;./configure"  skip-autogen="never">
+	<branch repo="simplesystems.org" module="libpng-1.2.44.tar.bz2"
+		version="1.2.44">
+	    <patch file="&patch_dir;png-symbols.patch"/>
+	</branch>
+	<dependencies>
+	    <dep package="zlib"/>
+	</dependencies>
+    </autotools>
+    <!--
+    <tarball id="tiff" version="3.8.2">
+	<source href="ftp://ftp.remotesensing.org/pub/libtiff/tiff-3.8.2.tar.gz"
+		md5sum="fbb6f446ea4ed18955e2714934e5b698"/>
+	<dependencies>
+	    <dep package="jpeg"/>
+	</dependencies>
+    </tarball>
+    -->
+
+<!-- Gtk stack -->
+    <autotools id="pixman">
+	<branch repo="cairographics"
+		module="pixman-0.17.2.tar.gz"
+		version="0.17.2"/>
+    </autotools>
+    <autotools id="cairo">
+	<branch repo="cairographics"
+		module="cairo-1.8.8.tar.gz"
+		version="1.8.8">
+	</branch>
+	<dependencies>
+	    <dep package="zlib"/>
+	    <dep package="png"/>
+	    <dep package="pixman"/>
+	    <dep package="freetype"/>
+	    <dep package="fontconfig"/>
+	</dependencies>
+    </autotools>
+
+    <tarball id="iconv" version="1.13">
+	<source href="http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.tar.gz"/>
+	<patches>
+	    <patch file="&patch_dir;iconv.patch"/>
+	</patches>
+    </tarball>
+    <autotools id="libdatrie">
+	<branch repo="debian"
+		module="libd/libdatrie/libdatrie_0.2.4.orig.tar.gz"
+		version="0.2.4" checkoutdir="libdatrie-0.2.4"/>
+	<dependencies>
+	    <dep package="iconv"/>
+	</dependencies>
+    </autotools>
+    <autotools id="libthai">
+	<branch repo="debian"
+		module="libt/libthai/libthai_0.1.14.orig.tar.gz"
+		version="0.1.14" checkoutdir="libthai-0.1.14">
+	    <patch file="&patch_dir;libthai.patch"/>
+	</branch>
+	<dependencies>
+	    <dep package="libdatrie"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="gnome-common">
+	<branch/>
+	<dependencies/>
+    </autotools>
+
+    <autotools id="freetype"
+	autogen-sh="configure"  skip-autogen="never">
+	<branch repo="savannah" module="freetype/freetype-2.3.11.tar.bz2" version="2.3.11"/>
+	<dependencies>
+	</dependencies>
+    </autotools>
+
+    <autotools id="fontconfig"
+	autogen-sh="autoreconf"  skip-autogen="never">
+	<branch repo="fontconfig" module="fontconfig-2.8.0.tar.gz" version="2.8.0">
+	    <patch file="&patch_dir;fontconfig-CC.patch"/>
+	</branch>
+	<dependencies>
+	    <dep package="freetype"/>
+	    <dep package="libxml2"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="pango">
+	<branch repo="gnome.org" module="sources/pango/1.28/pango-1.28.0.tar.bz2" version="1.28.0">
+	  <patch file="&patch_dir;pango-no-introspection.patch"/>
+	</branch>
+	<dependencies>
+	    <dep package="freetype"/>
+	    <dep package="cairo"/>
+	    <dep package="glib"/>
+	    <dep package="libthai"/>
+	    <dep package="gtk-doc"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="atk">
+	<branch repo="gnome.org" module="sources/atk/1.30/atk-1.30.0.tar.bz2" version="1.30.0"/>
+	<dependencies>
+	    <dep package="glib"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="gtk+">
+	<branch repo="gnome.org" module="sources/gtk+/2.20/gtk+-2.20.0.tar.bz2"
+		version="2.18.5">
+	    <patch file="&patch_dir;gtk-disable-demo.patch"/>
+	    <patch file="&patch_dir;gtk-use-wine-to-cross-compile.patch"/>
+	    <patch file="&patch_dir;gtk-gdk-expose-order.patch" strip="1"/>
+	    <patch file="&patch_dir;gtk-gtkprintoperation-win32.patch" strip="1"/>
+	</branch>
+	<dependencies>
+	    <dep package="glib"/>
+	    <dep package="cairo"/>
+	    <dep package="atk"/>
+	    <dep package="pango"/>
+	</dependencies>
+    </autotools>
+
+<!-- glade stack -->
+    <tarball id="libxml2" version="2.7.7">
+	<source href="ftp://xmlsoft.org/libxml2/libxml2-2.7.7.tar.gz"/>
+	<dependencies>
+	    <dep package="zlib"/>
+	</dependencies>
+    </tarball>
+    <autotools id="libglade"
+	autogen-sh="autoreconf" skip-autogen="never">
+	<branch repo="gnome.org" module="sources/libglade/2.6/libglade-2.6.4.tar.bz2"
+		version="2.6.4">
+	    <patch file="&patch_dir;libglade-no-python.patch"/>
+	</branch>
+	<dependencies>
+	    <dep package="gtk+"/>
+	    <dep package="libxml2"/>
+	</dependencies>
+    </autotools>
+
+<!-- python stack -->
+    <autotools id="pygobject" 
+	autogen-sh="autoreconf" skip-autogen="never">
+	<branch repo="gnome.org" module="sources/pygobject/2.20/pygobject-2.20.0.tar.bz2"
+		version="2.20.0">
+	    <patch file="&patch_dir;pygobject.patch"/>
+	    <patch file="&patch_dir;pygiochannel.patch"/>
+	    <patch file="&patch_dir;pygobject-configure.patch"/>
+	    <patch file="&patch_dir;pygconsts.patch"/>
+	</branch>
+
+	<dependencies>
+	    <dep package="glib"/>
+	</dependencies>
+    </autotools>
+
+    <tarball id="libxslt" version="1.1.26">
+	<source href="ftp://xmlsoft.org/libxslt/libxslt-1.1.26.tar.gz"/>
+	<patches>
+	  <patch file="&patch_dir;libxslt.patch"/>
+	</patches>
+	<dependencies>
+	    <dep package="libxml2"/>
+	</dependencies>
+    </tarball>
+    <autotools id="libgda">
+	<branch repo="gnome.org" module="sources/libgda/4.1/libgda-4.1.3.tar.bz2"
+		version="4.1.3">
+	</branch>
+	<dependencies>
+	    <dep package="glib"/>
+	    <dep package="libxml2"/>
+	    <dep package="libxslt"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="pxlib" autogen-sh="configure">
+	<branch repo="sourceforge" module="pxlib/pxlib/0.6.3/pxlib-0.6.3.tar.gz"
+		version="0.6.3">
+	    <patch file="&patch_dir;pxlib-intl.patch"/>
+	    <patch file="&patch_dir;pxlib-link.patch"/>
+	</branch>
+    </autotools>
+
+    <autotools id="psiconv">
+	<branch repo="debian"
+		module="p/psiconv/psiconv_0.9.8.orig.tar.gz"
+		version="0.9.8" checkoutdir="psiconv-0.9.8">
+	    <patch file="&patch_dir;psiconv.patch"/>
+	</branch>
+    </autotools>
+
+<!-- print preview -->
+  <tarball id="poppler" version="0.12.2">
+    <source href="http://poppler.freedesktop.org/poppler-0.12.2.tar.gz"/>
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="glib"/>
+      <dep package="freetype"/>
+      <dep package="fontconfig"/>
+    </dependencies>
+    <suggests>
+      <dep package="poppler-data"/>
+    </suggests>
+    <after>
+      <dep package="gtk+"/>
+    </after>
+    <patches>
+    </patches>
+  </tarball>
+<!-- Check license and fix make
+  <tarball id="poppler-data" version="0.3.1">
+    <source href="http://poppler.freedesktop.org/poppler-data-0.3.1.tar.gz"/>
+    <dependencies>
+    </dependencies>
+    <patches>
+    </patches>
+  </tarball>
+-->
+
+    <autotools id="evince">
+	<branch repo="gnome.org" module="sources/evince/2.30/evince-2.30.1.tar.bz2" version="2.30.1">
+	    <!-- <patch file="&patch_dir;evince-no-mkdtemp.patch"/> -->
+	</branch>
+	<dependencies>
+	    <dep package="glib"/>
+	    <dep package="gtk+"/>
+	    <dep package="libxml2"/>
+	    <!-- <dep package="gnome-icon-theme"/>-->
+	    <dep package="libglade"/>
+	    <dep package="poppler"/>
+	    <!-- <dep package="gnome-doc-utils"/>-->
+	</dependencies>
+    </autotools>
+
+<!-- Gnumeric stack -->
+    <autotools id="libgsf">
+	<branch repo="gnome.org" module="sources/libgsf/1.14/libgsf-1.14.19.tar.gz" version="1.14.19">
+	</branch>
+	<dependencies>
+	    <dep package="glib"/>
+	    <dep package="gtk+"/> <!-- make sure gdkpixbuf does not pick up external gtk -->
+	    <dep package="libxml2"/>
+	    <dep package="zlib"/>
+	    <dep package="libbz2"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="lp_solve">
+	<branch repo="sourceforge" module="lpsolve/lpsolve/5.5.0.15/lp_solve_5.5.0.15_source.tar.gz"
+		version="5.5.0.15" checkoutdir="lp_solve_5.5">
+	</branch>
+    </autotools>
+
+    <autotools id="lasem">
+	<branch/>
+	<dependencies>
+	    <dep package="gtk+"/>
+	</dependencies>
+    </autotools>
+
+    <autotools id="goffice">
+	<branch/>
+	<dependencies>
+	    <dep package="glib"/>
+	    <dep package="libgsf"/>
+	    <dep package="libxml2"/>
+	    <dep package="pango"/>
+	    <!-- <dep package="lasem"/> -->
+	</dependencies>
+    </autotools>
+    <autotools id="gnumeric">
+	<branch/>
+	<dependencies>
+	    <dep package="goffice"/>
+	</dependencies>
+	<suggests>
+	    <!-- <dep package="libgda"/> -->
+	    <!-- <dep package="lp_solve"/> -->
+	    <!-- <dep package="psiconv"/> -->
+	    <dep package="pxlib"/>
+	    <!-- <dep package="pygobject"/> -->
+	</suggests>
+    </autotools>
+</moduleset>

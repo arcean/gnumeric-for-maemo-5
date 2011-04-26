@@ -1,0 +1,62 @@
+#! /bin/sh
+set -e
+
+for s in gnumeric-dialogs.schemas gnumeric-general.schemas gnumeric-plugins.schemas ; do
+	f=/etc/gconf/schemas/$s
+	if [ -e $f ] ; then
+		echo "Obsoleted conffile $f found... "
+		if grep -q '^'$(md5sum $f | sed -e 's/  .*$//')'$' /usr/share/gnumeric/$s.md5sum ; then
+			echo "... no local changes detected. Removing."
+			rm -f $f
+		else
+			echo "... locally modified. Leaving as-is."
+		fi
+	fi
+done
+
+if [ -x /usr/bin/update-mime-database ]; then
+ update-mime-database /usr/share/mime
+fi
+if [ -x /usr/bin/update-desktop-database ]; then
+ update-desktop-database /usr/share/applications
+fi
+if [ -x /usr/bin/hildon-update-category-database ]; then
+ hildon-update-category-database /usr/share/mime
+fi
+
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.ms-excel.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.oasis.opendocument.spreadsheet.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/application-vnd.openxmlformats-officedocument.spreadsheetml.sheet.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.lotus-1-2-3.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.stardivision.calc.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.sun.xml.calc.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-applix-spreadsheet.png
+ln -s -f /usr/share/icons/hicolor/48x48/hildon/Gnumeric_spreadsheet.png /usr/share/icons/hicolor/48x48/mimetypes/application-x-gnumeric.png
+
+case "$1" in
+	configure)
+		# only call maemo-select-menu-location if the package was not
+		# installed before
+		if [ -z $2 ]; then
+			maemo-select-menu-location gnumeric.desktop || true
+		fi
+
+        # force update of the icon cache for the application icon to show up properly
+        gtk-update-icon-cache -f /usr/share/icons/hicolor
+
+	# Generate DBus Universally Unique ID (UUID).
+	dbus-uuidgen --ensure
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+	
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0

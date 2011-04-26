@@ -1,0 +1,7 @@
+usr/bin
+usr/lib
+usr/share/gnumeric
+usr/share/gconf/schemas
+usr/share/idl
+usr/share/man/man1
+var/lib/scrollkeeper

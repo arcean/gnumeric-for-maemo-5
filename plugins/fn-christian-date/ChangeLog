@@ -1,0 +1,99 @@
+2011-03-24  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.14
+
+2011-02-02  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.13
+
+2010-11-25  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.12
+
+2010-10-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.11
+
+2010-09-04  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.10
+
+2010-08-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.9
+
+2010-07-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.8
+
+2010-06-28  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.7
+
+2010-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.6
+
+2010-05-30  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.5
+
+2010-05-20  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.4
+
+2010-05-07  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.3
+
+2010-04-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.2
+
+2010-03-08  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.1
+
+2010-02-13  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.0
+
+2010-01-19  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.18
+
+2009-12-15  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.17
+
+2009-11-29  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.16
+
+2009-11-01  Morten Welinder <terra@gnome.org>
+
+	* Release 1.9.15
+
+2009-10-23  Morten Welinder  <terra@gnome.org>
+
+	* functions.c (eastersunday_calc_for_year): Renamed from
+	eastersunday_calc.  Init date here.
+	(eastersunday_calc_no_year): Simplify.
+	(eastersunday_calc): New function.  Fix a 1904-mode issue.
+	(gnumeric_eastersunday, gnumeric_ashwednesday,
+	gnumeric_ascensionthursday, gnumeric_goodfriday,
+	gnumeric_pentecostsunday): Just call eastersunday_calc with the
+	right offset.
+
+2009-10-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* functions.c (gnumeric_ashwednesday): initialize year
+
+2009-10-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* functions.c: Change the handling of small years throughout
+	(adjust_year): rewrite
+
+2009-10-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* Initial Implementation

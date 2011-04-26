@@ -1,0 +1,97 @@
+Source: gnumeric
+Section: user/office
+Priority: optional
+Maintainer: Tomasz Pieniazek <t.pieniazek@gazeta.pl>
+XSBC-Bugtracker: https://garage.maemo.org/tracker/?atid=2122&group_id=567&func=browse
+Build-Depends: debhelper (>= 5.0.37.2), dh-buildinfo,
+ po-debconf, gettext, bison, libxml-parser-perl,
+ zlib1g-dev, libglib2.0-dev (>= 2.12.0), libgsf-1-dev (>= 1.14.20),
+ libgoffice-0-8-dev (>= 0.8.14), libxml2-dev (>= 2.6.10-2),
+ libpango1.0-dev (>= 1.12.0),
+ libgtk2.0-dev (>= 2.12.0), libglade2-dev (>= 2.3.6),
+ libart-2.0-dev (>= 2.3.16-5),
+ libgconf2-dev (>= 2.6.2-1),
+ libscrollkeeper-dev (>= 0.3.14),
+ libscrollkeeper0 (>= 0.3.14),
+ scrollkeeper (>= 0.3.14),
+ libosso-dev, libhildon1-dev, libhildonfm2-dev
+Standards-Version: 3.8.0
+
+Package: gnumeric-dbg
+Architecture: any
+Depends: gnumeric (= ${binary:Version}),${misc:Depends}
+Description: debugging symbols for gnumeric
+
+Package: gnumeric
+Architecture: any
+Depends: libgsf-1 (>= 1.14.20), libgoffice-0-8 (>= 0.8.14), ${shlibs:Depends}, ${misc:Depends}
+XS-Python-Version: current
+XB-Python-Version: ${python:Versions}
+Description: spreadsheet application for GNOME - main program
+ Gnumeric is a spreadsheet application that interoperates well
+ with other spreadsheets. It comes with plugins that enable it to deal with
+ commonly used spreadsheet file formats.
+ .
+ The following formats can be imported and exported:
+  - Microsoft Excel 2007 (.xlsx);
+  - Microsoft Excel 97/2000/XP (.xls);
+  - Microsoft Excel 95 (.xls);
+  - OASIS XML, OpenOffice.org XML, StarOffice (.sxc);
+  - Comma/Character Separated Values (.csv);
+  - Data Interchange Format (.dif);
+  - Applix version 4 (.as).
+ .
+ Additionally, the following formats can be imported:
+  - GNU Oleo (.oleo);
+  - Linear and integer program expression format (.mps);
+  - Lotus 1-2-3 (.wks, .wk1);
+  - MS MultiPlan SYLK (.sylk);
+  - WordPerfect family "Plan Perfect" (.pln);
+  - Quattro Pro (tm);
+  - XSpread or SC;
+  - XBase (.dbf).
+ .
+ Gnumeric can export to LaTeX 2e (.tex), TROFF (.me) and HTML as well.
+ .
+ Gnumeric should be easy to use, in particular for users familiar with
+ Excel.
+ .
+ Gnumeric is a GNOME application. GNOME (GNU Network Object Model Environment) 
+ is a user-friendly set of applications and desktop tools to be used in 
+ conjunction with a window manager for the X Window System.
+XB-Maemo-Icon-26:
+ iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABmJLR0QA/wD/
+ AP+gvaeTAAAACXBIWXMAABL+AAAS/gGgIVgHAAAAB3RJTUUH1wwCESE1a967
+ OgAABbRJREFUSMfFltuLZFcVxn/nWnVO1amumuluazoz3ekQSeYioj6YhBCZ
+ xyCCMl7y5JMg6EuIwfwNefNNBEFJBG8k+iRDiAMjCENEMxN6Zrpn7DF9neqq
+ mp46dTvn7KsPVd1Jp2OCL7pgn31YrL2//a317Qv8j8x5+ccv/fDc2fOvJEly
+ 5tBrLTgw/XzI7MGwo15j1Nb29pUb711/8bVf/ur2xwH5586ef+XChQtnfN8/
+ GMR4PAbHoVwuHwkWokBrQxRFR/xKKX9xcelimva+9q3vXFr9/W/fsMeAkiQ5
+ 4zouSbWK1hopFcPhEHDwPf9IcGEKtNLH/YUgjqIgSZJ5wAPUMSCw5HmOMQat
+ FUJK0jQ9WOmR4CzPUFJijDnmDwL/E2vkWztJiRAFUimEEAxHI+ozM0Rx+SMV
+ tUjfP+Z3HPA875OBHCCKIsIwREpJURRYY2g2mzSbzSPBo9EIIQWNeuOofzxC
+ FPJTGE2pj8djpBQIIRgMhqRpShiGR4LH2RilFNbYY6kLg9KnMyqXyoRhgBAT
+ RsZArZZQr9ePBAehjxSS2PPI0x6qP8AUAi0FA9cl296Jkr/8tQwMP55RljEY
+ DpBSTmo0GPLwYQXvI+pK23u0371Oef0etXFGlOe4QuC5Dsr3OdvuPF/x/Ozl
+ cvkPo6L420+tFR9SHURRmSAIkVJQFAWu41Jv1JmdPQmAUYrOzVukv/4NT0rF
+ 4/Pz+OUId7rvrDEYrdGNE8uj5eUX13Z2vvvu+vrrP7p//yfDPN/+GVgfLFme
+ Tws9ZTQckKa9Q8n21u4w/N0bfGV+nmoQgNZYpTBaY4zBaj1pxhAZ433+1Km5
+ +UbjB29fv376zubm9yiKgQ8OQRDglcsEQuD7Pkop4iimWqkyfvCA3pt/5GKz
+ SaQUajw+nNQqdcjmAMwYgzGGWlAqP/3lZy/tjq+sfH9n41XfWovRE/pKKbSS
+ GK1RWqGUZO/GDZbDEiUhUFPpW60nk0//tTEYYykcj/vxHFvxHBvRHN3arMe5
+ 0VfD7t5rPoDWGmP0VAxymkJJluWk6/c4X6kge70PAA5WrzXDRsI7i0+xUT3N
+ dnSCvnHJhCYvBFJqPrd4btGrXF30J7IN8L0SUsrD1FXiiGoc4RiDAVSef5Cq
+ aa8x7F18nNvls+z2ZiiEJJeCvJAUhZqcnbhhbm15KobJGaakpBCC0WhEL03B
+ Wva7XfZzQRyGyMHgSC16T0S0vqQob25QtJ8kyyVFMWl5ITkRewy7HWdYFIEL
+ UC6VmKnVqNVq1JKESqVCLUmoN+qUqhXeX10lTxKs46DyHJVlCJlz7xloJx3c
+ 6l20GhyCFEIShw4Vk9PtDWRhjHKxkOcFaZqSpin9fp/RcEi/36eXpjhzs7Q6
+ HW5eu4ZaWsJvNlFS0mnmrH2hz77eQcS3sHQoCom1hrkkoO4K7m22cB5stQYy
+ b7k4UCqF1GoJtVpCklSJ45hqUqVRn2H5mafJH11ir9XiH5cvsysEPPVFtr/+
+ CDp0scoQxCmzjZRTMwGnE4dRt8Ptu9tE3Q3lba386Y6WW76x1oDjWmunR76D
+ 47pYYzHGUjl5kualb7D5819Au83tt97CPlZn7fw87vsz4Ls4BpzeLdbvhHR7
+ I6y1LOY7cnbl8tX3Bt3X78HQe+65Z59fWlw65fu+6wcBpTAijmM830drg9IG
+ d6aGWVhgd2cXfA/pCe4+lrLlttkbtGgP2nTuBnRaC8yaoX60e7NTuvn2m6t7
+ /3p1xeh/Gij8lZWVl8ZZ9kIlrjxy7C0yNa2UMxiP3PtPfDbsPnwQnC78+fha
+ uOA33QqR4yKt1Ts9PbN7pS26W+/st9b//Hetr+5DCxgD1vn2C990rLUe4P6n
+ u8RaS5qmzuqttWjY61XcLKvHLrXPOCyUHScx1pqBdfZbmr1Mq14GPQ19QBw8
+ nZz/9nk2XVAIlKb9wR2ugGLaJGD4f9i/AeSMlnqr87ZtAAAAAElFTkSuQmCC
