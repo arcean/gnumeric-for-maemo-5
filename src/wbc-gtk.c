@@ -5924,11 +5924,6 @@ wbc_gtk_init (GObject *obj)
 		g_object_ref (hildon_program);
 
 	wbcg->hildon_prog = hildon_program;
-/*
-if(firstOpen)
-	wbcg_set_toplevel (wbcg, hildon_stackable_window_new ());
-else*/
-//	wbcg_set_toplevel (wbcg, hildon_window_new ());
 
 	if(gnm_conf_get_core_gui_editing_launchpage()){
 		open_launchPage(wbcg);
@@ -6038,8 +6033,10 @@ else*/
 	wbcg->windows.actions = NULL;
 	wbcg->windows.merge_id = 0;
 
+#ifndef GNM_USE_HILDON
 	wbcg->templates.actions = NULL;
 	wbcg->templates.merge_id = 0;
+#endif
 
 	gnm_app_foreach_extra_ui ((GFunc) cb_init_extra_ui, wbcg);
 	g_object_connect ((GObject *) gnm_app_get_app (),
@@ -6055,6 +6052,7 @@ else*/
 
 	gtk_container_add (GTK_CONTAINER (wbcg->toplevel), wbcg->everything);
 
+#ifndef GNM_USE_HILDON
 	/* updates the undo/redo menu labels before check_underlines
 	 * to avoid problems like #324692. */
 	wb_control_undo_redo_labels (WORKBOOK_CONTROL (wbcg), NULL, NULL);
@@ -6063,11 +6061,9 @@ else*/
 				       (GtkCallback)check_underlines,
 				       (gpointer)"");
 	}
+#endif
 
 #ifdef GNM_USE_HILDON
-	//hildon_window_set_menu (HILDON_WINDOW (wbcg_toplevel (wbcg)),
-	//			GTK_MENU (gtk_ui_manager_get_widget (wbcg->ui, "/popup")));
-
 	hildon_window_set_app_menu(HILDON_WINDOW (wbcg_toplevel (wbcg)), create_hildon_main_menu(wbcg));
 
 	gtk_widget_show_all (wbcg->toplevel);
@@ -6086,11 +6082,6 @@ else*/
 		wbc_gtk_set_toggle_action_state (wbcg, "ViewMenuToolbarStandardToolbar", TRUE);
 	else
 		wbc_gtk_set_toggle_action_state (wbcg, "ViewMenuToolbarStandardToolbar", FALSE);
-
-	//wbc_gtk_set_toggle_action_state (wbcg, "ViewMenuToolbarFormatToolbar", FALSE);
-	//wbc_gtk_set_toggle_action_state (wbcg, "ViewMenuToolbarObjectToolbar", FALSE);
-	wbc_gtk_set_toggle_action_state (wbcg, "ViewSheets", FALSE);
-	wbc_gtk_set_toggle_action_state (wbcg, "ViewStatusbar", FALSE);
 
 	hildon_gtk_window_enable_zoom_keys(wbcg->toplevel, TRUE);
 #endif
@@ -6154,12 +6145,15 @@ wbc_gtk_new (WorkbookView *optional_view,
 	wb_control_set_view (wbc, optional_view, optional_wb);
 	wbv = wb_control_view (wbc);
 	sheet = wbv->current_sheet;
+
 	if (sheet != NULL) {
-		wb_control_menu_state_update (wbc, MS_ALL);
-		wb_control_update_action_sensitivity (wbc);
+		//Maemo 5: not needed
+		//wb_control_menu_state_update (wbc, MS_ALL);
+		//wb_control_update_action_sensitivity (wbc);
 		wb_control_style_feedback (wbc, NULL);
 		cb_zoom_change (sheet, NULL, wbcg);
 	}
+
 
 	wbc_gtk_create_notebook_area (wbcg);
 	signal_paned_repartition (wbcg->tabs_paned);

@@ -154,6 +154,7 @@ static GNM_ACTION_DEF (cb_file_save_as)	{ gui_file_save_as (wbcg, wb_control_vie
 #endif
 #endif
 
+#ifndef GNM_USE_HILDON
 static GNM_ACTION_DEF (cb_file_sendto) {
 	WorkbookControl *wbc = WORKBOOK_CONTROL (wbcg);
 	WorkbookView *wbv = wb_control_view (wbc);
@@ -264,6 +265,7 @@ static GNM_ACTION_DEF (cb_file_sendto) {
 
 	/* What do we do with "problem"? */
 }
+#endif
 
 static GNM_ACTION_DEF (cb_file_page_setup)
 {
@@ -1973,9 +1975,11 @@ static GtkActionEntry const permanent_actions[] = {
 	{ "FileSaveAs", "HILDON_SAVE", N_("_Save As"),
 		"<control><shift>s", N_("Save the current workbook with a different name"),
 		G_CALLBACK (cb_file_save_as) },
+#ifndef GNM_USE_HILDON
 	{ "FileSend", "Gnumeric_Link_EMail", N_("Sen_d To..."),
 		NULL, N_("Send the current file via email"),
 		G_CALLBACK (cb_file_sendto) },
+#endif
 	{ "FilePrintArea",      NULL, N_("Print Area")},
 #ifdef HAVE_GTK_ADJUSTMENT_CONFIGURE
 	/* gtk_adjustment_configure implies gtk 2.14 or later */
@@ -5692,7 +5696,6 @@ void open_launchPage(WBCGtk *wbcg)
 		newf->file = g_strdup(uri);
 
 		new[i-1] = HILDON_BUTTON(hildon_button_new (HILDON_SIZE_AUTO_WIDTH, HILDON_BUTTON_ARRANGEMENT_VERTICAL));
-		//hildon_button_set_image(new[i-1], GTK_WIDGET(im_close1));
 		hildon_button_set_title(HILDON_BUTTON(new[i-1]), temp_dest);
 		hildon_button_set_alignment (HILDON_BUTTON(new[i-1]), 0, 0.5, 1, 0.5);
 
@@ -5719,4 +5722,6 @@ void open_launchPage(WBCGtk *wbcg)
 	g_signal_connect(new_file, "clicked", G_CALLBACK (cb_lp_new_file), wbcg);
 	g_signal_connect(open_file, "clicked", G_CALLBACK (cb_lp_open_file), wbcg);
 	g_signal_connect(exit, "clicked", G_CALLBACK (cb_lp_exit), wbcg);
+
+//	gtk_widget_show_all(HILDON_WINDOW (wbcg->mainWindow));
 }
