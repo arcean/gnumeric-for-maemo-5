@@ -5,8 +5,8 @@ Maintainer: Tomasz Pieniazek <t.pieniazek@gazeta.pl>
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?atid=2122&group_id=567&func=browse
 Build-Depends: debhelper (>= 5.0.37.2), dh-buildinfo,
  po-debconf, gettext, bison, libxml-parser-perl,
- zlib1g-dev, libglib2.0-dev (>= 2.12.0), libgsf-1-dev (>= 1.14.20),
- libgoffice-0-8-dev (>= 0.8.14), libxml2-dev (>= 2.6.10-2),
+ zlib1g-dev, libglib2.0-dev (>= 2.12.0), libgsf-1-dev (>= 1.14.21),
+ libgoffice-0-8-dev (>= 0.8.15), libxml2-dev (>= 2.6.10-2),
  libpango1.0-dev (>= 1.12.0),
  libgtk2.0-dev (>= 2.12.0), libglade2-dev (>= 2.3.6),
  libart-2.0-dev (>= 2.3.16-5),
@@ -24,7 +24,7 @@ Description: debugging symbols for gnumeric
 
 Package: gnumeric
 Architecture: any
-Depends: libgsf-1 (>= 1.14.20), libgoffice-0-8 (>= 0.8.14), ${shlibs:Depends}, ${misc:Depends}
+Depends: libgsf-1 (>= 1.14.21), libgoffice-0-8 (>= 0.8.15), ${shlibs:Depends}, ${misc:Depends}
 XS-Python-Version: current
 XB-Python-Version: ${python:Versions}
 Description: spreadsheet application for GNOME - main program
