@@ -18,6 +18,7 @@
 #include "ms-excel-write.h"
 #include "ms-escher.h"
 #include "ms-formula-write.h"
+#include "compilation.h"
 
 #include <parse-util.h>
 #include <gnm-format.h>
@@ -5259,6 +5260,7 @@ chart_write_DROPBAR (XLChartWriteState *s)
 	g_object_unref (s->dp_style);
 }
 
+GNM_BEGIN_KILL_SWITCH_WARNING
 static void
 chart_write_LEGEND (XLChartWriteState *s, GogObject const *legend)
 {
@@ -5292,6 +5294,7 @@ chart_write_LEGEND (XLChartWriteState *s, GogObject const *legend)
 	chart_write_text (s, NULL, NULL, 0);
 	chart_write_END (s);
 }
+GNM_END_KILL_SWITCH_WARNING
 
 static void
 chart_write_axis_sets (XLChartWriteState *s, GSList *sets)

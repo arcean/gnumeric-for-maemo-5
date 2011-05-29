@@ -193,6 +193,7 @@ struct _GnmFunc {
 	GPtrArray  *arg_names_p;
 	GnmFuncHelp const *help;
 	GOString *textdomain;
+	char *localized_name;
 	GnmFuncType fn_type;
 	union {
 		GnmFuncNodes nodes;
@@ -226,7 +227,8 @@ void	    gnm_func_ref	     (GnmFunc *func);
 void	    gnm_func_unref	     (GnmFunc *func);
 void        gnm_func_load_if_stub    (GnmFunc *func);
 void	    gnm_func_load_stub	     (GnmFunc *fn_def);
-char const *gnm_func_get_name	     (GnmFunc const *fn_def);
+char const *gnm_func_get_name	     (GnmFunc const *fn_def,
+				      gboolean localized);
 gpointer    gnm_func_get_user_data   (GnmFunc const *func);
 void        gnm_func_set_user_data   (GnmFunc *func, gpointer user_data);
 GnmFunc	   *gnm_func_lookup	     (char const *name, Workbook *scope);	/* change scope one day */

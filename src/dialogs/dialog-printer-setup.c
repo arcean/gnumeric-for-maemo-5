@@ -1139,9 +1139,9 @@ hf_insert_hf_stock_tag (HFCustomizeState *hf_state, GtkTextBuffer *buffer,
 		gtk_text_buffer_get_iter_at_mark
 			(buffer, &iter, gtk_text_buffer_get_insert (buffer));
 
-		pix = gtk_widget_render_icon (GTK_WIDGET (hf_state->dialog),
+		pix = gtk_widget_render_icon_pixbuf (GTK_WIDGET (hf_state->dialog),
 					      stock_id,
-					      GTK_ICON_SIZE_MENU, NULL);
+					      GTK_ICON_SIZE_MENU);
 		gtk_text_buffer_insert_pixbuf (buffer, &iter, pix);
 		gtk_text_iter_backward_char (&iter);
 		new_mark = gtk_text_buffer_create_mark (buffer, NULL,
@@ -2612,7 +2612,7 @@ cb_do_print (PrinterSetupState *state)
 	WorkbookControl *wbc = WORKBOOK_CONTROL (state->wbcg);
 
 	cb_do_print_ok (state);
-	gnm_print_sheet (wbc, sheet, FALSE, PRINT_ACTIVE_SHEET, NULL);
+	gnm_print_sheet (wbc, sheet, FALSE, PRINT_SAVED_INFO, NULL);
 }
 
 static void

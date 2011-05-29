@@ -1153,13 +1153,13 @@ rangeref_parse (GnmRangeRef *res, char const *start, GnmParsePos const *pp,
 static void
 std_expr_func_handler (GnmConventionsOut *out, GnmExprFunction const *func)
 {
-		char const *name = gnm_func_get_name (func->func);
-		GString *target = out->accum;
+	char const *name = gnm_func_get_name (func->func,
+					      out->convs->localized_function_names);
+	GString *target = out->accum;
 
-		g_string_append (target, name);
-		/* FIXME: possibly a space here.  */
-		gnm_expr_list_as_string (func->argc, func->argv, out);
-		return;
+	g_string_append (target, name);
+	/* FIXME: possibly a space here.  */
+	gnm_expr_list_as_string (func->argc, func->argv, out);
 }
 
 static void
@@ -1168,9 +1168,10 @@ std_expr_name_handler (GnmConventionsOut *out, GnmExprName const *name)
 	GnmNamedExpr const *thename = name->name;
 	GString *target = out->accum;
 
-	if (!thename->active) {
+	if (!expr_name_is_active (thename)) {
 		g_string_append (target,
-			value_error_name (GNM_ERROR_REF, out->convs->output.translated));
+				 value_error_name (GNM_ERROR_REF,
+						   out->convs->output.translated));
 		return;
 	}
 
@@ -1331,6 +1332,12 @@ std_external_wb (G_GNUC_UNUSED GnmConventions const *convs,
 	return gnm_app_workbook_get_by_name (wb_name, ref_uri);
 }
 
+static char const *
+std_string_parser (char const *in, GString *target,
+		   G_GNUC_UNUSED GnmConventions const *convs)
+{
+	return go_strunescape (target, in);
+}
 
 /**
  * gnm_conventions_new_full :
@@ -1351,11 +1358,16 @@ gnm_conventions_new_full (unsigned size)
 	convs = g_malloc0 (size);
 	convs->ref_count = 1;
 
+	convs->r1c1_addresses           = FALSE;
+	convs->localized_function_names = FALSE;
+
 	convs->sheet_name_sep		= '!';
 	convs->intersection_char	= ' ';
 	convs->exp_is_left_associative  = FALSE;
 	convs->input.range_ref		= rangeref_parse;
+	convs->input.string		= std_string_parser;
 	convs->input.name		= std_name_parser;
+	convs->input.name_validate     	= expr_name_validate;
 	convs->input.func		= std_func_map;
 	convs->input.external_wb	= std_external_wb;
 

@@ -272,7 +272,7 @@ static int fmt_dialog_currency = 0;
  */
 static void
 cb_page_select (G_GNUC_UNUSED GtkNotebook *notebook,
-		G_GNUC_UNUSED GtkNotebookPage *page,
+		G_GNUC_UNUSED GtkWidget *page,
 		gint page_num,
 		G_GNUC_UNUSED	gpointer user_data)
 {
@@ -280,9 +280,9 @@ cb_page_select (G_GNUC_UNUSED GtkNotebook *notebook,
 }
 
 static void
-cb_notebook_destroy (GtkObject *obj, gpointer page_sig_ptr)
+cb_notebook_destroy (GtkWidget *nb, gpointer page_sig_ptr)
 {
-	g_signal_handler_disconnect (obj, GPOINTER_TO_UINT (page_sig_ptr));
+	g_signal_handler_disconnect (nb, GPOINTER_TO_UINT (page_sig_ptr));
 }
 
 /*
@@ -1776,26 +1776,26 @@ build_validation_error_combo (GtkComboBox *box)
 			    1, _("None          (silently accept invalid input)"),
 			    -1);
 
-	pixbuf = gtk_widget_render_icon (GTK_WIDGET (box), GTK_STOCK_STOP,
-					 GTK_ICON_SIZE_BUTTON, NULL);
+	pixbuf = gtk_widget_render_icon_pixbuf (GTK_WIDGET (box), GTK_STOCK_STOP,
+					 GTK_ICON_SIZE_BUTTON);
 	gtk_list_store_append (store, &iter);
 	gtk_list_store_set (store, &iter,
 			    0, pixbuf,
 			    1, _("Stop            (never allow invalid input)"),
 			    -1);
 
-	pixbuf = gtk_widget_render_icon (GTK_WIDGET (box),
+	pixbuf = gtk_widget_render_icon_pixbuf (GTK_WIDGET (box),
 					 GTK_STOCK_DIALOG_WARNING,
-					 GTK_ICON_SIZE_BUTTON, NULL);
+					 GTK_ICON_SIZE_BUTTON);
 	gtk_list_store_append (store, &iter);
 	gtk_list_store_set (store, &iter,
 			    0, pixbuf,
 			    1, _("Warning     (accept/discard invalid input)"),
 			    -1);
 
-	pixbuf = gtk_widget_render_icon (GTK_WIDGET (box),
+	pixbuf = gtk_widget_render_icon_pixbuf (GTK_WIDGET (box),
 					 GTK_STOCK_DIALOG_INFO,
-					 GTK_ICON_SIZE_BUTTON, NULL);
+					 GTK_ICON_SIZE_BUTTON);
 	gtk_list_store_append (store, &iter);
 	gtk_list_store_set (store, &iter,
 			    0, pixbuf,
@@ -2329,7 +2329,7 @@ cb_fmt_dialog_dialog_buttons (GtkWidget *btn, FormatState *state)
 	}
 
 	if (btn != state->apply_button)
-		gtk_object_destroy (GTK_OBJECT (state->dialog));
+		gtk_widget_destroy (GTK_WIDGET (state->dialog));
 }
 
 /* Handler for destroy */

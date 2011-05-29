@@ -1,4 +1,4 @@
-/* vim: set sw=8: */
+/* vim: set sw=8: -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 
 /*
  * xml-sax-write.c : export .gnumeric and the clipboard subset using a the sax
@@ -215,20 +215,21 @@ xml_write_name (GnmOutputXML *state, GnmNamedExpr *nexpr)
 static void
 xml_write_named_expressions (GnmOutputXML *state, GnmNamedExprCollection *scope)
 {
-	if (scope != NULL) {
-		GSList *names =
-			g_slist_sort (gnm_named_expr_collection_list (scope),
-				      (GCompareFunc)expr_name_cmp_by_name);
-		GSList *p;
+	GSList *names =
+		g_slist_sort (gnm_named_expr_collection_list (scope),
+			      (GCompareFunc)expr_name_cmp_by_name);
+	GSList *p;
 
-		gsf_xml_out_start_element (state->output, GNM "Names");
-		for (p = names; p; p = p->next) {
-			GnmNamedExpr *nexpr = p->data;
-			xml_write_name (state, nexpr);
-		}
-		gsf_xml_out_end_element (state->output); /* </gnm:Names> */
-		g_slist_free (names);
+	if (!names)
+		return;
+
+	gsf_xml_out_start_element (state->output, GNM "Names");
+	for (p = names; p; p = p->next) {
+		GnmNamedExpr *nexpr = p->data;
+		xml_write_name (state, nexpr);
 	}
+	gsf_xml_out_end_element (state->output); /* </gnm:Names> */
+	g_slist_free (names);
 }
 
 static void
@@ -305,6 +306,7 @@ static void
 xml_write_print_info (GnmOutputXML *state, PrintInformation *pi)
 {
 	char  *paper_name;
+	char const *uri;
 	double header;
 	double footer;
 	double left;
@@ -398,8 +400,14 @@ xml_write_print_info (GnmOutputXML *state, PrintInformation *pi)
 
 	paper_name = print_info_get_paper (pi);
 	if (paper_name)
-		gsf_xml_out_simple_element (state->output, GNM "paper", paper_name);
+		gsf_xml_out_simple_element (state->output, GNM "paper", 
+					    paper_name);
 	g_free (paper_name);
+	
+	uri = print_info_get_printtofile_uri (pi);
+	if (uri)
+		gsf_xml_out_simple_element (state->output, GNM "print-to-uri", 
+					    uri);
 
 	if (NULL != pi->page_breaks.v)
 		xml_write_breaks (state, pi->page_breaks.v);

@@ -232,7 +232,7 @@
     </autotools>
 
 <!-- python stack -->
-    <autotools id="pygobject" 
+    <autotools id="pygobject"
 	autogen-sh="autoreconf" skip-autogen="never">
 	<branch repo="gnome.org" module="sources/pygobject/2.20/pygobject-2.20.0.tar.bz2"
 		version="2.20.0">
@@ -328,7 +328,7 @@
 
 <!-- Gnumeric stack -->
     <autotools id="libgsf">
-	<branch repo="gnome.org" module="sources/libgsf/1.14/libgsf-1.14.19.tar.gz" version="1.14.19">
+	<branch repo="gnome.org" module="sources/libgsf/1.14/libgsf-1.14.20.tar.gz" version="1.14.20">
 	</branch>
 	<dependencies>
 	    <dep package="glib"/>

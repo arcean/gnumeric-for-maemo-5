@@ -50,6 +50,7 @@
 #include <gsf/gsf-impl-utils.h>
 #include <gdk/gdkkeysyms.h>
 #include <goffice/goffice.h>
+#include <dead-kittens.h>
 
 #define CELL_SORT_KEY "cell-sort-dialog"
 
@@ -866,12 +867,12 @@ cb_treeview_keypress (G_GNUC_UNUSED GtkWidget *w, GdkEventKey *event,
 	GtkTreeIter iter;
 
 	switch (event->keyval) {
-	case GDK_Delete:
-	case GDK_KP_Delete:
+	case GDK_KEY_Delete:
+	case GDK_KEY_KP_Delete:
 		cb_delete_clicked (w, state);
 		return TRUE;
-	case GDK_KP_Up:
-	case GDK_Up:
+	case GDK_KEY_KP_Up:
+	case GDK_KEY_Up:
 		if (ctrl) {
 			cb_up (state);
 			return TRUE;
@@ -883,8 +884,8 @@ cb_treeview_keypress (G_GNUC_UNUSED GtkWidget *w, GdkEventKey *event,
 							&iter);
 		return TRUE;
 
-	case GDK_KP_Down:
-	case GDK_Down:
+	case GDK_KEY_KP_Down:
+	case GDK_KEY_Down:
 		if (ctrl) {
 			cb_down (state);
 			return TRUE;
@@ -1176,15 +1177,13 @@ dialog_cell_sort (WBCGtk *wbcg)
         state->dialog = go_gtk_builder_get_widget (state->gui, "CellSort");
 
 	state->image_ascending =
-		gtk_widget_render_icon (state->dialog,
+		gtk_widget_render_icon_pixbuf (state->dialog,
 					GTK_STOCK_SORT_ASCENDING,
-					GTK_ICON_SIZE_LARGE_TOOLBAR,
-					"Gnumeric-Cell-Sort");
+					GTK_ICON_SIZE_LARGE_TOOLBAR);
 	state->image_descending =
-		gtk_widget_render_icon (state->dialog,
+		gtk_widget_render_icon_pixbuf (state->dialog,
 					GTK_STOCK_SORT_DESCENDING,
-					GTK_ICON_SIZE_LARGE_TOOLBAR,
-					"Gnumeric-Cell-Sort");
+					GTK_ICON_SIZE_LARGE_TOOLBAR);
 	dialog_init (state);
 
 	gnumeric_keyed_dialog (state->wbcg, GTK_WINDOW (state->dialog),

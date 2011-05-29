@@ -1,3 +1,73 @@
+2011-05-21  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.15
+
+2011-05-2 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-chi-squared.c (analysis_tool_chi_squared_engine_run): 
+	no colons in field labels
+	* analysis-kaplan-meier.c (analysis_tool_kaplan_meier_engine_run): ditto
+	* analysis-principal-components.c
+	(analysis_tool_principal_components_engine_run): ditto
+	* analysis-tools.c (analysis_tool_regression_engine_run): ditto
+	(analysis_tool_regression_simple_engine_run): ditto
+
+2011-05-2 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-sign-test.c (analysis_tool_sign_test_engine_run): no colons
+	in field labels
+	(analysis_tool_sign_test_two_engine_run): ditto
+	* analysis-signed-rank-test.c
+	(analysis_tool_signed_rank_test_engine_run): ditto
+	(analysis_tool_signed_rank_test_two_engine_run): ditto
+
+2011-05-1 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-wilcoxon-mann-whitney.c
+	(analysis_tool_wilcoxon_mann_whitney_engine_run): don't use colons for
+	field names
+
+2011-05-1 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-anova.c (analysis_tool_anova_two_factor_no_rep_engine_run):
+	use thin border
+	(analysis_tool_anova_two_factor_engine_run): ditto
+	* analysis-exp-smoothing.c
+	(analysis_tool_exponential_smoothing_engine_ses_h_run): fix italic
+	labels
+	(analysis_tool_exponential_smoothing_engine_ses_r_run): ditto
+	(analysis_tool_exponential_smoothing_engine_des_run): ditto
+	(analysis_tool_exponential_smoothing_engine_ates_run): ditto
+	(analysis_tool_exponential_smoothing_engine_mtes_run): ditto
+	* analysis-wilcoxon-mann-whitney.c
+	(analysis_tool_wilcoxon_mann_whitney_engine_run): don't bold the title
+
+2011-05-1 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-frequency.c (analysis_tool_frequency_engine_run):
+	fix italic labels
+	* analysis-histogram.c (analysis_tool_histogram_engine_run): ditto
+	* analysis-tools.c (analysis_tool_ranking_engine_run): ditto
+
+2011-05-1 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-tools.c (summary_statistics): fix italic labels
+	(confidence_level): ditto
+	(kth_smallest_largest): ditto
+	(analysis_tool_sampling_engine_run): ditto
+	(analysis_tool_table): ditto
+	(analysis_tool_ztest_engine_run): ditto
+	(analysis_tool_ttest_paired_engine_run): ditto
+	(analysis_tool_ttest_eqvar_engine_run): ditto
+	(analysis_tool_ttest_neqvar_engine_run): ditto
+	(analysis_tool_ftest_engine_run): ditto
+	(analysis_tool_anova_single_engine_run): ditto
+
+2011-05-1 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-histogram.c (analysis_tool_histogram_engine_run):
+	be more specific in the translator notes
+
 2011-03-24  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.14
@@ -43,20 +113,20 @@
 	* analysis-tools.c (calculate_n_obs): new
 	(analysis_tool_regression_engine_run): calculate residuals
 	(analysis_tool_regression_engine): allocate space for residuals
-	
+
 2010-11-25  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.12
 
 2010-11-24 Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
-	* analysis-exp-smoothing.c 
+	* analysis-exp-smoothing.c
 	(analysis_tool_exponential_smoothing_engine_ses_h_run): fix data label
 	(analysis_tool_exponential_smoothing_engine_ses_r_run): ditto
 	(analysis_tool_exponential_smoothing_engine_des_run): ditto
 	(analysis_tool_exponential_smoothing_engine_ates_run): ditto
 	(analysis_tool_exponential_smoothing_engine_mtes_run): ditto
-	
+
 2010-11-04  Morten Welinder  <terra@gnome.org>
 
 	* dao.c (dao_convert_to_values): Use sheet_foreach_cell_in_range

@@ -21,6 +21,7 @@
 #include <gutils.h>
 #include <mstyle.h>
 #include <style-color.h>
+#include <style-font.h>
 #include <parse-util.h>
 #include <sheet-object-cell-comment.h>
 
@@ -784,6 +785,8 @@ typedef struct {
 	guint8 const *data;
 } record_t;
 
+static gboolean lotus_read_works (LotusState *state, record_t *r);
+
 static GnmValue *lotus_get_strval (const record_t *r, int ofs, int def_group);
 
 static void
@@ -845,7 +848,7 @@ record_next (record_t *r)
 		gsf_mem_dump (r->data, r->len);
 #endif
 
-	return (r->data != NULL);
+	return TRUE;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1545,10 +1548,10 @@ lotus_read_old (LotusState *state, record_t *r)
 		case LOTUS_INTEGER: CHECK_RECORD_SIZE (>= 7) {
 			GnmValue *v = value_new_int (GSF_LE_GET_GINT16 (r->data + 5));
 			guint8 fmt = GSF_LE_GET_GUINT8 (r->data);
-			int i = GSF_LE_GET_GUINT16 (r->data + 1);
-			int j = GSF_LE_GET_GUINT16 (r->data + 3);
+			int col = GSF_LE_GET_GUINT16 (r->data + 1);
+			int row = GSF_LE_GET_GUINT16 (r->data + 3);
 
-			cell = insert_value (state, state->sheet, i, j, v);
+			cell = insert_value (state, state->sheet, col, row, v);
 			if (cell)
 				cell_set_format_from_lotus_format (cell, fmt);
 			break;
@@ -1556,10 +1559,10 @@ lotus_read_old (LotusState *state, record_t *r)
 		case LOTUS_NUMBER: CHECK_RECORD_SIZE (>= 13) {
 			GnmValue *v = lotus_value (gsf_le_get_double (r->data + 5));
 			guint8 fmt = GSF_LE_GET_GUINT8 (r->data);
-			int i = GSF_LE_GET_GUINT16 (r->data + 1);
-			int j = GSF_LE_GET_GUINT16 (r->data + 3);
+			int col = GSF_LE_GET_GUINT16 (r->data + 1);
+			int row = GSF_LE_GET_GUINT16 (r->data + 3);
 
-			cell = insert_value (state, state->sheet, i, j, v);
+			cell = insert_value (state, state->sheet, col, row, v);
 			if (cell)
 				cell_set_format_from_lotus_format (cell, fmt);
 			break;
@@ -1569,9 +1572,9 @@ lotus_read_old (LotusState *state, record_t *r)
 			/* gchar format_prefix = *(r->data + 1 + 4);*/
 			GnmValue *v = lotus_get_strval (r, 6, state->lmbcs_group);
 			guint8 fmt = GSF_LE_GET_GUINT8 (r->data);
-			int i = GSF_LE_GET_GUINT16 (r->data + 1);
-			int j = GSF_LE_GET_GUINT16 (r->data + 3);
-			cell = insert_value (state, state->sheet, i, j, v);
+			int col = GSF_LE_GET_GUINT16 (r->data + 1);
+			int row = GSF_LE_GET_GUINT16 (r->data + 3);
+			cell = insert_value (state, state->sheet, col, row, v);
 			if (cell)
 				cell_set_format_from_lotus_format (cell, fmt);
 			break;
@@ -1964,6 +1967,7 @@ lotus_read_new (LotusState *state, record_t *r)
 			switch (subtype) {
 			case 0xfa1: CHECK_RECORD_SIZE (>= 24) {
 				/* Text style.  */
+#if 0
 				guint16 styleid = GSF_LE_GET_GUINT16 (r->data + 2);
 				guint8 fontid = GSF_LE_GET_GUINT8 (r->data + 9);
 				guint16 fontsize = GSF_LE_GET_GUINT16 (r->data + 10);
@@ -1974,6 +1978,7 @@ lotus_read_new (LotusState *state, record_t *r)
 				guint8 halign = GSF_LE_GET_GUINT8 (r->data + 20);
 				guint8 valign = GSF_LE_GET_GUINT8 (r->data + 21);
 				guint16 angle = GSF_LE_GET_GUINT16 (r->data + 22);
+#endif
 
 #if 0
 				g_print ("Saw text style %d with fontid %d.\n", styleid, fontid);
@@ -1988,15 +1993,22 @@ lotus_read_new (LotusState *state, record_t *r)
 
 				/* Cell style.  */
 				guint16 styleid = GSF_LE_GET_GUINT16 (r->data + 2);
+#if 0
 				guint8 fontid = GSF_LE_GET_GUINT8 (r->data + 9);
+#endif
 				guint16 fontsize = GSF_LE_GET_GUINT16 (r->data + 10);
 				guint16 textfg = GSF_LE_GET_GUINT16 (r->data + 12);
+#if 0
 				guint16 textbg = GSF_LE_GET_GUINT16 (r->data + 14);
+#endif
 				guint16 facebits = GSF_LE_GET_GUINT16 (r->data + 16);
 				guint16 facemask = GSF_LE_GET_GUINT16 (r->data + 18);
+
+#if 0
 				guint8 halign = GSF_LE_GET_GUINT8 (r->data + 20);
 				guint8 valign = GSF_LE_GET_GUINT8 (r->data + 21);
 				guint16 angle = GSF_LE_GET_GUINT16 (r->data + 22);
+#endif
 				guint16 intfg = GSF_LE_GET_GUINT16 (r->data + 24);
 				guint16 intbg = GSF_LE_GET_GUINT16 (r->data + 26);
 				guint8 intpat = GSF_LE_GET_GUINT8 (r->data + 28);
@@ -2027,8 +2039,6 @@ lotus_read_new (LotusState *state, record_t *r)
 
 #define FACEBIT(bitval,attr)							\
 	if (facemask & bitval) {						\
-                if (facebits & bitval)						\
-			g_print ("Bit value %d set.\n", bitval);		\
 		gnm_style_set_font_ ## attr (style, (facebits & bitval) != 0);	\
 	}
 				FACEBIT (0x0001,bold);
@@ -2364,9 +2374,6 @@ lotus_read_new (LotusState *state, record_t *r)
 		rldb = NULL;
 	}
 
-	g_hash_table_destroy (state->style_pool);
-	state->style_pool = NULL;
-
 	return result;
 }
 
@@ -2376,10 +2383,14 @@ lotus_read (LotusState *state)
 	record_t r;
 	r.input = state->input;
 
-	if (record_next (&r) && r.type == LOTUS_BOF) {
-		state->version = GSF_LE_GET_GUINT16 (r.data);
+	if (!record_next (&r)) return FALSE;
+
+	state->version = GSF_LE_GET_GUINT16 (r.data);
+
+	if (r.type == LOTUS_BOF) {
+		state->is_works = FALSE;
 #if LOTUS_DEBUG > 0
-		g_print ("Version=%x\n", state->version);
+		g_print ("Version=%x, Lotus\n", state->version);
 #endif
 		switch (state->version) {
 		case LOTUS_VERSION_ORIG_123:
@@ -2396,6 +2407,13 @@ lotus_read (LotusState *state)
 		case LOTUS_VERSION_123SS98:
 			return lotus_read_new (state, &r);
 		}
+	} else if (r.type == WORKS_BOF) {
+		state->is_works = TRUE;
+#if LOTUS_DEBUG > 0
+		g_print ("Version=%x, MS Works\n", state->version);
+#endif
+		if (state->version == WORKS_VERSION_3)
+			return lotus_read_works (state, &r);
 	}
 
 	return FALSE;
@@ -2410,4 +2428,492 @@ void
 lmbcs_shutdown (void)
 {
 	gsf_iconv_close (lmbcs_12_iconv);
+}
+
+typedef struct {
+	char *typeface;
+	int variant;
+	int size;
+	GIConv converter;
+} WksFontEntry;
+
+static WksFontEntry *
+wks_font_new (void)
+{
+	WksFontEntry *res = g_new0 (WksFontEntry, 1);
+	res->converter = (GIConv)-1;
+	return res;
+}
+
+static void
+wks_font_dtor (WksFontEntry *s)
+{
+	g_free (s->typeface);
+	if (s->converter != (GIConv)-1)
+		gsf_iconv_close (s->converter);
+	g_free (s);
+}
+
+static void
+cell_set_fmt (LotusState *state, GnmCell *cell, int fmt)
+{
+	GnmRange range;
+	GnmStyle *style;
+
+	range.start = cell->pos;
+	range.end = range.start;
+	
+	style = g_hash_table_lookup (state->style_pool, 
+				     GINT_TO_POINTER (fmt));
+
+	if (style) {
+		gnm_style_ref (style);
+		sheet_apply_style (state->sheet, &range, style);
+	}
+}
+
+static const guint8 works_color_table[16][3]={
+	{0,0,0}, /* dummy */
+	{0,0,0},
+	{0,0,255},
+	{0,255,255},
+	{0,255,0},
+	{255,0,255},
+	{255,0,0},
+	{255,255,0},
+	{128,128,128},
+	{255,255,255},
+	{0,0,128},
+	{0,128,128},
+	{0,128,0},
+	{128,0,128},
+	{128,0,0},
+	{192,192,192}
+};
+
+static GnmColor *
+works_color (guint i)
+{
+	if (i == 0) return style_color_auto_font();
+	if (i < G_N_ELEMENTS (works_color_table))
+		return style_color_new_i8 (works_color_table[i][0],
+					   works_color_table[i][1],
+					   works_color_table[i][2]);
+	return NULL;
+}
+
+static const gchar* works_data_fmts[]=
+{
+	"dd.mm.yyyy",
+	"d mmmm yyyy",
+	"dd.yyyy",
+	"mmmm yyyy",
+	"dd.mm",
+	"d mmmm",
+	"dd-mm-yy", /* looks unused */
+	"mmmm"
+};
+
+static const gchar* works_time_fmts[]=
+{
+	"h:mm AM/PM",
+	"h:mm:ss AM/PM",
+	"h:mm",
+	"h:mm:ss"
+};
+
+static const gchar* works_frac_fmts[]=
+{
+	"# ?" "?/?" "?" /* silly trick to avoid using a trigraph */,
+	"# ?/4",
+	"#", /* unused ? */
+	"# ?/8",
+	"# ?/10",
+	"# ?/16",
+	"# ?/32",
+	"# ?/100"
+};
+
+static char *
+works_format_string (guint8 arg)
+{
+	int type, prec;
+	GString *str;
+
+	type = arg & 0xf;
+	prec = (arg >> 5) & 7;
+
+	str = g_string_new(NULL);
+
+	switch (type) {
+		case 0: /* fixed */
+		case 2: /* currency */
+			g_string_append(str,"0");
+			append_precision(str,prec);
+			break;
+		case 1: /* exp */
+			g_string_append(str,"0");
+			append_precision(str,prec);
+			g_string_append(str,"E+00");
+			break;
+		case 3: /* percent */
+			g_string_append(str,"0");
+			append_precision(str,prec);
+			g_string_append(str,"%");
+			break;
+		case 4: /* thousands */
+			g_string_append(str,"# ##0");
+			append_precision(str,prec);
+			break;
+		case 5:
+
+			switch (prec) {
+				case 0: /* general */
+				case 1: /* boolean */
+					break;
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+					g_string_append(str,works_time_fmts[prec-2]);
+					break;
+			};
+			break;
+		case 6:
+			g_string_append(str,works_data_fmts[prec]);
+			break;
+		case 10: /* fixed */
+			g_string_append_len(str,"000000000",prec+1);
+			break;
+		case 11: /* fraction (no ...) */
+		case 12: /* fraction */
+			if (type == 11) {
+				if (prec == 0) {
+					g_string_append(str,"# ?/2");
+					break;
+				} else if (prec == 1) {
+					g_string_append(str,"# ?/3");
+					break;
+				}
+			}
+			g_string_append(str,works_frac_fmts[prec]);
+			break;
+		case 13: /* currency + red */
+		case 14: /* thousands + red */
+			g_string_append(str,"# ##0");
+			append_precision(str,prec);
+			g_string_append(str,";[Red]-# ##0"); /* l10n??? */
+			append_precision(str,prec);
+			break;
+	}
+	return g_string_free(str, FALSE);
+}
+
+static GnmValue *
+works_get_strval (const record_t *r, guint ofs, int fmt, LotusState *state)
+{
+	GString *str = g_string_new (NULL);
+	char *strutf8;
+	GIConv converter;
+	WksFontEntry *font;
+
+	while (ofs < r->len && r->data[ofs] != 0) {
+		g_string_append_c (str, r->data[ofs]);
+		ofs++;
+	}
+
+	font = g_hash_table_lookup (state->works_style_font,
+				    GINT_TO_POINTER(fmt));
+	converter = font ? font->converter : (GIConv)-1;
+	if (converter == (GIConv)-1)
+		converter = state->works_conv;
+
+	strutf8 = g_convert_with_iconv (str->str, str->len,
+					converter,
+					NULL, NULL,
+					NULL);
+	g_string_free (str, TRUE);
+
+	if (strutf8)
+		return value_new_string_nocopy (strutf8);
+	else
+		return value_new_empty ();
+}
+
+static gboolean
+lotus_read_works (LotusState *state, record_t *r)
+{
+	gboolean result = TRUE;
+	int sheetidx = 0;
+	int styleidx = 0;
+	int fontidx  = 0;
+	GnmCell    *cell;
+
+	state->style_pool = g_hash_table_new_full
+	(g_direct_hash,
+	 g_direct_equal,
+	 NULL,
+	 (GDestroyNotify)gnm_style_unref);
+
+	state->fonts = g_hash_table_new_full
+	(g_direct_hash,
+	 g_direct_equal,
+	 NULL,
+	 (GDestroyNotify)wks_font_dtor);
+
+	state->works_style_font = g_hash_table_new (g_direct_hash,
+						    g_direct_equal);
+
+	state->lmbcs_group = 1;
+
+	state->works_conv = gsf_msole_iconv_open_for_import (1252);
+
+	do {
+		switch (r->type) {
+		case WORKS_BOF:
+			state->sheet = attach_sheet (state->wb, sheetidx++);
+			break;
+
+		case LOTUS_EOF:
+			state->sheet = NULL;
+			break;
+
+		case WORKS_SMALL_FLOAT: CHECK_RECORD_SIZE (>= 6) {
+			int row = GSF_LE_GET_GUINT16 (r->data + 2);
+			int col = r->data[0];
+#if 0
+			int fmt = GSF_LE_GET_GUINT16 (r->data + 4);
+#endif
+			guint32 raw = GSF_LE_GET_GUINT32 (r->data + 6);
+			char flag = raw & 1;
+			float x;
+			GnmValue *v;
+
+			raw = (raw&0xfc000000)|((raw&0x3fffffe)<<3);
+			x = gsf_le_get_float (&raw);
+			v = lotus_value (flag ? x/100.0 : x);
+			(void)insert_value (state, state->sheet, col, row, v);
+			break;
+		}
+#if 0
+		case LOTUS_INTEGER: CHECK_RECORD_SIZE (>= 7) {
+			GnmValue *v = value_new_int (GSF_LE_GET_GINT16 (r->data + 5));
+			guint8 fmt = GSF_LE_GET_GUINT8 (r->data);
+			int i = GSF_LE_GET_GUINT16 (r->data + 1);
+			int j = GSF_LE_GET_GUINT16 (r->data + 3);
+
+			cell = insert_value (state, state->sheet, col, row, v);
+			if (cell)
+				cell_set_format_from_lotus_format (cell, fmt);
+			break;
+		}
+#endif
+
+		case LOTUS_NUMBER: CHECK_RECORD_SIZE (>= 14) {
+			GnmValue *v = lotus_value (gsf_le_get_double (r->data + 6));
+			int col = GSF_LE_GET_GUINT16 (r->data + 0);
+			int row = GSF_LE_GET_GUINT16 (r->data + 2);
+			int fmt = GSF_LE_GET_GUINT16 (r->data + 4);
+
+			cell = insert_value (state, state->sheet, col, row, v);
+			if (cell)
+				cell_set_fmt (state, cell, fmt);
+			break;
+		}
+		case LOTUS_LABEL: CHECK_RECORD_SIZE (>= 8) {
+			int col = GSF_LE_GET_GUINT16 (r->data + 0);
+			int row = GSF_LE_GET_GUINT16 (r->data + 2);
+			int fmt = GSF_LE_GET_GUINT16 (r->data + 4);
+			GnmValue *v = works_get_strval (r, 6, fmt, state);
+			cell = insert_value (state, state->sheet, col, row, v);
+			if (cell)
+				cell_set_fmt (state, cell, fmt);
+#if 0
+			g_printerr ("String at %s:\n",
+				    cellpos_as_string (&cell->pos));
+			gsf_mem_dump (r->data, r->len);
+#endif
+			break;
+		}
+		case LOTUS_BLANK: CHECK_RECORD_SIZE (>= 6) {
+			GnmValue *v = value_new_empty();
+			int col = GSF_LE_GET_GUINT16 (r->data + 0);
+			int row = GSF_LE_GET_GUINT16 (r->data + 2);
+			int fmt = GSF_LE_GET_GUINT16 (r->data + 4);
+			cell = insert_value (state, state->sheet, col, row, v);
+			if (cell)
+				cell_set_fmt (state, cell, fmt);
+			break;
+		}
+		case LOTUS_FORMULA: CHECK_RECORD_SIZE (>= 16) {
+			int col = GSF_LE_GET_GUINT16 (r->data + 0);
+			int row = GSF_LE_GET_GUINT16 (r->data + 2);
+			int fmt = GSF_LE_GET_GUINT16 (r->data + 4);
+			int len = GSF_LE_GET_GINT16 (r->data + 14);
+			GnmExprTop const *texpr;
+			GnmParsePos pp;
+			GnmValue *v = NULL;
+
+			if (r->len < (15 + len))
+				break;
+
+			pp.eval.col = col;
+			pp.eval.row = row;
+			pp.sheet = state->sheet;
+			pp.wb = pp.sheet->workbook;
+			texpr = lotus_parse_formula (state, &pp,
+						     r->data + 16, len);
+
+			if (0x7ff0 == (GSF_LE_GET_GUINT16 (r->data + 12) & 0x7ff8)) {
+				if (LOTUS_STRING == record_peek_next (r)) {
+					record_next (r);
+					v = lotus_get_strval (r, 6, state->lmbcs_group);
+				} else
+					v = value_new_error_VALUE (NULL);
+			} else
+				v = lotus_value (gsf_le_get_double (r->data + 6));
+			cell = lotus_cell_fetch (state, state->sheet, col, row);
+			if (cell) {
+				gnm_cell_set_expr_and_value (cell, texpr, v, TRUE);
+				cell_set_fmt (state, cell, fmt);
+			} else
+				value_release (v);
+			gnm_expr_top_unref (texpr);
+			break;
+		}
+
+		case WORKS_FONT: CHECK_RECORD_SIZE (>= 38) {
+			WksFontEntry *font = wks_font_new();
+			int codepage;
+			int fid = fontidx++;
+			int l;
+			font->variant = GSF_LE_GET_GUINT16(r->data + 0);
+			l = strlen (r->data + 2);
+			if (l > 34) l = 34;
+			font->typeface = g_malloc(l + 1);
+			/* verify UTF-8? */
+			memcpy(font->typeface, r->data + 2, l);
+			font->typeface[l] = 0;
+			font->size = r->data[36];
+			
+			codepage = gnm_font_override_codepage (font->typeface);
+			if (codepage != -1)
+				font->converter = gsf_msole_iconv_open_for_import (codepage);
+
+			g_hash_table_insert (state->fonts,
+			     GUINT_TO_POINTER ((guint)fid),
+			     font);
+
+			break;
+		}
+
+		case WORKS_STYLE: CHECK_RECORD_SIZE (>= 10) {
+			GnmStyle *style;
+			GnmColor *color;
+			WksFontEntry *font;
+			char *fmt;
+			int tmp;
+
+			guint16 styleid = styleidx++;
+			guint8 fontid = GSF_LE_GET_GUINT8 (r->data + 4);
+			/*guint16 fontsize = GSF_LE_GET_GUINT16 (r->data + 10);
+			guint16 textbg = GSF_LE_GET_GUINT16 (r->data + 14);*/
+			guint16 facebits;
+			guint8 align = GSF_LE_GET_GUINT8 (r->data + 1);
+			/*guint16 angle = GSF_LE_GET_GUINT16 (r->data + 22);
+			guint16 intfg = GSF_LE_GET_GUINT16 (r->data + 24);
+			guint16 intbg = GSF_LE_GET_GUINT16 (r->data + 26);
+			guint8 intpat = GSF_LE_GET_GUINT8 (r->data + 28);*/
+
+			style = gnm_style_new ();
+
+			font = g_hash_table_lookup(state->fonts,GUINT_TO_POINTER ((guint)fontid));
+
+			if (font) {
+				facebits = font->variant;
+#define FACEBIT(bitval,attr)							\
+		gnm_style_set_font_ ## attr (style, (facebits & bitval) != 0);
+				FACEBIT (0x0001,bold);
+				FACEBIT (0x0002,italic);
+				FACEBIT (0x0004,uline);
+				FACEBIT (0x0008,strike);
+#undef FACEBIT
+				if (font->size != 0)
+					gnm_style_set_font_size (style, font->size / 2.0);
+
+				if (font->variant & 0xF0) {
+					color = works_color((font->variant >> 4) & 0xF);
+					if (color)
+						gnm_style_set_font_color (style, color);
+				}
+
+				if (font->typeface)
+					gnm_style_set_font_name(style, font->typeface);
+
+				g_hash_table_insert (state->works_style_font,
+						     GUINT_TO_POINTER((guint)styleid),
+						     font);
+			}
+
+			tmp = (align >> 2) & 7;
+			switch (tmp) {
+				case 1:
+					tmp = HALIGN_LEFT;
+					break;
+				case 2:
+					tmp = HALIGN_CENTER;
+					break;
+				case 3:
+					tmp = HALIGN_RIGHT;
+					break;
+				case 4:
+					tmp = HALIGN_FILL;
+					break;
+				default:
+					tmp = HALIGN_GENERAL;
+			}
+			gnm_style_set_align_h(style, tmp);
+
+			tmp = (align >> 6) & 3;
+			switch (tmp) {
+				case 0:
+					tmp = VALIGN_BOTTOM;
+					break;
+				case 1:
+					tmp = VALIGN_CENTER;
+					break;
+				case 2:
+					tmp = VALIGN_TOP;
+					break;
+			}
+			gnm_style_set_align_v(style, tmp);
+
+			if (align & 0x20) {
+				gnm_style_set_wrap_text(style, TRUE);
+			}
+
+			fmt = works_format_string(r->data[0]);
+			if (fmt) {
+				if (*fmt) gnm_style_set_format_text(style, fmt);
+				g_free(fmt);
+			}
+
+#ifdef DEBUG_STYLE
+			g_print ("Defining style 0x%04x:\n", styleid);
+			gnm_style_dump (style);
+#endif
+			g_hash_table_insert (state->style_pool,
+					     GUINT_TO_POINTER ((guint)styleid),
+					     style);
+		}
+
+		default:
+			g_warning ("Unknown record 0x%x of length %d.", r->type, r->len);
+			break;
+		}
+	} while (record_next (r));
+
+	g_hash_table_destroy (state->works_style_font);
+
+	return result;
 }

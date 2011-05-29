@@ -1256,7 +1256,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>IMPRODUCT</function>(<parameter>z1</parameter>,<parameter>z2</parameter>)</synopsis>
+        <synopsis><function>IMPRODUCT</function>(<parameter>z1</parameter>,<parameter>z2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -1534,7 +1534,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>IMSUM</function>(<parameter>z1</parameter>,<parameter>z2</parameter>)</synopsis>
+        <synopsis><function>IMSUM</function>(<parameter>z1</parameter>,<parameter>z2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -3521,7 +3521,7 @@
           <function>BESSELI</function>
         </refname>
         <refpurpose>
-        Modified Bessel function of the first kind of order @{α} at <parameter>x</parameter>
+        Modified Bessel function of the first kind of order <parameter>α</parameter> at <parameter>x</parameter>
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -3530,15 +3530,15 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>X</parameter>: number</para>
-        <para>@{α}: order (any number)</para>
+        <para><parameter>α</parameter>: order (any number)</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If <parameter>x</parameter> or @{α} are not numeric, #VALUE! is returned. If @{α} &lt; 0, #NUM! is returned.</para>
+        <para>If <parameter>x</parameter> or <parameter>α</parameter> are not numeric, #VALUE! is returned. If <parameter>α</parameter> &lt; 0, #NUM! is returned.</para>
       </refsect1>
       <refsect1>
         <title>Microsoft Excel Compatibility</title>
-        <para>This function is Excel compatible if only integer orders @{α} are used.</para>
+        <para>This function is Excel compatible if only integer orders <parameter>α</parameter> are used.</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -3559,7 +3559,7 @@
           <function>BESSELJ</function>
         </refname>
         <refpurpose>
-        Bessel function of the first kind of order @{α} at <parameter>x</parameter>
+        Bessel function of the first kind of order <parameter>α</parameter> at <parameter>x</parameter>
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -3568,11 +3568,11 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>X</parameter>: number</para>
-        <para>@{α}: order (any non-negative integer)</para>
+        <para><parameter>α</parameter>: order (any non-negative integer)</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If <parameter>x</parameter> or @{α} are not numeric, #VALUE! is returned. If @{α} &lt; 0, #NUM! is returned. If @{α} is not an integer, it is truncated.</para>
+        <para>If <parameter>x</parameter> or <parameter>α</parameter> are not numeric, #VALUE! is returned. If <parameter>α</parameter> &lt; 0, #NUM! is returned. If <parameter>α</parameter> is not an integer, it is truncated.</para>
       </refsect1>
       <refsect1>
         <title>Microsoft Excel Compatibility</title>
@@ -3597,7 +3597,7 @@
           <function>BESSELK</function>
         </refname>
         <refpurpose>
-        Modified Bessel function of the second kind of order @{α} at <parameter>x</parameter>
+        Modified Bessel function of the second kind of order <parameter>α</parameter> at <parameter>x</parameter>
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -3606,15 +3606,15 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>X</parameter>: number</para>
-        <para>@{α}: order (any number)</para>
+        <para><parameter>α</parameter>: order (any number)</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If <parameter>x</parameter> or @{α} are not numeric, #VALUE! is returned. If @{α} &lt; 0, #NUM! is returned.</para>
+        <para>If <parameter>x</parameter> or <parameter>α</parameter> are not numeric, #VALUE! is returned. If <parameter>α</parameter> &lt; 0, #NUM! is returned.</para>
       </refsect1>
       <refsect1>
         <title>Microsoft Excel Compatibility</title>
-        <para>This function is Excel compatible if only integer orders @{α} are used.</para>
+        <para>This function is Excel compatible if only integer orders <parameter>α</parameter> are used.</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -3635,7 +3635,7 @@
           <function>BESSELY</function>
         </refname>
         <refpurpose>
-        Bessel function of the second kind of order @{α} at <parameter>x</parameter>
+        Bessel function of the second kind of order <parameter>α</parameter> at <parameter>x</parameter>
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -3644,11 +3644,11 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>X</parameter>: number</para>
-        <para>@{α}: order (any non-negative integer)</para>
+        <para><parameter>α</parameter>: order (any non-negative integer)</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If <parameter>x</parameter> or @{α} are not numeric, #VALUE! is returned. If @{α} &lt; 0, #NUM! is returned. If @{α} is not an integer, it is truncated.</para>
+        <para>If <parameter>x</parameter> or <parameter>α</parameter> are not numeric, #VALUE! is returned. If <parameter>α</parameter> &lt; 0, #NUM! is returned. If <parameter>α</parameter> is not an integer, it is truncated.</para>
       </refsect1>
       <refsect1>
         <title>Microsoft Excel Compatibility</title>
@@ -3923,16 +3923,25 @@
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
-        <para><parameter>x</parameter>: integer</para>
+        <para><parameter>x</parameter>: integer (− 513 &lt; <parameter>x</parameter> &lt; 512)</para>
         <para><parameter>places</parameter>: number of digits</para>
       </refsect1>
       <refsect1>
         <title>Description</title>
-        <para>If <parameter>places</parameter> is given, <function>DEC2BIN</function> pads the result with zeros to achieve exactly <parameter>places</parameter> digits. If this is not possible, <function>DEC2BIN</function> returns #NUM!</para>
+        <para>If <parameter>places</parameter> is given and <parameter>x</parameter> is non-negative, <function>DEC2BIN</function> pads the result with zeros to achieve exactly <parameter>places</parameter> digits. If this is not possible, <function>DEC2BIN</function> returns #NUM!</para>
+        <para>If <parameter>places</parameter> is given and <parameter>x</parameter> is negative, <parameter>places</parameter> is ignored.</para>
+      </refsect1>
+      <refsect1>
+        <title>Note</title>
+        <para>If <parameter>x</parameter> &lt; − 512 or <parameter>x</parameter> &gt; 511, <function>DEC2BIN</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>Microsoft Excel Compatibility</title>
         <para>This function is Excel compatible.</para>
+      </refsect1>
+      <refsect1>
+        <title>OpenDocument Format (ODF) Compatibility</title>
+        <para>This function is OpenFormula compatible.</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -4322,7 +4331,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>INVSUMINV</function>(<parameter>x0</parameter>,<parameter>x1</parameter>)</synopsis>
+        <synopsis><function>INVSUMINV</function>(<parameter>x0</parameter>,<parameter>x1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -5864,7 +5873,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>NPV</function>(<parameter>rate</parameter>,<parameter>value1</parameter>,<parameter>value2</parameter>)</synopsis>
+        <synopsis><function>NPV</function>(<parameter>rate</parameter>,<parameter>value1</parameter>,<parameter>value2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -8692,7 +8701,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>ISREF</function>(<parameter>value</parameter>)</synopsis>
+        <synopsis><function>ISREF</function>(<parameter>value</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -8847,7 +8856,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>AND</function>(<parameter>b0</parameter>,<parameter>b1</parameter>)</synopsis>
+        <synopsis><function>AND</function>(<parameter>b0</parameter>,<parameter>b1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -9065,7 +9074,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>OR</function>(<parameter>b0</parameter>,<parameter>b1</parameter>)</synopsis>
+        <synopsis><function>OR</function>(<parameter>b0</parameter>,<parameter>b1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -9140,7 +9149,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>XOR</function>(<parameter>b0</parameter>,<parameter>b1</parameter>)</synopsis>
+        <synopsis><function>XOR</function>(<parameter>b0</parameter>,<parameter>b1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -9217,7 +9226,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>AREAS</function>(<parameter>reference</parameter>)</synopsis>
+        <synopsis><function>AREAS</function>(<parameter>reference</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -9247,7 +9256,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>ARRAY</function>(<parameter>v</parameter>)</synopsis>
+        <synopsis><function>ARRAY</function>(<parameter>v</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -9274,7 +9283,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>CHOOSE</function>(<parameter>index</parameter>,<parameter>value1</parameter>,<parameter>value2</parameter>)</synopsis>
+        <synopsis><function>CHOOSE</function>(<parameter>index</parameter>,<parameter>value1</parameter>,<parameter>value2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -10304,7 +10313,7 @@
           <function>AVERAGEIF</function>
         </refname>
         <refpurpose>
-        average of the cells in @{actual range} for which the corresponding cells in the range meet the given <parameter>criteria</parameter>
+        average of the cells in <parameter>actual range</parameter> for which the corresponding cells in the range meet the given <parameter>criteria</parameter>
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -11153,7 +11162,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>G_PRODUCT</function>(<parameter>x1</parameter>,<parameter>x2</parameter>)</synopsis>
+        <synopsis><function>G_PRODUCT</function>(<parameter>x1</parameter>,<parameter>x2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -11244,7 +11253,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>GCD</function>(<parameter>n0</parameter>,<parameter>n1</parameter>)</synopsis>
+        <synopsis><function>GCD</function>(<parameter>n0</parameter>,<parameter>n1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -11312,7 +11321,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>HYPOT</function>(<parameter>n0</parameter>,<parameter>n1</parameter>)</synopsis>
+        <synopsis><function>HYPOT</function>(<parameter>n0</parameter>,<parameter>n1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -11376,7 +11385,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>LCM</function>(<parameter>n0</parameter>,<parameter>n1</parameter>)</synopsis>
+        <synopsis><function>LCM</function>(<parameter>n0</parameter>,<parameter>n1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -11781,7 +11790,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MULTINOMIAL</function>(<parameter>x1</parameter>,<parameter>x2</parameter>,<parameter>xn</parameter>)</synopsis>
+        <synopsis><function>MULTINOMIAL</function>(<parameter>x1</parameter>,<parameter>x2</parameter>,<parameter>xn</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -11941,7 +11950,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>PRODUCT</function>(<parameter>values</parameter>)</synopsis>
+        <synopsis><function>PRODUCT</function>(<parameter>values</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -12496,7 +12505,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SUM</function>(<parameter>values</parameter>)</synopsis>
+        <synopsis><function>SUM</function>(<parameter>values</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -12536,7 +12545,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SUMA</function>(<parameter>area0</parameter>,<parameter>area1</parameter>)</synopsis>
+        <synopsis><function>SUMA</function>(<parameter>area0</parameter>,<parameter>area1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -12604,7 +12613,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SUMPRODUCT</function>(<parameter/>)</synopsis>
+        <synopsis><function>SUMPRODUCT</function>(<parameter/>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Description</title>
@@ -12637,7 +12646,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SUMSQ</function>(<parameter>area0</parameter>,<parameter>area1</parameter>)</synopsis>
+        <synopsis><function>SUMSQ</function>(<parameter>area0</parameter>,<parameter>area1</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -13694,17 +13703,17 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>c</parameter>: parameter of the Lévy distribution</para>
-        <para>@{α}: parameter of the Lévy distribution</para>
-        <para>@{β}: parameter of the Lévy distribution, defaults to 0</para>
+        <para><parameter>α</parameter>: parameter of the Lévy distribution</para>
+        <para><parameter>β</parameter>: parameter of the Lévy distribution, defaults to 0</para>
       </refsect1>
       <refsect1>
         <title>Description</title>
-        <para>For @{α} = 1, @{β}=0, the Lévy distribution reduces to the Cauchy (or Lorentzian) distribution.</para>
-        <para>For @{α} = 2, @{β}=0, the Lévy distribution reduces to the normal distribution.</para>
+        <para>For <parameter>α</parameter> = 1, <parameter>β</parameter>=0, the Lévy distribution reduces to the Cauchy (or Lorentzian) distribution.</para>
+        <para>For <parameter>α</parameter> = 2, <parameter>β</parameter>=0, the Lévy distribution reduces to the normal distribution.</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If @{α} ≤ 0 or @{α} &gt; 2, <function>RANDLEVY</function> returns #NUM! If @{β} &lt; -1 or @{β} &gt; 1, <function>RANDLEVY</function> returns #NUM!</para>
+        <para>If <parameter>α</parameter> ≤ 0 or <parameter>α</parameter> &gt; 2, <function>RANDLEVY</function> returns #NUM! If <parameter>β</parameter> &lt; -1 or <parameter>β</parameter> &gt; 1, <function>RANDLEVY</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -13789,12 +13798,12 @@
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
-        <para>@{ζ}: parameter of the lognormal distribution</para>
-        <para>@{σ}: standard deviation of the distribution</para>
+        <para><parameter>ζ</parameter>: parameter of the lognormal distribution</para>
+        <para><parameter>σ</parameter>: standard deviation of the distribution</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If @{σ} &lt; 0, <function>RANDLOGNORM</function> returns #NUM!</para>
+        <para>If <parameter>σ</parameter> &lt; 0, <function>RANDLOGNORM</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -13854,12 +13863,12 @@
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
-        <para>@{μ}: mean of the distribution</para>
-        <para>@{σ}: standard deviation of the distribution</para>
+        <para><parameter>μ</parameter>: mean of the distribution</para>
+        <para><parameter>σ</parameter>: standard deviation of the distribution</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If @{σ} &lt; 0, <function>RANDNORM</function> returns #NUM!</para>
+        <para>If <parameter>σ</parameter> &lt; 0, <function>RANDNORM</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -13887,7 +13896,7 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>a</parameter>: lower limit of the tail</para>
-        <para>@{σ}: standard deviation of the normal distribution</para>
+        <para><parameter>σ</parameter>: standard deviation of the normal distribution</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
@@ -13946,11 +13955,11 @@
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
-        <para>@{λ}: parameter of the Poisson distribution</para>
+        <para><parameter>λ</parameter>: parameter of the Poisson distribution</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If @{λ} &lt; 0 <function>RANDPOISSON</function> returns #NUM!</para>
+        <para>If <parameter>λ</parameter> &lt; 0 <function>RANDPOISSON</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -13978,7 +13987,7 @@
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
-        <para>@{σ}: scale parameter of the Rayleigh distribution</para>
+        <para><parameter>σ</parameter>: scale parameter of the Rayleigh distribution</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -14006,7 +14015,7 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>a</parameter>: lower limit of the tail</para>
-        <para>@{σ}: scale parameter of the Rayleigh distribution</para>
+        <para><parameter>σ</parameter>: scale parameter of the Rayleigh distribution</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -14035,12 +14044,12 @@
       <refsect1>
         <title>Arguments</title>
         <para><parameter>a</parameter>: amount of skew, defaults to 0</para>
-        <para>@{μ}: mean of the underlying normal distribution, defaults to 0</para>
-        <para>@{σ}: standard deviation of the underlying normal distribution, defaults to 1</para>
+        <para><parameter>μ</parameter>: mean of the underlying normal distribution, defaults to 0</para>
+        <para><parameter>σ</parameter>: standard deviation of the underlying normal distribution, defaults to 1</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If @{σ} &lt; 0, <function>RANDSNORM</function> returns #NUM!</para>
+        <para>If <parameter>σ</parameter> &lt; 0, <function>RANDSNORM</function> returns #NUM!</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -14179,7 +14188,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SIMTABLE</function>(<parameter>d1</parameter>,<parameter>d2</parameter>)</synopsis>
+        <synopsis><function>SIMTABLE</function>(<parameter>d1</parameter>,<parameter>d2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14249,7 +14258,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>AVEDEV</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>AVEDEV</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14281,7 +14290,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>AVERAGE</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>AVERAGE</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14314,7 +14323,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>AVERAGEA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>AVERAGEA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14776,7 +14785,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>COUNT</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>COUNT</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14808,7 +14817,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>COUNTA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>COUNTA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14920,7 +14929,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>CRONBACH</function>(<parameter>ref1</parameter>,<parameter>ref2</parameter>)</synopsis>
+        <synopsis><function>CRONBACH</function>(<parameter>ref1</parameter>,<parameter>ref2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -14986,7 +14995,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>DEVSQ</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>DEVSQ</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -15473,7 +15482,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>GEOMEAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>GEOMEAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -15554,7 +15563,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>HARMEAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>HARMEAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -15671,7 +15680,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>KURT</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>KURT</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -15714,7 +15723,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>KURTP</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>KURTP</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16151,7 +16160,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MAX</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MAX</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16184,7 +16193,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MAXA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MAXA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16221,7 +16230,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MEDIAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MEDIAN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16267,7 +16276,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MIN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MIN</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16300,7 +16309,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MINA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MINA</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -16337,7 +16346,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>MODE</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>MODE</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -18827,7 +18836,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SKEW</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>SKEW</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -18870,7 +18879,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SKEWP</function>(<parameter>number1</parameter>,<parameter>number2</parameter>)</synopsis>
+        <synopsis><function>SKEWP</function>(<parameter>number1</parameter>,<parameter>number2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -18980,7 +18989,7 @@
           <function>SSMEDIAN</function>
         </refname>
         <refpurpose>
-        median for grouped data as commonly determined in the social sciences
+        median for grouped data
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
@@ -18993,11 +19002,17 @@
       </refsect1>
       <refsect1>
         <title>Description</title>
-        <para>The data points given in <parameter>array</parameter> are assumed to be the result of grouping data into intervals of length <parameter>interval</parameter></para>
+        <para>The data are assumed to be grouped into intervals of width <parameter>interval</parameter>. Each data point in <parameter>array</parameter> is the midpoint of the interval containing the true value. The median is calculated by interpolation within the median interval (the interval containing the median value), assuming that the true values within that interval are distributed uniformly:</para>
+        <para>median = L + <parameter>interval</parameter>*(N/2 - CF)/F</para>
+        <para>where:</para>
+        <para>L = the lower limit of the median interval</para>
+        <para>N = the total number of data points</para>
+        <para>CF = the number of data points below the median interval</para>
+        <para>F = the number of data points in the median interval</para>
       </refsect1>
       <refsect1>
         <title>Note</title>
-        <para>If <parameter>array</parameter> is empty, this function returns a #NUM! error. If <parameter>interval</parameter> &lt;= 0, this function returns a #NUM! error.<function>SSMEDIAN</function> does not check whether the data points are at least <parameter>interval</parameter> apart.</para>
+        <para>If <parameter>array</parameter> is empty, this function returns a #NUM! error. If <parameter>interval</parameter> &lt;= 0, this function returns a #NUM! error. <function>SSMEDIAN</function> does not check whether the data points are at least <parameter>interval</parameter> apart.</para>
       </refsect1>
       <refsect1>
         <title>See also</title>
@@ -19057,7 +19072,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>STDEV</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>STDEV</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19099,7 +19114,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>STDEVA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>STDEVA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19138,7 +19153,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>STDEVP</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>STDEVP</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19176,7 +19191,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>STDEVPA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>STDEVPA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19252,7 +19267,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>SUBTOTAL</function>(<parameter>function_nbr</parameter>,<parameter>ref1</parameter>,<parameter>ref2</parameter>)</synopsis>
+        <synopsis><function>SUBTOTAL</function>(<parameter>function_nbr</parameter>,<parameter>ref1</parameter>,<parameter>ref2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19490,7 +19505,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>VAR</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>VAR</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19532,7 +19547,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>VARA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>VARA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19575,7 +19590,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>VARP</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>VARP</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19611,7 +19626,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>VARPA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>)</synopsis>
+        <synopsis><function>VARPA</function>(<parameter>area1</parameter>,<parameter>area2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>
@@ -19894,7 +19909,7 @@
       </refpurpose>
       </refnamediv>
       <refsynopsisdiv>
-        <synopsis><function>CONCATENATE</function>(<parameter>s1</parameter>,<parameter>s2</parameter>)</synopsis>
+        <synopsis><function>CONCATENATE</function>(<parameter>s1</parameter>,<parameter>s2</parameter>,<parameter/>…)</synopsis>
       </refsynopsisdiv>
       <refsect1>
         <title>Arguments</title>

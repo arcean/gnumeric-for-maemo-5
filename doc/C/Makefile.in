@@ -999,7 +999,12 @@ chm-stamp chm :
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@	env TEXINPUTS=$(srcdir):.: dbcontext -t tex -Pfo.setup=1 -I . \
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@		-P imagedata.default.scale='scale=600' \
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@		-o gnumeric.tex $(srcdir)/gnumeric.xml
-@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/\xE2\xA8\x89/\\times{}/' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/\xE2\xA8\x89/\\ensuremath{\\times}/' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/\\begin{verbatim}\([^_]*\)\\end{verbatim}/\\texttt{\1}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/\\texttt{\\emph{\\small{\(.*\)}}}:/\\texttt{\\emph{\1}}:/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/ *>{} */\\ensuremath{{}>{}}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/ *<{} */\\ensuremath{{}<{}}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBCONTEXT_TRUE@	sed -i -e 's/\\makeglossary/\\makeglossary\n\\setlength{\\headheight}{36pt}/g' gnumeric.tex
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@	env TEXMFCNF=$(srcdir): \
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@		TEXINPUTS=$(srcdir):/usr/share/texmf/tex/context/dbcontext/style: \
 @ENABLE_PDF_VIA_DBCONTEXT_TRUE@		texexec --pdf --mode=A4 --verbose gnumeric.tex
@@ -1007,10 +1012,15 @@ chm-stamp chm :
 @ENABLE_PDF_VIA_DBLATEX_TRUE@gnumeric.pdf:
 @ENABLE_PDF_VIA_DBLATEX_TRUE@	dblatex -t tex -Pfo.setup=1 -I . \
 @ENABLE_PDF_VIA_DBLATEX_TRUE@		-P imagedata.default.scale='scale=0.6' \
-@ENABLE_PDF_VIA_DBLATEX_TRUE@		-P latex.encoding=utf-8 \
+@ENABLE_PDF_VIA_DBLATEX_TRUE@		-P latex.encoding=utf8 \
 @ENABLE_PDF_VIA_DBLATEX_TRUE@		-P latex.output.revhistory=0 \
 @ENABLE_PDF_VIA_DBLATEX_TRUE@		-o gnumeric.tex $(srcdir)/gnumeric.xml
-@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/\xE2\xA8\x89/\\times{}/' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/\xE2\xA8\x89/\\ensuremath{\\times}/' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/\\begin{verbatim}\([^_]*\)\\end{verbatim}/\\texttt{\1}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/\texttt{\emph{\small{\(.*\)}}}:/\texttt{\emph{\1}}:/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/ *>{} */\\ensuremath{{}>{}}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/ *<{} */\\ensuremath{{}<{}}/g' gnumeric.tex
+@ENABLE_PDF_VIA_DBLATEX_TRUE@	sed -i -e 's/\\makeglossary/\\makeglossary\n\\setlength{\\headheight}{36pt}\n\\input{textdefs.tex}/g' gnumeric.tex
 @ENABLE_PDF_VIA_DBLATEX_TRUE@	for runs in $$(seq 1 4); do \
 @ENABLE_PDF_VIA_DBLATEX_TRUE@		env TEXINPUTS=$(srcdir): \
 @ENABLE_PDF_VIA_DBLATEX_TRUE@			pdflatex -interaction nonstopmode gnumeric.tex ; \

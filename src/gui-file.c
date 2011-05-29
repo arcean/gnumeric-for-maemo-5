@@ -348,8 +348,9 @@ gui_file_open (WBCGtk *wbcg, char const *default_format)
 		 */
 		gtk_box_pack_start (GTK_BOX (GTK_DIALOG (fsel)->vbox), box, FALSE, TRUE, 6);
 #else
+		g_object_ref_sink (box);
 		g_object_set_data_full (G_OBJECT (advanced_button), "extra",
-			g_object_ref (box), g_object_unref);
+					box, g_object_unref);
 		gtk_widget_show_all (box);
 		g_signal_connect (G_OBJECT (advanced_button),
 				  "clicked",

@@ -35,6 +35,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define UNICODE_ELLIPSIS "\xe2\x80\xa6"
+#define F2(func,s) dgettext ((func)->textdomain->str, (s))
+
 static GList	    *categories;
 static SymbolTable  *global_symbol_table;
 static GnmFuncGroup *unknown_cat;
@@ -53,7 +56,7 @@ functions_shutdown (void)
 		GnmFunc *func = unknown_cat->functions->data;
 		if (func->ref_count > 0) {
 			g_warning ("Function %s still has %d refs.\n",
-				   gnm_func_get_name (func),
+				   gnm_func_get_name (func, FALSE),
 				   func->ref_count);
 			func->ref_count = 0;
 		}
@@ -158,7 +161,7 @@ dump_externals (GPtrArray *defs, FILE *out)
 		int j;
 
 		for (j = 0; fd->help[j].type != GNM_FUNC_HELP_END; j++) {
-			const char *s = _(fd->help[j].text);
+			const char *s = F2(fd, fd->help[j].text);
 
 			switch (fd->help[j].type) {
 			case GNM_FUNC_HELP_EXTREF:
@@ -331,16 +334,17 @@ function_dump_defs (char const *filename, int dump_type)
 			GString *excel = g_string_new (NULL);
 			GString *note = g_string_new (NULL);
 			GString *seealso = g_string_new (NULL);
+			gint min, max;
 
 			fprintf (output_file, "@CATEGORY=%s\n",
-				 _(fd->fn_group->display_name->str));
+				 F2(fd, fd->fn_group->display_name->str));
 			for (i = 0;
 			     fd->help[i].type != GNM_FUNC_HELP_END;
 			     i++) {
 				switch (fd->help[i].type) {
 				case GNM_FUNC_HELP_NAME: {
 					char *short_desc;
-					char *name = split_at_colon (_(fd->help[i].text), &short_desc);
+					char *name = split_at_colon (F2(fd, fd->help[i].text), &short_desc);
 					fprintf (output_file,
 						 "@FUNCTION=%s\n",
 						 name);
@@ -355,21 +359,21 @@ function_dump_defs (char const *filename, int dump_type)
 				case GNM_FUNC_HELP_SEEALSO:
 					if (seealso->len > 0)
 						g_string_append (seealso, ",");
-					g_string_append (seealso, _(fd->help[i].text));
+					g_string_append (seealso, F2(fd, fd->help[i].text));
 					break;
 				case GNM_FUNC_HELP_DESCRIPTION:
 					if (desc->len > 0)
 						g_string_append (desc, "\n");
-					g_string_append (desc, _(fd->help[i].text));
+					g_string_append (desc, F2(fd, fd->help[i].text));
 					break;
 				case GNM_FUNC_HELP_NOTE:
 					if (note->len > 0)
 						g_string_append (note, " ");
-					g_string_append (note, _(fd->help[i].text));
+					g_string_append (note, F2(fd, fd->help[i].text));
 					break;
 				case GNM_FUNC_HELP_ARG: {
 					char *argdesc;
-					char *name = split_at_colon (_(fd->help[i].text), &argdesc);
+					char *name = split_at_colon (F2(fd, fd->help[i].text), &argdesc);
 					if (first_arg)
 						first_arg = FALSE;
 					else
@@ -388,12 +392,12 @@ function_dump_defs (char const *filename, int dump_type)
 				case GNM_FUNC_HELP_ODF:
 					if (odf->len > 0)
 						g_string_append (odf, " ");
-					g_string_append (odf, _(fd->help[i].text));
+					g_string_append (odf, F2(fd, fd->help[i].text));
 					break;
 				case GNM_FUNC_HELP_EXCEL:
 					if (excel->len > 0)
 						g_string_append (excel, " ");
-					g_string_append (excel, _(fd->help[i].text));
+					g_string_append (excel, F2(fd, fd->help[i].text));
 					break;
 
 				case GNM_FUNC_HELP_EXTREF:
@@ -405,7 +409,14 @@ function_dump_defs (char const *filename, int dump_type)
 				}
 			}
 
-			fprintf (output_file, "@SYNTAX=%s)\n", syntax->str);
+			function_def_count_args (fd, &min, &max);
+			if (max == G_MAXINT)
+				fprintf (output_file, 
+					 "@SYNTAX=%s," UNICODE_ELLIPSIS ")\n", 
+					 syntax->str);
+			else
+				fprintf (output_file, "@SYNTAX=%s)\n", 
+					 syntax->str);
 
 			if (arg_desc->len > 0)
 				fprintf (output_file, "@ARGUMENTDESCRIPTION=%s", arg_desc->str);
@@ -875,15 +886,16 @@ function_def_create_arg_names (GnmFunc const *fn_def)
 	g_return_val_if_fail (fn_def != NULL, NULL);
 
 	ptr = g_ptr_array_new ();
-	if (fn_def->help != NULL)
-		for (i = 0;
-		     fn_def->help[i].type != GNM_FUNC_HELP_END;
-		     i++) {
-			if (fn_def->help[i].type == GNM_FUNC_HELP_ARG)
-				g_ptr_array_add
-					(ptr, split_at_colon
-					 (_(fn_def->help[i].text), NULL));
-		}
+	for (i = 0;
+	     fn_def->help && fn_def->help[i].type != GNM_FUNC_HELP_END;
+	     i++) {
+		if (fn_def->help[i].type != GNM_FUNC_HELP_ARG)
+			continue;
+
+		g_ptr_array_add
+			(ptr, split_at_colon
+			 (F2(fn_def, fn_def->help[i].text), NULL));
+	}
 	return ptr;
 }
 
@@ -960,6 +972,7 @@ gnm_func_free (GnmFunc *func)
 
 	if (func->textdomain)
 		go_string_unref (func->textdomain);
+	g_free (func->localized_name);
 
 	if (func->arg_names_p) {
 		g_ptr_array_foreach (func->arg_names_p, (GFunc) g_free, NULL);
@@ -1035,6 +1048,7 @@ gnm_func_add (GnmFuncGroup *fn_group,
 	func->flags		= desc->flags;
 	func->impl_status	= desc->impl_status;
 	func->test_status	= desc->test_status;
+	func->localized_name    = NULL;
 
 	func->user_data		= NULL;
 	func->ref_count		= 0;
@@ -1193,11 +1207,41 @@ gnm_func_set_user_data (GnmFunc *func, gpointer user_data)
 }
 
 char const *
-gnm_func_get_name (GnmFunc const *func)
+gnm_func_get_name (GnmFunc const *func, gboolean localized_function_names)
 {
+	int i;
+
 	g_return_val_if_fail (func != NULL, NULL);
 
-	return func->name;
+	if (!localized_function_names)
+		return func->name;
+
+	gnm_func_load_if_stub ((GnmFunc *)func);
+
+	for (i = 0;
+	     (func->localized_name == NULL &&
+	      func->help &&
+	      func->help[i].type != GNM_FUNC_HELP_END);
+	     i++) {
+		const char *s, *sl;
+		char *U;
+		if (func->help[i].type != GNM_FUNC_HELP_NAME)
+			continue;
+
+		s = func->help[i].text;
+		sl = F2 (func, s);
+		if (s == sl) /* String not actually translated. */
+			continue;
+
+		U = split_at_colon (F2 (func, s), NULL);
+		((GnmFunc *)func)->localized_name = U ? g_utf8_strdown (U, -1) : NULL;
+		g_free (U);
+	}
+
+	if (!func->localized_name)
+		((GnmFunc *)func)->localized_name = g_strdup (func->name);
+
+	return func->localized_name;
 }
 
 /**
@@ -1215,16 +1259,17 @@ gnm_func_get_description (GnmFunc const *fn_def)
 
 	gnm_func_load_if_stub ((GnmFunc *)fn_def);
 
-	if (fn_def->help != NULL)
-		for (i = 0;
-		     fn_def->help[i].type != GNM_FUNC_HELP_END;
-		     i++) {
-			if (fn_def->help[i].type == GNM_FUNC_HELP_NAME) {
-				gchar const *desc;
-				desc = strchr (_(fn_def->help[i].text), ':');
-				return desc ? (desc + 1) : "";
-			}
-		}
+	for (i = 0;
+	     fn_def->help && fn_def->help[i].type != GNM_FUNC_HELP_END;
+	     i++) {
+		const char *desc;
+
+		if (fn_def->help[i].type != GNM_FUNC_HELP_NAME)
+			continue;
+
+		desc = strchr (F2 (fn_def, fn_def->help[i].text), ':');
+		return desc ? (desc + 1) : "";
+	}
 	return "";
 }
 
@@ -1261,7 +1306,10 @@ function_def_count_args (GnmFunc const *fn_def,
 	 */
 	if (fn_def->fn_type == GNM_FUNC_TYPE_NODES) {
 		*min = 0;
-		*max = G_MAXINT;
+		if (g_ascii_strcasecmp ("INDEX",fn_def->name) == 0)
+			*max = 4;
+		else
+			*max = G_MAXINT;
 		return;
 	}
 
@@ -1384,23 +1432,24 @@ function_def_get_arg_name (GnmFunc const *fn_def, guint arg_idx)
 char const*
 gnm_func_get_arg_description (GnmFunc const *fn_def, guint arg_idx)
 {
-	guint arg = 0;
 	gint i;
 	g_return_val_if_fail (fn_def != NULL, NULL);
 
 	gnm_func_load_if_stub ((GnmFunc *)fn_def);
 
-	if (fn_def->help != NULL)
-		for (i = 0;
-		     fn_def->help[i].type != GNM_FUNC_HELP_END;
-		     i++) {
-			if (fn_def->help[i].type == GNM_FUNC_HELP_ARG
-			    && arg++ == arg_idx) {
-				gchar const *desc;
-				desc = strchr (_(fn_def->help[i].text), ':');
-				return desc ? (desc + 1) : "";
-			}
-		}
+	for (i = 0;
+	     fn_def->help && fn_def->help[i].type != GNM_FUNC_HELP_END;
+	     i++) {
+		gchar const *desc;
+
+		if (fn_def->help[i].type != GNM_FUNC_HELP_ARG)
+			continue;
+		if (arg_idx--)
+			continue;
+
+		desc = strchr (F2 (fn_def, fn_def->help[i].text), ':');
+		return desc ? (desc + 1) : "";
+	}
 
 	return "";
 }

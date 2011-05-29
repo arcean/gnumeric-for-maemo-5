@@ -295,7 +295,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-TESTS = $(wildcard $(srcdir)/t[0-9][0-9][0-9][0-9]-*.pl)
+TESTS = $(sort $(wildcard $(srcdir)/t[0-9][0-9][0-9][0-9]-*.pl))
 SUPPS = common.supp commondots.supp gui.supp t8003-valgrind-pdf.supp
 EXTRA_DIST = GnumericTest.pm $(SUPPS) normalize-gnumeric $(TESTS)
 all: all-am

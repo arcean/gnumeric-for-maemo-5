@@ -1,12 +1,21 @@
+2011-05-21  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.15
+
+2011-05-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* gnumeric-expr-entry.c (gee_update_lexer_items): fix flags, we
+	don't wnat to create placeholders here.
+
 2011-03-24  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.14
 
 2011-03-08  Andreas J. Guelzow <aguelzow@pyrshep.ca>
-	
-	* widget-font-selector.c (fs_init): Use correct domain for 
+
+	* widget-font-selector.c (fs_init): Use correct domain for
 	gnm_gtk_builder_new
-	
+
 2011-02-18  Morten Welinder  <terra@gnome.org>
 
 	* widget-font-selector.c (list_init): Plug leak.

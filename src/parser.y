@@ -511,7 +511,7 @@ parser_simple_val_or_name (GnmExpr *str_expr)
 				res = NULL;
 			} else if (state->flags & GNM_EXPR_PARSE_UNKNOWN_NAMES_ARE_STRINGS) {
 				res = gnm_expr_new_constant (value_new_string (str));
-			} else if (expr_name_validate (str)) {
+			} else if (state->convs->input.name_validate (str)) {
 				GnmParsePos pp = *state->pos;
 				pp.sheet = NULL;
 				/* Create a place holder */
@@ -1185,6 +1185,12 @@ yylex (void)
 	 */
 	if (start != end && !open_paren (end)) {
 		state->ptr = end;
+		if (invalid_sheet == ref.a.sheet) {
+		        yylval.expr = register_expr_allocation
+		                (gnm_expr_new_constant 
+				 (value_new_error_REF (NULL)));
+			return CONSTANT;
+		}
 		if (state->flags & GNM_EXPR_PARSE_FORCE_ABSOLUTE_REFERENCES) {
 			if (ref.a.col_relative) {
 				ref.a.col += state->pos->eval.col;
@@ -1357,7 +1363,7 @@ yylex (void)
 	case '\'':
 	case '"': {
 		GString *s = g_string_new (NULL);
-		char const *end = go_strunescape (s, start);
+		char const *end = state->convs->input.string (start, s, state->convs);
 
 		if (end == NULL) {
 			size_t len = strlen (start);

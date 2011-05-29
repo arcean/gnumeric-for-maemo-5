@@ -1,3 +1,154 @@
+2011-05-21  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.15
+
+2011-05-20  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_cellref_check_for_err): look for #REF!
+	(oo_cellref_parse): use oo_cellref_check_for_err, don't create
+	new sheets until we know that we likely have a valid reference
+	(oo_expr_parse_str_try): new
+	(oo_expr_parse_str): use oo_expr_parse_str_try, handle references
+	that are missing []
+
+2011-05-20  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_named_expression): only write
+	active names
+
+2011-05-20  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_cellref_parse): return invalid_sheet when
+	encountering #REF!, check for this return value in all callers
+	(oo_rangeref_parse): check for invalid_sheet, check for this return
+	value in all callers
+	(oo_expr_rangeref_parse): check for [#REF!]
+
+2011-05-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_fix_expr_names): implement
+	(odf_fix_expr_names_t_new): new
+	(odf_fix_expr_names_t_free): new
+	(odf_fix_expr_names_t_add): new
+	(odf_fix_en_validate): new
+	(odf_fix_en_collect): new
+	(odf_fix_en_apply): new
+
+2011-05-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_sheet): use sheet_get_cells_extent
+
+2011-05-17  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_fix_expr_names): new stub
+	(odf_expr_name_validate): new
+	(oo_conventions_new): connect odf_expr_name_validate
+	(openoffice_file_open): connect odf_fix_expr_names
+
+2011-05-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_named_expression): avoid writing some
+	placeholder names
+
+2011-05-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_validation_base_cell_address): new
+	(odf_validation_append_expression): new
+	(odf_validation_append_expression_pair): new
+	(odf_validation_general): implement
+	(odf_validation_length): implement
+	(odf_validation_custom): implement
+	(odf_validation_in_list): use odf_validation_append_expression, don't
+	write base cell address
+	(odf_print_spreadsheet_content_validations): write base cell address
+	and pass initialized parse position onwards
+
+2011-05-15  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_validations_analyze): warn if we drop part of a
+	validation condition
+
+2011-05-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (opendoc_content_dtd): add CELL_ANNOTATION_TEXT_LINE_BREAK,
+	* openoffice-write.c (odf_validation_general): new stub
+	(odf_validation_length): new stub
+	(odf_validation_custom): new stub
+	(odf_print_spreadsheet_content_validations): connect above stubs
+
+2011-05-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_validation_new_single_expr): make argument const
+	(odf_validation_new_pair_expr): ditto
+	(odf_validations_analyze): handle (plain) is-true-formula
+
+2011-05-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_validation_new_list): add argument and
+	permit non-zero offset
+	(odf_validation_new_general): renamed to odf_validation_new_single_expr
+	(odf_validation_new_pair_expr): new
+	(odf_validation_new_between): new
+	(odf_validation_new_op): new
+	(odf_validation_new_tlength): use odf_validation_new_op
+	(odf_validations_analyze): new
+	(odf_validations_translate): use odf_validations_analyze
+
+2011-05-12  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_validation_new_general): new
+	(odf_validation_new_tlength): new
+	(odf_validations_translate): connect odf_validation_new_tlength
+
+2011-05-11  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c: change all styles into partial style and use
+	sheet_style_apply_... rather than sheet_style_set_...
+	(oo_row_start): handle default styles
+	(oo_cell_start): don't change any of the saved styles.
+
+2011-05-10  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_cellref_as_string_base): extracted from
+	odf_cellref_as_string
+	(odf_cellref_as_string): use odf_cellref_as_string_base
+	(odf_rangeref_as_string): use odf_cellref_as_string
+	* openoffice-read.c (oo_cell_start): add comments
+	(oo_style): add comments
+	(oo_style_end): check for NULL
+
+2011-05-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (openoffice_file_open): initialize cur_control
+
+2011-05-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_string_handler): use odf_print_string
+	(odf_print_string): new
+	(odf_cellref_as_string): rewrite
+
+2011-05-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_string_handler): add comment
+	* openoffice-read.c (odf_strunescape): new
+	(oo_conventions_new): connect odf_strunescape
+
+2011-05-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_string_handler): new
+	(odf_expr_conventions_new): connect odf_string_handler
+
+2011-05-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_manifest): write manifest
+	version for ODF 1.2 or newer
+
+2011-04-04  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_interpolation_attribute):
+	only include foreign attribute values if asked to do
+	(odf_write_axis_style): ditto
+
 2011-03-24  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.14
@@ -5,7 +156,7 @@
 2011-03-14  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-read.c (oo_table_end): set sheet to NULL
-	(oo_named_expr): handle missing base and expression name 
+	(oo_named_expr): handle missing base and expression name
 	spaces
 	(opendoc_content_dtd): connect named-expressions element to
 	table
@@ -15,33 +166,33 @@
 2011-03-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-write.c (odf_write_named_expression): new
-	(odf_write_content): call odf_write_named_expression as 
+	(odf_write_content): call odf_write_named_expression as
 	appropriate
 	(odf_write_gnm_settings): use odf_add_bool
 
 2011-02-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
-	* openoffice-read.c (odf_validation_new_list): also read 
+	* openoffice-read.c (odf_validation_new_list): also read
 	expressions as allowed in ODF1.2
-	(odf_validations_translate): add a few stubs for other 
+	(odf_validations_translate): add a few stubs for other
 	validation types.
-	* openoffice-write.c (odf_write_objects): don't write 
+	* openoffice-write.c (odf_write_objects): don't write
 	validation combos
 	(odf_write_cell): write validation name
 	(odf_validation_general_attributes): new
 	(odf_validation_in_list): new
 	(odf_print_spreadsheet_content_validations): new
 	(odf_print_spreadsheet_content_prelude): connect the above
-	
+
 2011-02-15  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-read.c (odf_validation_t): add field
 	(odf_validation_new_list): new
-	(odf_validations_translate): call odf_validation_new_list 
+	(odf_validations_translate): call odf_validation_new_list
 	if applicable
 	(odf_validation_new): initialize new field
 	(odf_validation): determine name space
-	
+
 2011-02-14  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-read.c (odf_validations_translate): new
@@ -52,34 +203,34 @@
 	(oo_cell_start): read validation name
 	(opendoc_content_dtd): connect odf_validation
 	(openoffice_file_open): initialize and free validation hash
-	
+
 2011-02-02  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.13
 
 2010-12-11  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
-	* openoffice-read.c (oo_cellref_parse): enlarge the sheet if we 
+	* openoffice-read.c (oo_cellref_parse): enlarge the sheet if we
 	encounter a reference off the sheet.
 
 2010-11-30  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-write.c (odf_write_cell): Write office:string-value.
 	The element content may differ also for strings depending on format.
-	* openoffice-read.c (oo_cell_start): ODF uses office:string-value, 
+	* openoffice-read.c (oo_cell_start): ODF uses office:string-value,
 	while oldstyle OOo uses table:string-value.
 	(odf_text_content): new
 	(styles_dtd): connect handlers for children of number:text-style
-	
+
 2010-11-30  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-write.c (odf_write_style_goformat_name): also write
 	data styles for text formats
-	
+
 2010-11-30  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
-	* openoffice-read.c (styles_dtd): connect style:map handling to 
-	number:text-style since OOo seems to use maps attached to 
+	* openoffice-read.c (styles_dtd): connect style:map handling to
+	number:text-style since OOo seems to use maps attached to
 	number:text-style to render dates that it flagged as numbers.
 
 2010-11-25  Morten Welinder <terra@gnome.org>
@@ -89,7 +240,7 @@
 2010-11-17  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* plugin.xml.in: we are supporting ots not odt files. [#635111]
-	
+
 2010-11-05  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-write.c (odf_write_sheet): get the correct extent

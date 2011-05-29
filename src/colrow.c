@@ -608,7 +608,7 @@ colrow_set_states (Sheet *sheet, gboolean is_cols,
 					ColRowInfo *cri = segment->info[sub];
 					if (cri != NULL) {
 						segment->info[sub] = NULL;
-						g_free (cri);
+						colrow_free (cri);
 					}
 				}
 			} else {
@@ -980,6 +980,9 @@ colrow_set_visibility_list (Sheet *sheet, gboolean is_cols,
 				       info->first, info->last);
 	}
 
+	if (visible)
+		sheet_colrow_optimize (sheet);
+
 	if (is_cols)
 		sheet_queue_respan (sheet, 0, gnm_sheet_get_last_row (sheet));
 	if (list != NULL)
@@ -1230,58 +1233,6 @@ colrow_get_global_outline (Sheet const *sheet, gboolean is_cols, int depth,
 
 	*show = g_slist_reverse (*show);
 	*hide = g_slist_reverse (*hide);
-}
-
-/**
- * colrow_reset_defaults :
- * @sheet : #Sheet
- * @is_cols :
- * @maxima : The maximum col/row with cell content (this argument can go away
- *		 once we stop using col/row data to limit iteration)
- *
- * Find empty cols/rows that are equivalent to the default
- * and replace them with the default.
- **/
-void
-colrow_reset_defaults (Sheet *sheet, gboolean is_cols, int maxima)
-{
-	ColRowCollection *infos = is_cols ? &sheet->cols : &sheet->rows;
-	ColRowInfo const *default_cri = &infos->default_style;
-	ColRowSegment *segment;
-	ColRowInfo *cri;
-	int const end = colrow_max (is_cols, sheet);
-	int inner, inner_start, inner_last, i;
-
-	if (maxima >= end) {
-		g_warning ("In colrow_reset_defaults, someone set maxima to %d >= %d", maxima, end);
-		maxima = end - 1;
-	}
-
-	/* From here on, maxima is the first unused.  */
-	maxima++;
-
-	i = COLROW_SEGMENT_START(maxima);
-	inner_start = maxima - i;
-	for ( ; i < end ; i += COLROW_SEGMENT_SIZE) {
-		segment = COLROW_GET_SEGMENT (infos, i);
-		if (segment == NULL)
-			continue;
-		inner_last = COLROW_SEGMENT_SIZE;
-		for (inner = inner_start ; inner < inner_last; inner++) {
-			cri = segment->info[inner];
-			if (colrow_equal (cri, default_cri)) {
-				segment->info[inner] = NULL;
-				colrow_free (cri);
-			} else
-				maxima = inner + i;
-		}
-		if (maxima <= i) {
-			g_free (segment);
-			COLROW_GET_SEGMENT (infos, i) = NULL;
-		}
-		inner_start = 0;
-	}
-	infos->max_used = maxima - 1;
 }
 
 void

@@ -533,7 +533,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = tools cut-n-paste-code $(am__append_1)
 lib_LTLIBRARIES = libspreadsheet.la
-noinst_HEADERS = dead-kittens.h
+noinst_HEADERS = dead-kittens.h compilation.h
 AM_CPPFLAGS = \
 	-I$(top_srcdir)							\
 	-I$(srcdir)							\

@@ -217,12 +217,12 @@ gee_rangesel_reset (GnmExprEntry *gee)
 }
 
 static void
-gee_destroy (GtkObject *object)
+gee_destroy (GtkWidget *widget)
 {
-	GnmExprEntry *gee = GNM_EXPR_ENTRY (object);
+	GnmExprEntry *gee = GNM_EXPR_ENTRY (widget);
 	gee_remove_update_timer (gee);
 	gee_detach_scg (gee);
-	parent_class->destroy (object);
+	gnm_destroy_class_chain (parent_class, widget);
 }
 
 static void
@@ -464,7 +464,7 @@ gee_set_property (GObject      *object,
 						  G_CALLBACK (cb_icon_clicked), gee);
 			}
 		} else if (gee->icon != NULL)
-			gtk_object_destroy (GTK_OBJECT (gee->icon));
+			gtk_widget_destroy (gee->icon);
 		break;
 
 	case PROP_TEXT: {
@@ -728,6 +728,8 @@ gee_set_tooltip (GnmExprEntry *gee, GnmFunc *fd, gint args, gboolean had_stuff)
 	gint min, max, i;
 	gboolean first = TRUE;
 	char *extra = NULL;
+	gboolean localized_function_names = gee->sheet->convs->localized_function_names;
+	const char *fdname;
 
 	gnm_func_load_if_stub (fd);
 	function_def_count_args (fd, &min, &max);
@@ -741,7 +743,9 @@ gee_set_tooltip (GnmExprEntry *gee, GnmFunc *fd, gint args, gboolean had_stuff)
 	gee->tooltip.fd = fd;
 	gnm_func_ref (gee->tooltip.fd);
 
-	str = g_string_new (gnm_func_get_name (fd));
+	fdname = gnm_func_get_name (fd, localized_function_names);
+
+	str = g_string_new (fdname);
 	g_string_append_c (str, '(');
 
 	for (i = 0; i < max; i++) {
@@ -776,11 +780,11 @@ gee_set_tooltip (GnmExprEntry *gee, GnmFunc *fd, gint args, gboolean had_stuff)
 	}
 	if (max == 0 && args == 0 && !had_stuff) {
 		extra = g_strdup_printf (_("%s takes no arguments"),
-					 gnm_func_get_name (fd));
+					 fdname);
 	} else if (args >= max) {
 		g_string_append (str, UNICODE_RIGHT_TRIANGLE UNICODE_CROSS_AND_SKULLBONES UNICODE_LEFT_TRIANGLE);
 		extra = g_strdup_printf (_("Too many arguments for %s"),
-					 gnm_func_get_name (fd));
+					 fdname);
 	}
 	g_string_append_c (str, ')');
 	if (extra) {
@@ -789,7 +793,7 @@ gee_set_tooltip (GnmExprEntry *gee, GnmFunc *fd, gint args, gboolean had_stuff)
 		g_free (extra);
 	}
 
-	gee->tooltip.tooltip = gee_create_tooltip 
+	gee->tooltip.tooltip = gee_create_tooltip
 		(gee, str->str, _("\n\n<i>Ctrl-F4 to close tooltip</i>"), FALSE);
 	gee->tooltip.args = args;
 	gee->tooltip.had_stuff = (max == 0 && args == 0 && had_stuff);
@@ -807,13 +811,14 @@ gee_set_tooltip_completion (GnmExprEntry *gee, GSList *list, guint start, guint 
 	GSList *list_c = list;
 	gchar const *name = NULL;
 	gboolean show_tool_tip;
+	gboolean localized_function_names = gee->sheet->convs->localized_function_names;
 
 	gee_delete_tooltip (gee, TRUE);
 
 	str = g_string_new (NULL);
 	for (; list_c != NULL && ++i < max; list_c = list_c->next) {
 		GnmFunc *fd = list_c->data;
-		name = gnm_func_get_name (fd);
+		name = gnm_func_get_name (fd, localized_function_names);
 		if ((end - start) < (guint) g_utf8_strlen (name, -1))
 			/* xgettext: the first %s is a function name and */
 			/* the second %s the function description */
@@ -865,11 +870,16 @@ gee_dump_lexer (GnmLexerItem *gli) {
 
 }
 
-static  int
-func_def_cmp (gconstpointer a, gconstpointer b)
+static gint
+func_def_cmp (gconstpointer a_, gconstpointer b_, gpointer user)
 {
-	return g_utf8_collate (gnm_func_get_name (a),
-			       gnm_func_get_name (b));
+	GnmFunc const * const a = (GnmFunc const * const)a_;
+	GnmFunc const * const b = (GnmFunc const * const)b_;
+	GnmExprEntry *gee = user;
+	gboolean localized = gee->sheet->convs->localized_function_names;
+
+	return g_utf8_collate (gnm_func_get_name (a, localized),
+			       gnm_func_get_name (b, localized));
 }
 
 
@@ -897,7 +907,8 @@ gee_update_lexer_items (GnmExprEntry *gee)
 	if (!gee->feedback_disabled && !forced_text) {
 		gee->texpr = gnm_expr_parse_str
 			((str[0] == '=') ? str+1 : str,
-			 &gee->pp, GNM_EXPR_PARSE_DEFAULT,
+			 &gee->pp, GNM_EXPR_PARSE_DEFAULT 
+			 | GNM_EXPR_PARSE_UNKNOWN_NAMES_ARE_STRINGS,
 			 sheet_get_conventions (sheet), NULL);
 	}
 
@@ -990,9 +1001,10 @@ gee_check_tooltip (GnmExprEntry *gee)
 			(prefix, gee->sheet->workbook);
 		g_free (prefix);
 		if (list != NULL) {
-			list = g_slist_sort
+			list = g_slist_sort_with_data
 				(list,
-				 (GCompareFunc)func_def_cmp);
+				 func_def_cmp,
+				 gee);
 			if (gee_set_tooltip_completion
 			    (gee, list, start_t, end_t)) {
 				g_free (str);
@@ -1141,8 +1153,8 @@ cb_gee_key_press_event (GtkEntry	*entry,
 	int state = gnumeric_filter_modifiers (event->state);
 
 	switch (event->keyval) {
-	case GDK_Up:	
-	case GDK_KP_Up:
+	case GDK_KEY_Up:	
+	case GDK_KEY_KP_Up:
 		/* Tab is only applicable for the main entry */
 		 if (gee->is_cell_renderer || !wbcg_is_editing (wbcg))
 			break;
@@ -1190,8 +1202,8 @@ cb_gee_key_press_event (GtkEntry	*entry,
 			return TRUE;
 		}
 	}
-	case GDK_Down:	
-	case GDK_KP_Down:
+	case GDK_KEY_Down:	
+	case GDK_KEY_KP_Down:
 		//if(blockArrows)
 		//	break;
 		/* Tab is only applicable for the main entry */
@@ -1242,8 +1254,8 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		}
 	}
 
-	case GDK_Left:	
-	case GDK_KP_Left:
+	case GDK_KEY_Left:	
+	case GDK_KEY_KP_Left:
 		if(blockArrows)
 			break;
 		/* Tab is only applicable for the main entry */
@@ -1287,8 +1299,8 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		return TRUE;
 	}
 
-	case GDK_Right:	
-	case GDK_KP_Right:
+	case GDK_KEY_Right:	
+	case GDK_KEY_KP_Right:
 		if(blockArrows)
 			break;
 		/* Tab is only applicable for the main entry */
@@ -1333,7 +1345,7 @@ cb_gee_key_press_event (GtkEntry	*entry,
 	}
 		/* GDK_F2 starts editing */
 		/* GDK_F3 opens the paste names dialog */
-	case GDK_F4: {
+	case GDK_KEY_F4: {
 		/* Cycle absolute reference mode through the sequence rel/rel,
 		 * abs/abs, rel/abs, abs/rel and back to rel/rel. Update text
 		 * displayed in entry.
@@ -1402,7 +1414,7 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		return TRUE;
 	}
 
-	case GDK_Escape:
+	case GDK_KEY_Escape:
 		if (gee->is_cell_renderer) {
 			gtk_entry_set_editing_cancelled(entry, TRUE);
 			gtk_cell_editable_editing_done (GTK_CELL_EDITABLE (gee));
@@ -1413,7 +1425,7 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		return TRUE;
 
 	case GDK_KP_Enter:
-	case GDK_Return:
+	case GDK_KEY_Return:
 		if (gee->is_cell_renderer)
 			return FALSE;
 		/* Is this the right way to append a newline ?? */
@@ -1432,9 +1444,9 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		is_enter = TRUE;
 		/* fall through */
 
-	case GDK_Tab:
-	case GDK_ISO_Left_Tab:
-	case GDK_KP_Tab:
+	case GDK_KEY_Tab:
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_KP_Tab:
 		/* Tab is only applicable for the main entry */
 
 		 if (gee->is_cell_renderer || !wbcg_is_editing (wbcg))
@@ -1477,8 +1489,8 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		return TRUE;
 	}
 
-	case GDK_KP_Separator:
-	case GDK_KP_Decimal: {
+	case GDK_KEY_KP_Separator:
+	case GDK_KEY_KP_Decimal: {
 		GtkEditable *editable = GTK_EDITABLE (entry);
 		gint start, end, l;
 		GString const* s = go_locale_get_decimal ();
@@ -1491,7 +1503,7 @@ cb_gee_key_press_event (GtkEntry	*entry,
 		return TRUE;
 	}
 
-	case GDK_F9: {
+	case GDK_KEY_F9: {
 		/* Replace selection by its evaluated result.  */
 		GtkEditable *editable = GTK_EDITABLE (entry);
 		gint start, end;
@@ -1691,7 +1703,6 @@ gee_go_plot_data_editor_init (GogDataEditorClass *iface)
 static void
 gee_class_init (GObjectClass *gobject_class)
 {
-	GtkObjectClass *gtk_object_class = (GtkObjectClass *)gobject_class;
 	GtkWidgetClass *widget_class = (GtkWidgetClass *)gobject_class;
 
 	parent_class = g_type_class_peek_parent (gobject_class);
@@ -1699,7 +1710,7 @@ gee_class_init (GObjectClass *gobject_class)
 	gobject_class->set_property	= gee_set_property;
 	gobject_class->get_property	= gee_get_property;
 	gobject_class->finalize		= gee_finalize;
-	gtk_object_class->destroy	= gee_destroy;
+	gnm_destroy_class_set (gobject_class, gee_destroy);
 	widget_class->mnemonic_activate = gee_mnemonic_activate;
 
 	signals[UPDATE] = g_signal_new ("update",

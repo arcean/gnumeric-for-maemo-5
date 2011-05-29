@@ -1075,6 +1075,8 @@ compute_pages (GtkPrintOperation *operation,
 	guint ct;
 
 	switch (pr) {
+	case PRINT_SAVED_INFO:
+		/* This should never happen. */
 	case PRINT_ACTIVE_SHEET:
 		compute_sheet_pages_add_sheet (pi, pi->sheet, FALSE, FALSE);
 		break;
@@ -1572,6 +1574,31 @@ cb_delete_and_free (char *tmp_file_name)
 	}
 }
 
+static gchar *
+gnm_print_uri_change_extension (char const *uri, GtkPrintSettings* settings)
+{
+	const gchar *ext = gtk_print_settings_get
+		(settings,
+		 GTK_PRINT_SETTINGS_OUTPUT_FILE_FORMAT);
+	gchar *base;
+	gchar *used_ext;
+	gint strip;
+	gchar *res;
+	gint uri_len = strlen(uri);
+
+	g_return_val_if_fail (ext != NULL, NULL);
+	
+	base     = g_path_get_basename (uri);
+	used_ext = strrchr (base, '.');
+	if (used_ext == NULL)
+		return g_strconcat (uri, ".", ext, NULL);
+	strip = strlen (base) - (used_ext - base);
+	res = g_strndup (uri, uri_len - strip + 1 + strlen (ext));
+	res[uri_len - strip] = '.';
+	strcpy (res + uri_len - strip + 1, ext);
+	return res;
+}
+
 void
 gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 		 gboolean preview, PrintRange default_range,
@@ -1587,10 +1614,19 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 	gchar *tmp_file_name = NULL;
 	int tmp_file_fd = -1;
 	gboolean preview_via_pdf = FALSE;
+	PrintRange pr_translator[] = {PRINT_ACTIVE_SHEET, PRINT_ALL_SHEETS,
+				      PRINT_ALL_SHEETS, PRINT_ACTIVE_SHEET,
+				      PRINT_SHEET_SELECTION, PRINT_ACTIVE_SHEET,
+				      PRINT_SHEET_SELECTION_IGNORE_PRINTAREA};
+	GODoc *doc;
+	gchar *output_uri = NULL;
+	gchar const *saved_uri = NULL;
 
 #ifdef PREVIEW_VIA_PDF
 	preview_via_pdf = preview;
 #endif
+
+	g_return_if_fail (sheet != NULL && sheet->workbook != NULL);
 
 	if (preview)
 		g_return_if_fail (!export_dst && wbc);
@@ -1603,12 +1639,46 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 	pi->sheet = sheet;
 
 	settings = gnm_conf_get_print_settings ();
+	if (default_range == PRINT_SAVED_INFO) {
+		gint dr = gtk_print_settings_get_int_with_default
+			(settings,
+			 GNUMERIC_PRINT_SETTING_PRINTRANGE_KEY,
+			 PRINT_ACTIVE_SHEET);
+		if (dr < 0 || dr >= (gint)G_N_ELEMENTS (pr_translator))
+			default_range = PRINT_ACTIVE_SHEET;
+		else 
+			default_range = pr_translator[dr];
+	}
 	gtk_print_settings_set_int (settings,
 				    GNUMERIC_PRINT_SETTING_PRINTRANGE_KEY,
 				    default_range);
 	pi->pr = default_range;
 	gtk_print_settings_set_use_color (settings,
 					  !sheet->print_info->print_black_and_white);
+
+	if (!export_dst && !preview_via_pdf && !preview) {
+		/* We should be setting the output file name to somethig */
+		/* reasonable */
+		doc = GO_DOC (sheet->workbook);
+		saved_uri = print_info_get_printtofile_uri (sheet->print_info);
+		if (saved_uri != NULL && 
+		    g_ascii_strncasecmp (doc->uri, "file:///", 8) == 0)
+			output_uri = gnm_print_uri_change_extension (saved_uri,
+								     settings);
+		else
+			saved_uri = NULL;
+		if (output_uri == NULL && doc->uri != NULL 
+		    && g_ascii_strncasecmp (doc->uri, "file:///", 8) == 0)
+			output_uri = gnm_print_uri_change_extension (doc->uri, 
+								     settings);
+		if (output_uri != NULL) {
+			gtk_print_settings_set (settings, 
+						GTK_PRINT_SETTINGS_OUTPUT_URI,
+						output_uri);
+			g_free (output_uri);
+		}
+	}
+
 	gtk_print_operation_set_print_settings (print, settings);
 	g_object_unref (settings);
 
@@ -1667,9 +1737,23 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 	res = gtk_print_operation_run (print, action, parent, NULL);
 
 	switch (res) {
-	case GTK_PRINT_OPERATION_RESULT_APPLY:
-		gnm_conf_set_print_settings (gtk_print_operation_get_print_settings (print));
-		gnm_insert_meta_date (GO_DOC (sheet->workbook), GSF_META_NAME_PRINT_DATE);
+	case GTK_PRINT_OPERATION_RESULT_APPLY: 
+		if (action == GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG) {
+			char const *printer;
+			settings = gtk_print_operation_get_print_settings (print);
+			gnm_conf_set_print_settings (settings);
+			gnm_insert_meta_date (GO_DOC (sheet->workbook), GSF_META_NAME_PRINT_DATE);
+			printer = gtk_print_settings_get_printer (settings);
+			if (strcmp (printer, "Print to File") == 0 || 
+			    strcmp (printer, _("Print to File")) == 0) {
+				gchar *wb_output_uri = 
+					gnm_print_uri_change_extension (doc->uri, 
+									settings);
+				print_info_set_printtofile_from_settings 
+					(sheet->print_info, settings, wb_output_uri);
+				g_free (wb_output_uri);
+			}
+		}
 		break;
 	case GTK_PRINT_OPERATION_RESULT_CANCEL:
 		printing_instance_delete (pi);

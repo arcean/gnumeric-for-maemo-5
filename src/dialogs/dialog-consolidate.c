@@ -45,6 +45,8 @@
 
 #include <string.h>
 
+#include <dead-kittens.h>
+
 #define CONSOLIDATE_KEY            "consolidate-dialog"
 
 enum {
@@ -315,7 +317,7 @@ cb_consolidate_ok_clicked (GtkWidget *button, ConsolidateState *state)
 	if (consolidate_check_destination (cs, dao)) {
 		if (!cmd_analysis_tool (WORKBOOK_CONTROL (state->base.wbcg),
 					state->base.sheet,
-					dao, cs, tool_consolidate_engine, 
+					dao, cs, tool_consolidate_engine,
 					FALSE) &&
 		    (button == state->base.ok_button))
 			gtk_widget_destroy (state->base.dialog);
@@ -503,11 +505,10 @@ dialog_consolidate_tool_init (ConsolidateState *state)
 	state->areas_index = -1;
 
 	setup_widgets (state, state->base.gui);
-	state->pixmap =  gtk_widget_render_icon
+	state->pixmap =  gtk_widget_render_icon_pixbuf
 		(GTK_WIDGET(state->base.dialog),
 		 "Gnumeric_ExprEntry",
-		 GTK_ICON_SIZE_LARGE_TOOLBAR,
-		 "Gnumeric-Consolidate-Dialog");
+		 GTK_ICON_SIZE_LARGE_TOOLBAR);
 
 	/* Dynamic initialization */
 	cb_source_changed (NULL, state);

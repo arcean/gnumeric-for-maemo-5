@@ -5,7 +5,7 @@ AC_PREREQ(2.54)
 
 m4_define([gnumeric_version_epoch], [1])
 m4_define([gnumeric_version_major], [10])
-m4_define([gnumeric_version_minor], [14])
+m4_define([gnumeric_version_minor], [15])
 m4_define([gnumeric_version_extra], [])
 m4_define([gnumeric_version_full],
     [gnumeric_version_epoch.gnumeric_version_major.gnumeric_version_minor[]gnumeric_version_extra])
@@ -127,7 +127,7 @@ CPPFLAGS=${_cppflags}
 LDFLAGS=${_ldflags}
 
 dnl **********
-dnl * Goffice 
+dnl * Goffice
 dnl **********
 # Goffice releases are parallel installable, which do we depend on
 GOFFICE_API_VER="0.8"
@@ -146,7 +146,7 @@ PKG_PROG_PKG_CONFIG(0.18)
 
 dnl *****************************
 libspreadsheet_reqs="
-	libgoffice-${GOFFICE_API_VER}	>= 0.8.10
+	libgoffice-${GOFFICE_API_VER}	>= 0.8.15
 	libgsf-1		>= 1.14.18
 	libxml-2.0		>= 2.4.12
 "
@@ -198,7 +198,7 @@ else
 	ui_msg="Gtk"
 	PKG_CHECK_MODULES(GTK, [$libspreadsheet_gtk_reqs])
 	PKG_CHECK_MODULES(GTK, [$gnumeric_gtk_reqs])
-fi 
+fi
 
 if test "x$gnumeric_with_gtk" = xtrue ; then
 	AC_DEFINE(GNM_WITH_GTK, 1, [Define if UI is built])
@@ -636,7 +636,7 @@ dnl We use a more straightforward approach for po-functions:
 dnl 1) We create POTFILES immediately here.
 dnl 2) We let config.status to create Makefile.in.
 dnl 3) We use AC_CONFIG_COMMANDS to create Makefile.
-dnl 
+dnl
 [# Create po-functions/POTFILES:
 if test -d po-functions; then
 	rm -f po-functions/POTFILES
@@ -687,18 +687,19 @@ CFLAGS="$CFLAGS $GNUMERIC_CFLAGS"
 LIBS="$GNUMERIC_LIBS $LIBS"
 
 AC_CHECK_FUNCS(g_option_context_set_delocalize g_hash_table_get_keys)
-AC_CHECK_FUNCS(gdk_cairo_set_source_rgba)
+AC_CHECK_FUNCS(gdk_cairo_set_source_rgba gdk_window_get_screen)
 AC_CHECK_FUNCS(gtk_adjustment_configure gtk_adjustment_get_page_increment gtk_adjustment_get_page_size gtk_adjustment_get_lower gtk_adjustment_get_upper gtk_adjustment_get_step_increment gtk_adjustment_set_lower gtk_adjustment_set_upper gtk_adjustment_set_page_increment gtk_adjustment_set_step_increment)
 AC_CHECK_FUNCS(gtk_cell_renderer_get_alignment gtk_cell_renderer_get_padding)
 AC_CHECK_FUNCS(gtk_cell_renderer_text_get_background_set gtk_cell_renderer_text_get_foreground_set gtk_cell_renderer_text_get_editable)
 AC_CHECK_FUNCS(gtk_dialog_get_content_area gtk_dialog_get_action_area)
 AC_CHECK_FUNCS(gtk_entry_get_text_length gtk_entry_set_icon_from_stock gtk_entry_get_buffer gtk_entry_get_text_area gtk_entry_set_editing_cancelled gtk_entry_get_overwrite_mode)
 AC_CHECK_FUNCS(gtk_layout_get_bin_window)
+AC_CHECK_FUNCS(gtk_object_destroy)
 AC_CHECK_FUNCS(gtk_orientable_set_orientation)
 AC_CHECK_FUNCS(gtk_selection_data_get_data gtk_selection_data_get_length gtk_selection_data_get_target)
 AC_CHECK_FUNCS(gtk_table_get_size)
 AC_CHECK_FUNCS(gtk_tree_view_column_get_button)
-AC_CHECK_FUNCS(gtk_widget_get_visible gtk_widget_set_visible gtk_widget_get_state gtk_widget_is_toplevel gtk_widget_get_window gtk_widget_get_can_focus gtk_widget_has_focus gtk_widget_get_style gtk_widget_get_allocation gtk_widget_is_sensitive gtk_widget_set_can_focus gtk_widget_set_can_default gtk_widget_get_realized)
+AC_CHECK_FUNCS(gtk_widget_get_visible gtk_widget_set_visible gtk_widget_get_state gtk_widget_is_toplevel gtk_widget_get_window gtk_widget_get_can_focus gtk_widget_has_focus gtk_widget_get_style gtk_widget_get_allocation gtk_widget_is_sensitive gtk_widget_set_can_focus gtk_widget_set_can_default gtk_widget_get_realized gtk_widget_render_icon_pixbuf)
 AC_CHECK_FUNCS(gtk_window_get_default_widget)
 AC_CHECK_FUNCS(gsf_infile_msvba_steal_modules gsf_open_pkg_foreach_rel )
 AC_CHECK_FUNCS(pango_font_map_create_context)

@@ -1,3 +1,46 @@
+Gnumeric 1.10.15
+
+Andreas:
+	* Fix shift-arrow movement for sheet objects. [#645805]
+	* Expand the description of SSMEDIAN. [#647247]
+	* Redesign autofilter Top10 dialog. [#646641]
+	* Handle NUL characters in cvs import. [#648354]
+	* Fix some Statistics tool formatting. [#649092]
+	* Fix undo crash for column widths. [#649139]
+	* Indicate vararg functions in function browser and docs. [#649484]
+	* Fix handling of argument names in docs. [#649592]
+	* Fix pdf docs. [#649591]
+	* Handle MS Works formula import. [#649406]
+	* Restore Gnumeric print range. [#649714]
+	* Set default, save and restore print file name. [#649711][#649713]
+	* Some ODF 1.2 export fixes including [#649906] and [#649914].
+	* Export external references to ODF.
+	* Fix ODF style handling on import. [#649851]
+	* Import more validations from ODF.
+	* Export all validations to ODF.
+	* Fix printing of background colours. [#650261]
+	* From ODF also import named expressions with illegal name. [#650125]
+	* Handle [#REF!] and friends on ODF import. [#650639][#650640]
+	* Handle some invalid expressions in ODF import. [#650625] 
+
+Jean:
+	* Fixed critical. [#649901]
+
+Morten:
+	* Fix problems with localized function docs.
+	* Plug leaks.
+	* Fix minor problem reading old xls objects.
+	* Reduce memory usage when new glib is used.  [#644197]
+	* Eliminate col/row infos that are identical to the default.  [#155003]
+	* Fix problems reading some Lotus 1-2-3 files.
+	* Fix paste-special repeat.
+	* Fix ADDRESS problem.
+	* Fix xlsx write problem.  [#650639]
+
+Urmas:
+	* Initial support for Works files.  [#647492]
+
+--------------------------------------------------------------------------
 Gnumeric 1.10.14
 
 Andreas:
@@ -5,16 +48,17 @@ Andreas:
 	* Allow function tooltips to be closed temporarily [#641355]
 	* Import & export list validation from and to ODF files. [#640701]
 	* Minor histogram improvements.
-	* Fix import of LibreOffice created xlsx files using shared formulas. 
+	* Fix import of LibreOffice created xlsx files using shared formulas.
 	  [#642850]
-	* Fix crash on resaving LibreOffice created xlsx files with unauthored 
+	* Fix crash on resaving LibreOffice created xlsx files with unauthored
 	  comments. [#642850]
 	* Trigger configurable text importer on paste of tabs. [#395631]
 	* Fix ctrl-end in presence of hidden rows. [#643971]
 	* Fix import of dbf files with more than 65536 rows. [#644189]
 	* Export workbook-scoped named expressions and ranges to ODF.
-	* Improve reading of named expressions from ODF files. 
+	* Improve reading of named expressions from ODF files.
 	* Fix weighted and Spencer moving averages crashes. [#645722]
+	* Avoid creation of unused names. [#650281]
 
 Jean:
 	* Fix cursor position inside a cell edited in a zoomed sheet. [#641709]
@@ -89,7 +133,7 @@ Andreas:
 	* Add argument to FOURIER to separate parts.
 	* Extend TREND function to handle multiple regression. [#630085]
 	* Fix selection for sheet object lists and combos. [#631322]
-	* Preserve selection for sheet object lists when we change 
+	* Preserve selection for sheet object lists when we change
 	  content. [#631327]
 	* Add option to sheet object lists and combos to enter values
 	  rather than index. [#629333]
@@ -123,8 +167,8 @@ Morten:
 
 Sameer Morar:
 	* Add key combinations to move sheets. [#634139]
-	* Modify quit dialog to be able to discard multiple files without 
-	saving.  [#527133]	
+	* Modify quit dialog to be able to discard multiple files without
+	saving.  [#527133]
 
 --------------------------------------------------------------------------
 Gnumeric 1.10.11
@@ -254,7 +298,7 @@ Andreas:
 	* New functions DATE2HDATE, DATE2HDATE_HEB and DATE2JULIAN.
 	* Add hyperlink and comment removal menu items.
 	* Add merge and unmerge menu items.
-	* Add menu item to autofit column width or row height based on the 
+	* Add menu item to autofit column width or row height based on the
 	  selection only. [#125595]
 	* Add autofit actions to cell context menu.
 	* Add new function ARRAY. [#570689]
@@ -262,16 +306,16 @@ Andreas:
 	* Add menu item to wrap SORT around an existing range.
 	* Show the number of rows filtered by the auto filter. [#346002]
 	* Improve function tooltips. [#623322]
-	* Improve expression entry range selection. 
+	* Improve expression entry range selection.
 	  [#80725][#624288][#624289][#624581]
-	* Add preference setting to disable the extension check for the 
+	* Add preference setting to disable the extension check for the
 	  configurable text exporter. [#594151]
-	* Add optional marker to indicate that a cell contains an expression. 
+	* Add optional marker to indicate that a cell contains an expression.
 	  [#55124]
 	* Add merge and unmerge items to the cell context menu.
 	* Permit double-clicking of functions in the function selector.
 	* Allow single merge to single merge copying. [#87296]
-	* Make the font style buttons override the character attributes. 
+	* Make the font style buttons override the character attributes.
 	  [#163410]
 	* Provide name completion (F4) when entering functions. [#587084]
 	* Implement access to the function selector to paste function
@@ -281,7 +325,7 @@ Andreas:
 	* Fix undo of Clear->All and Clear->Comments. [#625151][#623803]
 	* Add menu items to allow clearing of filtered rows only.
 	* Fix editing of hyperlinks.
-	* Work around OOo's failure to correctly define its named ranges. 
+	* Work around OOo's failure to correctly define its named ranges.
 	  [#625332]
 	* Remove range hightlighting while not editing expressions. [#625361]
 	* Reduce the size of the text import dialog. [#625281]
@@ -342,12 +386,12 @@ Gnumeric 1.10.6
 Andreas:
 	* Add Wilcoxon Signed Rank Test tools for one and two populations.
 	* Fix spin button handling in various tool dialogs. [#619971]
-	* Redesign define-named-expressions dialog. [#465840] 
+	* Redesign define-named-expressions dialog. [#465840]
 	* Add paste-names dialog. [#613325]
 	* Make changing the scope of a named expression undoable.
 	* Add search tool to paste- and define-names dialogs. [#465840]
 	* Check whether defined names are in use before deleting them.
-	* Add option to the regression tool to allow for multiple Y. 
+	* Add option to the regression tool to allow for multiple Y.
           [#620505]
 	* Ensure that names cannot be mistaken as cell references.
 	  [#409997]

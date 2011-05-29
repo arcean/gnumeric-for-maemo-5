@@ -1,3 +1,5 @@
+/* vim: set sw=8: -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+
 #ifndef GNUMERIC_PLUGIN_LOTUS_123_LOTUS_H
 #define GNUMERIC_PLUGIN_LOTUS_123_LOTUS_H
 
@@ -21,10 +23,14 @@ typedef struct {
 	Workbook	*wb;
 	Sheet		*sheet;
 	LotusVersion     version;
+	gboolean         is_works;
 	guint8          lmbcs_group;
 
         GHashTable      *style_pool;
 	gboolean        sheet_area_error;
+	GHashTable      *fonts;
+	GHashTable      *works_style_font;
+	GIConv          works_conv;
 } LotusState;
 
 Sheet	 *lotus_get_sheet  (Workbook *wb, int i);

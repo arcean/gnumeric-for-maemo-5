@@ -20,6 +20,8 @@
  * USA
  */
 
+#include "sheet-object-widget.h"
+
 /*****************************************************************************
  * Various functions common to at least charts and user shapes               *
  *****************************************************************************/
@@ -47,7 +49,8 @@ xlsx_chart_pop_obj (XLSXReadState *state)
 #endif
 
 	if (state->cur_style) {
-		g_object_set (G_OBJECT (state->cur_obj), "style", state->cur_style, NULL);
+		if (state->cur_obj)
+			g_object_set (G_OBJECT (state->cur_obj), "style", state->cur_style, NULL);
 		g_object_unref (state->cur_style);
 	}
 	state->cur_obj = obj_stack->data;
@@ -474,7 +477,7 @@ xlsx_axis_start (GsfXMLIn *xin, xmlChar const **attrs)
 static void
 xlsx_axis_crosses_at (GsfXMLIn *xin, xmlChar const **attrs)
 {
-	/* This element specifies where on the axis the perpendicular axis crosses. 
+	/* This element specifies where on the axis the perpendicular axis crosses.
 	   The units are dependent on the type of axis.
 	   When specified as a child element of valAx, the value is a decimal number on the value axis. When specified as a
 	   child element of dateAx, the date is defined as a integer number of days relative to the base date of the current
@@ -618,9 +621,9 @@ xlsx_axis_mark (GsfXMLIn *xin, xmlChar const **attrs)
 	int res;
 	simple_enum (xin, attrs, marks, &res);
 	if (xin->node->user_data.v_int == 0)
-		g_object_set (G_OBJECT (state->axis.obj), "major_tick_in", res & 1, "major_tick_out", res & 2, NULL);
+		g_object_set (G_OBJECT (state->axis.obj), "major-tick-in", res & 1, "major-tick-out", (res & 2) != 0, NULL);
 	else
-		g_object_set (G_OBJECT (state->axis.obj), "minor_tick_in", res & 1, "minor_tick_out", res & 2, NULL);
+		g_object_set (G_OBJECT (state->axis.obj), "minor-tick-in", res & 1, "minor-tick-out", (res & 2) != 0, NULL);
 }
 
 static void
@@ -646,7 +649,7 @@ xlsx_axis_end (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
 		if (0 == strcmp (type, "GogRadarPlot") ||
 		    0 == strcmp (type, "GogRadarAreaPlot")) {
 			role = (state->axis.type == XLSX_AXIS_CAT
-				|| state->axis.type == XLSX_AXIS_DATE) ? "Radial-Axis" : "Circular-Axis";
+				|| state->axis.type == XLSX_AXIS_DATE) ? "Circular-Axis" : "Radial-Axis";
 		} else if (0 == strcmp (type, "GogBubblePlot") ||
 			   0 == strcmp (type, "GogXYPlot")) {
 			/* both are VAL, use the position to decide */
@@ -843,6 +846,14 @@ xlsx_chart_legend_pos (GsfXMLIn *xin, xmlChar const **attrs)
 		{ "l",	 GOG_POSITION_W },
 		{ "r",	 GOG_POSITION_E },
 		{ "rt",	 GOG_POSITION_N | GOG_POSITION_E },
+		/* adding extra values not in spec, but actually possible (found first one at least) */
+		{ "tr",	 GOG_POSITION_N | GOG_POSITION_E },
+		{ "lt",	 GOG_POSITION_N | GOG_POSITION_W },
+		{ "tl",	 GOG_POSITION_N | GOG_POSITION_W },
+		{ "rb",	 GOG_POSITION_S | GOG_POSITION_E },
+		{ "br",	 GOG_POSITION_S | GOG_POSITION_E },
+		{ "lb",	 GOG_POSITION_S | GOG_POSITION_W },
+		{ "bl",	 GOG_POSITION_S| GOG_POSITION_W },
 		{ NULL, 0 }
 	};
 	XLSXReadState *state = (XLSXReadState *)xin->user_state;
@@ -906,6 +917,8 @@ xlsx_style_line_start (GsfXMLIn *xin, xmlChar const **attrs)
 {
 	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
 	state->sp_type |= GO_STYLE_LINE;
+	if (!state->cur_style)
+		state->cur_style = gog_style_new ();
 	state->gocolor = &state->cur_style->line.color;
 }
 
@@ -992,7 +1005,7 @@ xlsx_chart_grad_stop (GsfXMLIn *xin, xmlChar const **attrs)
 	for (; attrs != NULL && attrs[0] && attrs[1] ; attrs += 2)
 		if (attr_int (xin, attrs, "pos", &pos)) {
 			if (pos <= 50000) {
-				/* FIXME: use betstate->auto_colorter gradients 
+				/* FIXME: use betstate->auto_colorter gradients
 				 * for now, we only support stops at 0 and 1 */
 				state->gocolor = &state->cur_style->fill.pattern.back;
 				state->auto_color = &state->cur_style->fill.auto_back;
@@ -1019,8 +1032,12 @@ xlsx_chart_solid_fill (GsfXMLIn *xin, xmlChar const **attrs)
 		if (!(state->sp_type & GO_STYLE_LINE)) {
 			state->cur_style->fill.type = GO_STYLE_FILL_PATTERN;
 			state->cur_style->fill.auto_type = FALSE;
-			state->gocolor = &state->cur_style->fill.pattern.back;
-			state->auto_color = &state->cur_style->fill.auto_back;
+			state->gocolor = &state->cur_style->fill.pattern.fore;
+			state->auto_color = &state->cur_style->fill.auto_fore;
+		} else {
+			state->cur_style->line.dash_type = GO_LINE_SOLID;
+			state->gocolor = &state->cur_style->line.color;
+			state->auto_color = &state->cur_style->line.auto_color;
 		}
 	}
 }
@@ -1434,7 +1451,7 @@ GSF_XML_IN_NODE_FULL (START, CHART_SPACE, XL_NS_CHART, "chartSpace", GSF_XML_NO_
         GSF_XML_IN_NODE (VAL_AXIS, VAL_AXIS_CROSSBETWEEN, XL_NS_CHART, "crossBetween", GSF_XML_NO_CONTENT, NULL, NULL),
         GSF_XML_IN_NODE (VAL_AXIS, SHAPE_PR, XL_NS_CHART, "spPr", GSF_XML_NO_CONTENT, NULL, NULL),		/* 2nd Def */
         GSF_XML_IN_NODE (VAL_AXIS, TEXT_PR, XL_NS_CHART, "txPr", GSF_XML_NO_CONTENT, NULL, NULL),		/* 2nd Def */
-	
+
       GSF_XML_IN_NODE_FULL (PLOTAREA, DATE_AXIS, XL_NS_CHART, "dateAx", GSF_XML_NO_CONTENT, FALSE, TRUE,
                             &xlsx_axis_start, &xlsx_axis_end, XLSX_AXIS_DATE),
         GSF_XML_IN_NODE (DATE_AXIS, AXIS_AUTO, XL_NS_CHART, "auto", GSF_XML_NO_CONTENT, NULL, NULL),			/* 2nd Def */
@@ -1453,7 +1470,7 @@ GSF_XML_IN_NODE_FULL (START, CHART_SPACE, XL_NS_CHART, "chartSpace", GSF_XML_NO_
         GSF_XML_IN_NODE (DATE_AXIS, VAL_AXIS_TICKLBLPOS, XL_NS_CHART, "tickLblPos", GSF_XML_NO_CONTENT, NULL, NULL),	/* 2nd Def */
 	GSF_XML_IN_NODE (DATE_AXIS, SHAPE_PR, XL_NS_CHART, "spPr", GSF_XML_NO_CONTENT, NULL, NULL),		/* 2nd Def */
         GSF_XML_IN_NODE (DATE_AXIS, TEXT_PR, XL_NS_CHART, "txPr", GSF_XML_NO_CONTENT, NULL, NULL),		/* 2nd Def */
-	
+
       GSF_XML_IN_NODE (PLOTAREA, LAYOUT, XL_NS_CHART, "layout", GSF_XML_NO_CONTENT, NULL, NULL),
         GSF_XML_IN_NODE (LAYOUT, LAST_LAYOUT,	    XL_NS_CHART, "lastLayout", GSF_XML_NO_CONTENT, NULL, NULL),
           GSF_XML_IN_NODE (LAST_LAYOUT, LAYOUT_X, XL_NS_CHART, "x", GSF_XML_NO_CONTENT, NULL, NULL),
@@ -1652,6 +1669,21 @@ static void
 cb_axis_set_position (GObject *axis, XLSXAxisInfo *info,
 		      XLSXReadState *state)
 {
+	GogObject *obj = NULL;
+	if (info->cross_id) {
+		XLSXAxisInfo *cross_info = g_hash_table_lookup (state->axis.by_id, info->cross_id);
+		g_return_if_fail (cross_info != NULL);
+		obj = GOG_OBJECT (cross_info->axis);
+		if (go_finite (cross_info->cross_value)) {
+			GnmValue *value = value_new_float (cross_info->cross_value);
+			GnmExprTop const *texpr = gnm_expr_top_new_constant (value);
+			gog_dataset_set_dim (GOG_DATASET (obj), GOG_AXIS_ELEM_CROSS_POINT,
+				gnm_go_data_scalar_new_expr (state->sheet, texpr), NULL);
+		}
+		if (gog_axis_is_inverted (GOG_AXIS (axis)))
+			cross_info->cross = 2 - cross_info->cross; /* KLUDGE */
+		g_object_set (obj, "pos", cross_info->cross, "cross-axis-id", gog_object_get_id (GOG_OBJECT (axis)), NULL);
+	}
 	if (info->deleted) {
 		GSList *l = gog_chart_get_axes (state->chart, gog_axis_get_atype (GOG_AXIS (axis))), *cur;
 		GogAxis *visible = NULL;
@@ -1667,6 +1699,8 @@ cb_axis_set_position (GObject *axis, XLSXAxisInfo *info,
 		if (visible) {
 			GSList *l1, *cur1;
 
+			if (obj)
+				g_object_set (obj, "cross-axis-id", gog_object_get_id (GOG_OBJECT (visible)), NULL);
 			l1 = g_slist_copy ((GSList *) gog_axis_contributors (GOG_AXIS (axis)));
 			for (cur1 = l1; cur1; cur1 = cur1->next) {
 				if (GOG_IS_PLOT (cur1->data))
@@ -1683,20 +1717,6 @@ cb_axis_set_position (GObject *axis, XLSXAxisInfo *info,
 			}
 			g_slist_free (l1);
 		}
-	} else if (info->cross_id) {
-		XLSXAxisInfo *cross_info = g_hash_table_lookup (state->axis.by_id, info->cross_id);
-		GogObject *obj;
-		g_return_if_fail (cross_info != NULL);
-		obj = GOG_OBJECT (cross_info->axis);
-		if (go_finite (cross_info->cross_value)) {
-			GnmValue *value = value_new_float (cross_info->cross_value);
-			GnmExprTop const *texpr = gnm_expr_top_new_constant (value);
-			gog_dataset_set_dim (GOG_DATASET (obj), GOG_AXIS_ELEM_CROSS_POINT,
-				gnm_go_data_scalar_new_expr (state->sheet, texpr), NULL);
-		}
-		if (gog_axis_is_inverted (GOG_AXIS (axis)))
-			cross_info->cross = 2 - cross_info->cross; /* KLUDGE */
-		g_object_set (obj, "pos", cross_info->cross, "cross-axis-id", gog_object_get_id (GOG_OBJECT (axis)), NULL);
 	}
 }
 
@@ -1787,7 +1807,7 @@ xlsx_draw_anchor_start (GsfXMLIn *xin, xmlChar const **attrs)
 	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
 
 	g_return_if_fail (state->so == NULL);
-	
+
 	memset ((gpointer)state->drawing_pos, 0, sizeof (state->drawing_pos));
 	state->drawing_pos_flags = 0;
 }
@@ -1804,6 +1824,9 @@ xlsx_drawing_twoCellAnchor_end (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
 		if ((state->drawing_pos_flags & 0xFF) == 0xFF) {
 			SheetObjectAnchor anchor;
 			GnmRange r;
+			double coords[4];
+			double size;
+			int i;
 
 			range_init (&r,
 				state->drawing_pos[COL | FROM],
@@ -1811,10 +1834,21 @@ xlsx_drawing_twoCellAnchor_end (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
 				state->drawing_pos[COL | TO],
 				state->drawing_pos[ROW | TO]);
 
-#warning implement absolute offsets
-				sheet_object_anchor_init (&anchor, &r, NULL, GOD_ANCHOR_DIR_DOWN_RIGHT);
-				sheet_object_set_anchor (state->so, &anchor);
-				sheet_object_set_sheet (state->so, state->sheet);
+			for (i = 0; i < 8; i+=2) {
+				ColRowInfo const *cri;
+				if (i & 1) {
+					cri = sheet_row_get (state->sheet, state->drawing_pos[i]);
+					size = cri? cri->size_pts: sheet_row_get_default_size_pts (state->sheet);
+				} else {
+					cri = sheet_col_get (state->sheet, state->drawing_pos[i]);
+					/* FIXME: scaling horizontally just like in xlsx_CT_Col */
+					size = cri? cri->size_pts: sheet_col_get_default_size_pts (state->sheet) * 1.16191275167785;
+				}
+				coords[i / 2] = (double) state->drawing_pos[i + 1] / 12700. / size;
+			}
+			sheet_object_anchor_init (&anchor, &r, coords, GOD_ANCHOR_DIR_DOWN_RIGHT);
+			sheet_object_set_anchor (state->so, &anchor);
+			sheet_object_set_sheet (state->so, state->sheet);
 		} else
 			xlsx_warning (xin,
 				_("Dropping object with incomplete anchor %2x"), state->drawing_pos_flags);
@@ -1923,7 +1957,7 @@ xlsx_blip_start (GsfXMLIn *xin, xmlChar const **attrs)
 			sheet_object_image_set_image (SHEET_OBJECT_IMAGE (state->so),
 				gsf_open_pkg_rel_get_type (rel), data, size, FALSE);
 	}
-	
+
 }
 
 static GsfXMLInNode const xlsx_drawing_dtd[] = {
@@ -2147,6 +2181,243 @@ xlsx_sheet_drawing (GsfXMLIn *xin, xmlChar const **attrs)
  * Legacy drawing, just need to import, but should not be exported            *
  ******************************************************************************/
 
+/* define an approximate horizontal scale factor to align controls with cells */
+#define XLSX_SHEET_HSCALE 1.165
+
+static void
+xlsx_vml_group (GsfXMLIn *xin, xmlChar const **attrs)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	char **elts, **cur, *key, *value, *end;
+	double coords[4], local_coords[4], *cur_offs, dim;
+	int i;
+	for (i = 0; i < 4; i++)
+		coords[i] = local_coords[i] = 0.;
+	for (; attrs != NULL && attrs[0] && attrs[1] ; attrs += 2)
+		if (!strcmp (attrs[0], "style")) {
+			elts =  g_strsplit (attrs[1], ";", 0);
+			for (cur =  elts; *cur; cur++) {
+				value = strchr (*cur, ':');
+				if (!value)
+					continue; /* Hope this does not occur */
+				*value = 0;
+				value++;
+				key = *cur;
+				while (g_ascii_isspace (*key))
+					key++;
+				/* *cur is now the field name and sep is the associated value */
+				/* for now we get only left, top, width and height, assuming they are in pixels */
+				/* FIXME: scaling just like in xlsx_CT_Col */
+				if (!strcmp (key, "margin-left") || !strcmp (key, "left")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					coords[0] = (double) dim * XLSX_SHEET_HSCALE;
+				} else if (!strcmp (key, "margin-top") || !strcmp (key, "top")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					coords[1] = dim;
+				} else if (!strcmp (key, "width")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					coords[2] = (double) dim * XLSX_SHEET_HSCALE;
+				} else if (!strcmp (key, "height")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					coords[3] = dim;
+				}
+			}
+			g_strfreev (elts);
+		} else if (!strcmp (attrs[0], "coordorigin")) {
+			local_coords[0] = strtol (attrs[1], &end, 10) * XLSX_SHEET_HSCALE;
+			if (*end == ',')
+				local_coords[1] = strtol (end + 1, &end, 10);
+		} else if (!strcmp (attrs[0], "coordsize")) {
+			local_coords[2] = strtol (attrs[1], &end, 10) * XLSX_SHEET_HSCALE;
+			if (*end == ',')
+				local_coords[3] = strtol (end + 1, &end, 10);
+		}
+	/* setting the group local transform */
+	cur_offs = g_new (double, 4);
+	memcpy (cur_offs, state->grp_offset, sizeof (double) * 4);
+	state->grp_stack = g_slist_prepend (state->grp_stack, cur_offs);
+	/* evaluate new tranform */
+	if (cur_offs[2] != 0.) {
+		state->grp_offset[2] = coords[2] / local_coords[2] * cur_offs[2];
+		state->grp_offset[0] = coords[0] - local_coords[0] + cur_offs[0];
+		state->grp_offset[3] = coords[3] / local_coords[3] * cur_offs[3];
+		state->grp_offset[1] = coords[1] - local_coords[1] + cur_offs[1];
+	} else {
+		/* Not sure if the offset should be multiplied by the scale, don't do that, all known sample have unit scales */
+		state->grp_offset[2] = coords[2] / local_coords[2];
+		state->grp_offset[0] = coords[0] - local_coords[0];
+		state->grp_offset[3] = coords[3] / local_coords[3];
+		state->grp_offset[1] = coords[1] - local_coords[1];
+	}
+}
+
+static void
+xlsx_vml_group_end (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	/* assuming that a group can't be inside another group, otherwise we need a stack */
+	memcpy (state->grp_offset, state->grp_stack->data, sizeof (double) * 4);
+	g_free (state->grp_stack->data);
+	state->grp_stack = g_slist_delete_link (state->grp_stack, state->grp_stack);
+}
+
+static void
+xlsx_vml_shape (GsfXMLIn *xin, xmlChar const **attrs)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	for (; attrs != NULL && attrs[0] && attrs[1] ; attrs += 2)
+		if (!strcmp (attrs[0], "style")) {
+			char **elts = g_strsplit (attrs[1], ";", 0), **cur, *key, *value, *end;
+			int dim;
+			for (cur =  elts; *cur; cur++) {
+				value = strchr (*cur, ':');
+				if (!value)
+					continue; /* Hope this does not occur */
+				*value = 0;
+				value++;
+				key = *cur;
+				while (g_ascii_isspace (*key))
+					key++;
+				/* *cur is now the field name and sep is the associated value */
+				/* for now we get only left, top, width and height, assuming they are in pixels */
+				/* FIXME: scaling just like in xlsx_CT_Col */
+				if (!strcmp (key, "margin-left") || !strcmp (key, "left")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					state->chart_pos[0] = (double) dim * XLSX_SHEET_HSCALE;
+				} else if (!strcmp (key, "margin-top") || !strcmp (key, "top")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					state->chart_pos[1] = dim;
+				} else if (!strcmp (key, "width")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					state->chart_pos[2] = (double) dim * XLSX_SHEET_HSCALE;
+				} else if (!strcmp (key, "height")) {
+					dim = g_ascii_strtod (value, &end);
+					if (!strcmp (end, "pt"))
+						dim *= 4./3.;
+					state->chart_pos[3] = dim;
+				}
+			}
+			g_strfreev (elts);
+			if (state->grp_offset[2] != 0.) {
+				state->chart_pos[0] += state->grp_offset[0];
+				state->chart_pos[1] += state->grp_offset[1];
+				state->chart_pos[2] *= state->grp_offset[2];
+				state->chart_pos[3] *= state->grp_offset[3];
+			}
+			state->chart_pos[2] += state->chart_pos[0];
+			state->chart_pos[3] += state->chart_pos[1];
+		}
+}
+
+static void
+xlsx_vml_drop_style (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	if (!strcmp (xin->content->str, "Combo"))
+		/* adding a combo box */
+		state->so = SHEET_OBJECT (g_object_new (sheet_widget_combo_get_type (), NULL));
+		sheet_object_set_sheet (state->so, state->sheet);
+}
+
+static void
+xlsx_vml_client_data (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	if (state->so) {
+		SheetObjectAnchor anchor;
+		ColRowInfo *cri;
+		GnmRange r;
+		double coords[4];
+		int default_size = sheet_col_get_default_size_pixels (state->sheet);
+		int pos, sum, size;
+		for (pos = 0, sum = 0;;pos++) {
+			cri = sheet_col_get (state->sheet, pos);
+			size = (cri)? cri->size_pixels: default_size;
+			if (sum + size > state->chart_pos[0])
+				break;
+			sum += size;
+		}
+		r.start.col = pos;
+		coords[0] = (state->chart_pos[0] - sum) / size;
+		while (sum < state->chart_pos[2]) {
+			if (sum + size > state->chart_pos[2])
+				break;
+			sum += size;
+			cri = sheet_col_get (state->sheet, pos);
+			size = (cri)? cri->size_pixels: default_size;
+			pos++;
+		}
+		r.end.col = pos;
+		coords[2] = (state->chart_pos[2] - sum) / size;
+		default_size = sheet_row_get_default_size_pixels (state->sheet);
+		for (pos = 0, sum = 0;;pos++) {
+			cri = sheet_row_get (state->sheet, pos);
+			size = (cri)? cri->size_pixels: default_size;
+			if (sum + size > state->chart_pos[1])
+				break;
+			sum += size;
+		}
+		r.start.row = pos;
+		coords[1] = (state->chart_pos[1] - sum) / size;
+		while (sum < state->chart_pos[3]) {
+			if (sum + size > state->chart_pos[3])
+				break;
+			sum += size;
+			cri = sheet_row_get (state->sheet, pos);
+			size = (cri)? cri->size_pixels: default_size;
+			pos++;
+		}
+		r.end.row = pos;
+		coords[3] = (state->chart_pos[3] - sum) / size;
+		sheet_object_anchor_init (&anchor, &r, coords, GOD_ANCHOR_DIR_DOWN_RIGHT);
+		sheet_object_set_anchor (state->so, &anchor);
+		if (GNM_IS_SOW_LIST (state->so) || GNM_IS_SOW_COMBO (state->so))
+			sheet_widget_list_base_set_links (state->so, state->link_texpr, state->texpr);
+		g_object_unref (state->so);
+		state->so = NULL;
+	}
+	if (state->texpr) {
+		gnm_expr_top_unref (state->texpr);
+		state->texpr = NULL;
+	}
+	if (state->link_texpr) {
+		gnm_expr_top_unref (state->link_texpr);
+		state->link_texpr = NULL;
+	}
+}
+
+static void
+xlsx_vml_fmla_link (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	GnmValue *value = value_new_cellrange_str (state->sheet, xin->content->str);
+	if (value)
+		state->link_texpr = gnm_expr_top_new_constant (value);
+}
+
+static void
+xlsx_vml_fmla_range (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
+{
+	XLSXReadState	*state = (XLSXReadState *)xin->user_state;
+	GnmValue *value = value_new_cellrange_str (state->sheet, xin->content->str);
+	if (value)
+		state->texpr = gnm_expr_top_new_constant (value);
+}
+
 static GsfXMLInNode const xlsx_legacy_drawing_dtd[] = {
 GSF_XML_IN_NODE_FULL (START, START, -1, NULL, GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
 GSF_XML_IN_NODE_FULL (START, SP_LAYOUT, XL_NS_LEG_OFF, "shapelayout", GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
@@ -2157,7 +2428,7 @@ GSF_XML_IN_NODE_FULL (START, SP_TYPE, XL_NS_LEG_VML, "shapetype", GSF_XML_NO_CON
   GSF_XML_IN_NODE (SP_TYPE, PATH, XL_NS_LEG_VML, "path", GSF_XML_NO_CONTENT, NULL, NULL),
   GSF_XML_IN_NODE (SP_TYPE, STROKE, XL_NS_LEG_VML, "stroke", GSF_XML_NO_CONTENT, NULL, NULL),
   GSF_XML_IN_NODE (SP_TYPE, LOCK, XL_NS_LEG_OFF, "lock", GSF_XML_NO_CONTENT, NULL, NULL),
-GSF_XML_IN_NODE_FULL (START, SP, XL_NS_LEG_VML, "shape", GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
+GSF_XML_IN_NODE_FULL (START, SP, XL_NS_LEG_VML, "shape", GSF_XML_NO_CONTENT, FALSE, TRUE, &xlsx_vml_shape, NULL, 0),
   GSF_XML_IN_NODE (SP, FILL, XL_NS_LEG_VML, "fill", GSF_XML_NO_CONTENT, NULL, NULL),
   GSF_XML_IN_NODE (SP, PATH, XL_NS_LEG_VML, "path", GSF_XML_NO_CONTENT, NULL, NULL), /* already defined */
   GSF_XML_IN_NODE (SP, SHADOW, XL_NS_LEG_VML, "shadow", GSF_XML_NO_CONTENT, NULL, NULL),
@@ -2165,16 +2436,16 @@ GSF_XML_IN_NODE_FULL (START, SP, XL_NS_LEG_VML, "shape", GSF_XML_NO_CONTENT, FAL
   GSF_XML_IN_NODE (SP, TEXTBOX, XL_NS_LEG_VML, "textbox", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (TEXTBOX, DIV, -1, "div", GSF_XML_NO_CONTENT, NULL, NULL),
   GSF_XML_IN_NODE (SP, LOCK, XL_NS_LEG_OFF, "lock", GSF_XML_NO_CONTENT, NULL, NULL), /* already defined */
-  GSF_XML_IN_NODE (SP, CLIENT_DATA, XL_NS_LEG_XL, "ClientData", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (SP, CLIENT_DATA, XL_NS_LEG_XL, "ClientData", GSF_XML_NO_CONTENT, NULL, &xlsx_vml_client_data),
     GSF_XML_IN_NODE (CLIENT_DATA, ANCHOR, XL_NS_LEG_XL, "Anchor", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, AUTO_FILL, XL_NS_LEG_XL, "AutoFill", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, AUTO_LINE, XL_NS_LEG_XL, "AutoLine", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, DROP_LINES, XL_NS_LEG_XL, "DropLines", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, COLUMN, XL_NS_LEG_XL, "Column", GSF_XML_NO_CONTENT, NULL, NULL),
-    GSF_XML_IN_NODE (CLIENT_DATA, DROP_STYLE, XL_NS_LEG_XL, "DropStyle", GSF_XML_NO_CONTENT, NULL, NULL),
+    GSF_XML_IN_NODE (CLIENT_DATA, DROP_STYLE, XL_NS_LEG_XL, "DropStyle", GSF_XML_CONTENT, NULL, &xlsx_vml_drop_style),
     GSF_XML_IN_NODE (CLIENT_DATA, DX, XL_NS_LEG_XL, "Dx", GSF_XML_NO_CONTENT, NULL, NULL),
-    GSF_XML_IN_NODE (CLIENT_DATA, FMLA_LINK, XL_NS_LEG_XL, "FmlaLink", GSF_XML_NO_CONTENT, NULL, NULL),
-    GSF_XML_IN_NODE (CLIENT_DATA, FMLA_RANGE, XL_NS_LEG_XL, "FmlaRange", GSF_XML_NO_CONTENT, NULL, NULL),
+    GSF_XML_IN_NODE (CLIENT_DATA, FMLA_LINK, XL_NS_LEG_XL, "FmlaLink", GSF_XML_CONTENT, NULL, &xlsx_vml_fmla_link),
+    GSF_XML_IN_NODE (CLIENT_DATA, FMLA_RANGE, XL_NS_LEG_XL, "FmlaRange", GSF_XML_CONTENT, NULL, &xlsx_vml_fmla_range),
     GSF_XML_IN_NODE (CLIENT_DATA, INC, XL_NS_LEG_XL, "Inc", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, LCT, XL_NS_LEG_XL, "LCT", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, XMIN, XL_NS_LEG_XL, "Min", GSF_XML_NO_CONTENT, NULL, NULL),
@@ -2189,7 +2460,7 @@ GSF_XML_IN_NODE_FULL (START, SP, XL_NS_LEG_VML, "shape", GSF_XML_NO_CONTENT, FAL
     GSF_XML_IN_NODE (CLIENT_DATA, SEL_TYPE, XL_NS_LEG_XL, "SelType", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, SIZE_WITH_CELLS, XL_NS_LEG_XL, "SizeWithCells", GSF_XML_NO_CONTENT, NULL, NULL),
     GSF_XML_IN_NODE (CLIENT_DATA, VAL, XL_NS_LEG_XL, "Val", GSF_XML_NO_CONTENT, NULL, NULL),
-GSF_XML_IN_NODE_FULL (START, GROUP, XL_NS_LEG_VML, "group", GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
+GSF_XML_IN_NODE_FULL (START, GROUP, XL_NS_LEG_VML, "group", GSF_XML_NO_CONTENT, FALSE, TRUE, &xlsx_vml_group, &xlsx_vml_group_end, 0),
   GSF_XML_IN_NODE (GROUP, LOCK, XL_NS_LEG_OFF, "lock", GSF_XML_NO_CONTENT, NULL, NULL), /* already defined */
 	GSF_XML_IN_NODE (LOCK, SP, XL_NS_LEG_VML, "shape", GSF_XML_NO_CONTENT, NULL, NULL),  /* already defined */
   GSF_XML_IN_NODE (GROUP, GROUP, XL_NS_LEG_VML, "group", GSF_XML_NO_CONTENT, NULL, NULL),  /* already defined */

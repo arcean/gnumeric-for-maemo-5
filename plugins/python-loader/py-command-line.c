@@ -17,6 +17,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
+#include <dead-kittens.h>
 
 #define MAX_HISTORY_SIZE  100
 
@@ -52,7 +53,7 @@ static gint
 gnm_py_command_line_keypress (GnmPyCommandLine *cline, GdkEventKey *event, gpointer user_data)
 {
 	switch (event->keyval) {
-	case GDK_Return: {
+	case GDK_KEY_Return: {
 		const char *text;
 
 		text = gtk_entry_get_text (GTK_ENTRY (cline));
@@ -75,7 +76,7 @@ gnm_py_command_line_keypress (GnmPyCommandLine *cline, GdkEventKey *event, gpoin
 		cline->editing = TRUE;
 		break;
 	}
-	case GDK_Up:
+	case GDK_KEY_Up:
 		if (cline->editing) {
 			if (cline->history_tail != NULL) {
 				cline->history_cur = cline->history_tail;
@@ -94,7 +95,7 @@ gnm_py_command_line_keypress (GnmPyCommandLine *cline, GdkEventKey *event, gpoin
 			}
 		}
 		break;
-	case GDK_Down:
+	case GDK_KEY_Down:
 		if (!cline->editing) {
 			if (cline->history_cur->next != NULL) {
 				cline->history_cur = cline->history_cur->next;

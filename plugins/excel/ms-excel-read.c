@@ -1670,8 +1670,8 @@ excel_read_FONT (BiffQuery *q, GnmXLImporter *importer)
 	d (1, g_printerr ("Insert font '%s' (%d) size %d pts color %d\n",
 		      fd->fontname, fd->index, fd->height / 20, fd->color_idx););
 	d (3, g_printerr ("Font color = 0x%x\n", fd->color_idx););
-	
-	g_hash_table_insert (importer->font_data, 
+
+	g_hash_table_insert (importer->font_data,
 			     GINT_TO_POINTER (fd->index), fd);
 
 }
@@ -3289,7 +3289,10 @@ gnm_xl_importer_free (GnmXLImporter *importer)
 
 		/* NAME placeholders need removal, EXTERNNAME
 		 * placeholders will no be active */
-		if (nexpr->active && nexpr->is_placeholder && nexpr->ref_count == 2) {
+		if (expr_name_is_active (nexpr) &&
+		    expr_name_is_placeholder (nexpr) &&
+		    /* FIXME: Why do we need this? */
+		    nexpr->ref_count == 2) {
 			d (1, g_printerr ("Removing name %s\n", expr_name_name (nexpr)););
 			expr_name_remove (nexpr);
 		}
@@ -7083,7 +7086,7 @@ excel_read_init (void)
 
 		/* Fix case.  */
 		if (func)
-			name = gnm_func_get_name (func);
+			name = gnm_func_get_name (func, FALSE);
 
 		g_assert (g_hash_table_lookup (excel_func_by_name, name) ==
 			  NULL);

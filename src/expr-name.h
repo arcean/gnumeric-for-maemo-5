@@ -16,15 +16,16 @@ struct _GnmNamedExpr {
 	GnmParsePos    pos;
 	GHashTable *dependents;
 	GnmExprTop const *texpr;
-	gboolean    active;
 	gboolean    is_placeholder;
 	gboolean    is_hidden;
 	gboolean    is_permanent;
 	gboolean    is_editable;
+	GnmNamedExprCollection *scope;
 };
 
 gboolean expr_name_validate (const char *name);
 
+GnmNamedExpr *expr_name_new    (char const *name);
 GnmNamedExpr *expr_name_lookup (GnmParsePos const *pos, char const *name);
 GnmNamedExpr *expr_name_add    (GnmParsePos const *pp, char const *name,
 				GnmExprTop const *texpr, char **error_msg,
@@ -34,8 +35,6 @@ void expr_name_perm_add        (Sheet *sheet,
 				char const *name,
 				GnmExprTop const *texpr,
 				gboolean is_editable);
-GnmNamedExpr *expr_name_new    (char const *name, gboolean is_placeholder);
-
 void	 expr_name_ref	      (GnmNamedExpr *nexpr);
 void	 expr_name_unref      (GnmNamedExpr *nexpr);
 void     expr_name_remove     (GnmNamedExpr *nexpr);
@@ -49,6 +48,7 @@ void	 expr_name_set_expr   (GnmNamedExpr *ne, GnmExprTop const *texpr);
 void	 expr_name_add_dep    (GnmNamedExpr *ne, GnmDependent *dep);
 void	 expr_name_remove_dep (GnmNamedExpr *ne, GnmDependent *dep);
 gboolean expr_name_is_placeholder (GnmNamedExpr const *ne);
+gboolean expr_name_is_active  (GnmNamedExpr const *ne);
 void	 expr_name_downgrade_to_placeholder (GnmNamedExpr *nexpr);
 gboolean expr_name_in_use     (GnmNamedExpr *nexpr);
 
@@ -71,6 +71,7 @@ struct _GnmNamedExprCollection {
 	GHashTable *placeholders;
 };
 
+GnmNamedExprCollection *gnm_named_expr_collection_new (void);
 void gnm_named_expr_collection_free (GnmNamedExprCollection *names);
 void gnm_named_expr_collection_unlink (GnmNamedExprCollection *names);
 void gnm_named_expr_collection_relink (GnmNamedExprCollection *names);
@@ -80,6 +81,9 @@ void gnm_named_expr_collection_foreach (GnmNamedExprCollection *names,
 
 GnmNamedExpr *gnm_named_expr_collection_lookup (GnmNamedExprCollection const *scope,
 						char const *name);
+void gnm_named_expr_collection_rename (GnmNamedExprCollection *names,
+				       gchar const *old_name,
+				       gchar const *new_name);
 
 G_END_DECLS
 

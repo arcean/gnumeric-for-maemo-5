@@ -215,7 +215,7 @@ static gint
 cb_keyed_dialog_keypress (GtkWidget *dialog, GdkEventKey *event,
 			  G_GNUC_UNUSED gpointer user)
 {
-	if (event->keyval == GDK_Escape) {
+	if (event->keyval == GDK_KEY_Escape) {
 		gtk_widget_destroy (GTK_WIDGET (dialog));
 		return TRUE;
 	}
@@ -453,7 +453,7 @@ gnumeric_popup_menu (GtkMenu *menu, GdkEventButton *event)
 
 	if (event)
 		gtk_menu_set_screen (menu,
-				     gdk_drawable_get_screen (event->window));
+				     gdk_window_get_screen (event->window));
 
 	g_signal_connect (G_OBJECT (menu),
 		"hide",

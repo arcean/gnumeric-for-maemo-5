@@ -1,3 +1,4 @@
+/* vim: set sw=8: -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 #ifndef GNUMERIC_PLUGIN_LOTUS_123_LOTUS_TYPES_H
 #define GNUMERIC_PLUGIN_LOTUS_123_LOTUS_TYPES_H
 
@@ -108,5 +109,16 @@
 #define LOTUS_RLDB_PACKINFO          0x804
 #define LOTUS_NAMED_STYLE_DB         0xa80
 #define LOTUS_END_DATA               0x2af6
+
+/* -------------------------------------------------------------------------- */
+
+#define WORKS_VERSION_3 0x0404   /* == LOTUS_VERSION_ORIG_123 */
+
+#define WORKS_BOF 0xff
+#define WORKS_FONT  0x5456
+#define WORKS_STYLE 0x545a
+#define WORKS_SMALL_FLOAT 0x545b
+
+/* -------------------------------------------------------------------------- */
 
 #endif

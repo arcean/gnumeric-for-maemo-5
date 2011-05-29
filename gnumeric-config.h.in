@@ -102,6 +102,9 @@
 /* Define to 1 if you have the `gdk_cairo_set_source_rgba' function. */
 #undef HAVE_GDK_CAIRO_SET_SOURCE_RGBA
 
+/* Define to 1 if you have the `gdk_window_get_screen' function. */
+#undef HAVE_GDK_WINDOW_GET_SCREEN
+
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
@@ -202,6 +205,9 @@
 /* Define to 1 if you have the `gtk_layout_get_bin_window' function. */
 #undef HAVE_GTK_LAYOUT_GET_BIN_WINDOW
 
+/* Define to 1 if you have the `gtk_object_destroy' function. */
+#undef HAVE_GTK_OBJECT_DESTROY
+
 /* Define to 1 if you have the `gtk_orientable_set_orientation' function. */
 #undef HAVE_GTK_ORIENTABLE_SET_ORIENTATION
 
@@ -255,6 +261,9 @@
 
 /* Define to 1 if you have the `gtk_widget_is_toplevel' function. */
 #undef HAVE_GTK_WIDGET_IS_TOPLEVEL
+
+/* Define to 1 if you have the `gtk_widget_render_icon_pixbuf' function. */
+#undef HAVE_GTK_WIDGET_RENDER_ICON_PIXBUF
 
 /* Define to 1 if you have the `gtk_widget_set_can_default' function. */
 #undef HAVE_GTK_WIDGET_SET_CAN_DEFAULT

@@ -7,8 +7,11 @@
 #include "position.h"
 #include <pango/pango.h>
 #include <goffice/goffice.h>
+#include "libgnumeric.h"
 
 G_BEGIN_DECLS
+
+GNM_VAR_DECL Sheet *invalid_sheet;
 
 struct _GnmSheetSize {
 	int max_cols, max_rows;
@@ -184,6 +187,8 @@ int	    sheet_find_boundary_vertical   (Sheet *sheet, int move_col, int row,
 ColRowInfo const *sheet_colrow_get_default (Sheet const *sheet,
 					    gboolean is_cols);
 
+void        sheet_colrow_optimize          (Sheet *sheet);
+
 /* Returns a pointer to a ColRowInfo: existing or NULL */
 ColRowInfo *sheet_col_get                 (Sheet const *sheet, int col);
 ColRowInfo *sheet_row_get                 (Sheet const *sheet, int row);
@@ -304,6 +309,7 @@ void	 sheet_scrollbar_config		(Sheet const *s);
 void     sheet_mark_dirty	(Sheet *sheet);
 GnmRange    sheet_get_extent	(Sheet const *sheet,
 				 gboolean spans_and_merges_extend);
+GnmRange    sheet_get_cells_extent (Sheet const *sheet);
 GnmRange    sheet_get_printarea	(Sheet const *sheet,
 				 gboolean include_styles,
 				 gboolean ignore_printarea);

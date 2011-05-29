@@ -716,7 +716,7 @@ cb_sheet_label_drag_end (GtkWidget *widget, GdkDragContext *context,
 
 	/* Destroy the arrow. */
 	arrow = g_object_get_data (G_OBJECT (widget), "arrow");
-	gtk_object_destroy (GTK_OBJECT (arrow));
+	gtk_widget_destroy (arrow);
 	g_object_unref (arrow);
 	g_object_set_data (G_OBJECT (widget), "arrow", NULL);
 }
@@ -2276,6 +2276,13 @@ cb_workbook_debug_info (WBCGtk *wbcg)
 			    es->nodes_in, es->nodes_stored, es->nodes_killed);
 		gnm_expr_sharer_destroy (es);
 	}
+
+	if (gnm_debug_flag ("style-optimize")) {
+		WORKBOOK_FOREACH_SHEET (wb, sheet, (
+			{
+				sheet_style_optimize (sheet);
+			}));
+	}
 }
 
 static void
@@ -2890,7 +2897,9 @@ wbc_gtk_create_edit_area (WBCGtk *wbcg)
 #endif
 
 	/* Dependency debugger */
-	if (gnm_debug_flag ("deps") || gnm_debug_flag ("expr-sharer")) {
+	if (gnm_debug_flag ("deps") ||
+	    gnm_debug_flag ("expr-sharer") ||
+	    gnm_debug_flag ("style-optimize")) {
 		(void)edit_area_button (wbcg, tb, TRUE,
 					G_CALLBACK (cb_workbook_debug_info),
 					GTK_STOCK_DIALOG_INFO,
@@ -3808,7 +3817,7 @@ get_accel_label (GtkMenuItem *item, guint *key)
 	GList *l;
 	char const *res = NULL;
 
-	*key = GDK_VoidSymbol;
+	*key = GDK_KEY_VoidSymbol;
 	for (l = children; l; l = l->next) {
 		GtkWidget *w = l->data;
 
@@ -3842,7 +3851,7 @@ check_underlines (GtkWidget *w, char const *path)
 			g_free (newpath);
 		}
 
-		if (key != GDK_VoidSymbol) {
+		if (key != GDK_KEY_VoidSymbol) {
 			char const *prev = g_hash_table_lookup (used, GUINT_TO_POINTER (key));
 			if (prev) {
 				/* xgettext: Translators: if this warning shows up when
@@ -4859,7 +4868,7 @@ cb_auto_expr_insert_formula (WBCGtk *wbcg, gboolean below)
 	gnm_func_ref (specs->func);
 
 	cmd_analysis_tool (WORKBOOK_CONTROL (wbcg), scg_sheet (scg),
-			   dao, specs, analysis_tool_auto_expression_engine, 
+			   dao, specs, analysis_tool_auto_expression_engine,
 			   TRUE);
 }
 
@@ -5443,7 +5452,7 @@ wbc_gtk_finalize (GObject *obj)
 	gtk_window_set_focus (wbcg_toplevel (wbcg), NULL);
 
 	if (wbcg->toplevel != NULL) {
-		gtk_object_destroy (GTK_OBJECT (wbcg->toplevel));
+		gtk_widget_destroy (wbcg->toplevel);
 		wbcg->toplevel = NULL;
 	}
 
@@ -6056,7 +6065,8 @@ wbc_gtk_init (GObject *obj)
 	/* updates the undo/redo menu labels before check_underlines
 	 * to avoid problems like #324692. */
 	wb_control_undo_redo_labels (WORKBOOK_CONTROL (wbcg), NULL, NULL);
-	if (GNM_VERSION_MAJOR % 2) {
+	if (GNM_VERSION_MAJOR % 2 != 0 ||
+	    gnm_debug_flag ("underlines")) {
 		gtk_container_foreach (GTK_CONTAINER (wbcg->menu_zone),
 				       (GtkCallback)check_underlines,
 				       (gpointer)"");

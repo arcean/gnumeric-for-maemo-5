@@ -653,7 +653,7 @@ cb_table_destroy (SheetControlGUI *scg)
 
 	for (i = scg->active_panes; i-- > 0 ; )
 		if (NULL != scg->pane[i]) {
-			gtk_object_destroy (GTK_OBJECT (scg->pane[i]));
+			gtk_widget_destroy (GTK_WIDGET (scg->pane[i]));
 			scg->pane[i] = NULL;
 		}
 
@@ -1137,7 +1137,7 @@ scg_set_panes (SheetControl *sc)
 		int i;
 		for (i = 1 ; i <= 3 ; i++)
 			if (scg->pane[i]) {
-				gtk_object_destroy (GTK_OBJECT (scg->pane[i]));
+				gtk_widget_destroy (GTK_WIDGET (scg->pane[i]));
 				scg->pane[i] = NULL;
 			}
 
@@ -1681,7 +1681,7 @@ scg_finalize (GObject *object)
 	}
 
 	if (scg->table) {
-		gtk_object_destroy (GTK_OBJECT (scg->table));
+		gtk_widget_destroy (GTK_WIDGET (scg->table));
 		g_object_unref (scg->table);
 		scg->table = NULL;
 	}
@@ -2528,7 +2528,7 @@ typedef struct {
 } ObjDragInfo;
 
 static double
-snap_pos_to_grid (ObjDragInfo const *info, gboolean is_col, double w_pos,
+snap_pos_to_grid (ObjDragInfo const *info, gboolean is_col, double pos,
 		  gboolean to_min)
 {
 	GnmPane const *pane = info->pane;
@@ -2539,8 +2539,6 @@ snap_pos_to_grid (ObjDragInfo const *info, gboolean is_col, double w_pos,
 	int length = 0;
 	ColRowInfo const *cr_info;
 	int sheet_max = colrow_max (is_col, sheet);
-
-	double pos = w_pos + .5;
 
 	if (pos < pixel) {
 		while (cell > 0 && pos < pixel) {
@@ -3003,7 +3001,7 @@ scg_comment_unselect (SheetControlGUI *scg, GnmComment *cc)
 		scg_comment_timer_clear (scg);
 
 		if (scg->comment.item != NULL) {
-			gtk_object_destroy (GTK_OBJECT (scg->comment.item));
+			gtk_widget_destroy (scg->comment.item);
 			scg->comment.item = NULL;
 		}
 	}
@@ -3335,7 +3333,7 @@ scg_rangesel_extend (SheetControlGUI *scg, int n,
  * scg_cursor_move:
  *
  * @scg    : The scg
- * @count  : Number of units to move the cursor 
+ * @count  : Number of units to move the cursor
  * @jump_to_bound: skip from the start to the end of ranges
  *                 of filled or unfilled cells.
  * @horiz  : is the movement horizontal or vertical
@@ -3358,9 +3356,9 @@ scg_cursor_move (SheetControlGUI *scg, int n,
 			tmp.col + n - step, tmp.row, tmp.row,
 			step, jump_to_bound);
 	else
-		tmp.row = sheet_find_boundary_vertical 
+		tmp.row = sheet_find_boundary_vertical
 			(sv->sheet,
-			 tmp.col, tmp.row + n - step, 
+			 tmp.col, tmp.row + n - step,
 			 tmp.col,
 			 step, jump_to_bound);
 
@@ -3712,7 +3710,7 @@ scg_drag_receive_spreadsheet (SheetControlGUI *scg, const gchar *uri)
 
 static void
 scg_paste_cellregion (SheetControlGUI *scg, double x, double y,
-		       GnmCellRegion *content)
+		      GnmCellRegion *content)
 {
 	WorkbookControl	*wbc  = scg_wbc (scg);
 	Sheet *sheet = scg_sheet (scg) ;

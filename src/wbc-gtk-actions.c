@@ -325,7 +325,7 @@ static GNM_ACTION_DEF (cb_file_print_area_show)
 static GNM_ACTION_DEF (cb_file_print)
 {
 	gnm_print_sheet (WORKBOOK_CONTROL (wbcg),
-		wbcg_cur_sheet (wbcg), FALSE, PRINT_ACTIVE_SHEET, NULL);
+		wbcg_cur_sheet (wbcg), FALSE, PRINT_SAVED_INFO, NULL);
 }
 
 static GNM_ACTION_DEF (cb_file_print_preview)

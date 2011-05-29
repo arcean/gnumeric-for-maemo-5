@@ -105,6 +105,9 @@ struct _GnmConventions {
 #endif
 	gboolean r1c1_addresses;
 
+	/* Whether function names should be translated.  */
+	gboolean localized_function_names;
+
 	/* Separate elements in lists, 0 will use go_locale. */
 	gunichar arg_sep;
 	/* Separate array columns, 0 will use go_locale. */
@@ -148,11 +151,16 @@ struct _GnmConventions {
 					  GnmConventions const *convs);
 					/* GError **err); */
 
+		/* Called to unescape strings */
+		char const *(*string) (char const *in, GString *target,
+				       GnmConventions const *convs);
+
 		/* Called a lot for anything that might be a function name or
 		 * defined name.  */
 		char const *(*name) (char const *in,
 				     GnmConventions const *convs);
-
+		/* Returns true if a tentative expression name is legal. */
+		gboolean (*name_validate) (const char *name);
 
 		/* Must return non-NULL, and absorb the args, including the list. */
 		GnmExpr const *(*func) (GnmConventions const *convs,

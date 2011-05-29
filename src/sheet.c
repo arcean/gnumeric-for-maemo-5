@@ -645,27 +645,10 @@ gnm_sheet_get_property (GObject *object, guint property_id,
 	}
 }
 
-static GObject *
-gnm_sheet_constructor (GType type,
-		       guint n_construct_properties,
-		       GObjectConstructParam *construct_params)
+static void
+gnm_sheet_constructed (GObject *obj)
 {
-	GObject *obj;
-	Sheet *sheet;
-	static gboolean warned = FALSE;
-
-	if (GNM_MAX_COLS > 364238 && !warned) {
-		/* Oh, yeah?  */
-		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
-			     "with support for a very large number of columns.  Access to the\n"
-			     "column named TRUE may conflict with the constant of the same\n"
-			     "name.  Expect weirdness."));
-		warned = TRUE;
-	}
-
-	obj = parent_class->constructor (type, n_construct_properties,
-					 construct_params);
-	sheet = SHEET (obj);
+	Sheet *sheet = SHEET (obj);
 
 	/* Now sheet_type, max_cols, and max_rows have been set.  */
 	sheet->being_constructed = FALSE;
@@ -718,7 +701,22 @@ gnm_sheet_constructor (GType type,
 
 	sheet_scale_changed (sheet, TRUE, TRUE);
 
-	return obj;
+	parent_class->constructed (obj);
+}
+
+static guint
+cell_set_hash (GnmCell const *key)
+{
+	guint h = key->pos.row;
+	h = (h << 16) ^ (h >> 16);
+	h ^= key->pos.col;
+	return h;
+}
+
+static gint
+cell_set_equal (GnmCell const *a, GnmCell const *b)
+{
+	return (a->pos.row == b->pos.row && a->pos.col == b->pos.col);
 }
 
 static void
@@ -786,8 +784,8 @@ gnm_sheet_init (Sheet *sheet)
 	sheet->hash_merged = g_hash_table_new ((GHashFunc)&gnm_cellpos_hash,
 					       (GCompareFunc)&gnm_cellpos_equal);
 
-	sheet->cell_hash = g_hash_table_new ((GHashFunc)&gnm_cellpos_hash,
-					     (GCompareFunc)&gnm_cellpos_equal);
+	sheet->cell_hash = g_hash_table_new ((GHashFunc)&cell_set_hash,
+					     (GCompareFunc)&cell_set_equal);
 
 	/* Init preferences */
 	sheet->convs = gnm_conventions_default;
@@ -802,21 +800,32 @@ gnm_sheet_init (Sheet *sheet)
 	/* Init menu states */
 	sheet->priv->enable_showhide_detail = TRUE;
 
-	sheet->names = NULL;
+	sheet->names = gnm_named_expr_collection_new ();
 	sheet->style_data = NULL;
 
 	sheet->index_in_wb = -1;
 }
 
+static Sheet the_invalid_sheet;
+Sheet *invalid_sheet = &the_invalid_sheet;
+
 static void
 gnm_sheet_class_init (GObjectClass *gobject_class)
 {
+	if (GNM_MAX_COLS > 364238) {
+		/* Oh, yeah?  */
+		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
+			     "with support for a very large number of columns.  Access to the\n"
+			     "column named TRUE may conflict with the constant of the same\n"
+			     "name.  Expect weirdness."));
+	}
+
 	parent_class = g_type_class_peek_parent (gobject_class);
 
 	gobject_class->set_property	= gnm_sheet_set_property;
 	gobject_class->get_property	= gnm_sheet_get_property;
 	gobject_class->finalize         = gnm_sheet_finalize;
-	gobject_class->constructor      = gnm_sheet_constructor;
+	gobject_class->constructed      = gnm_sheet_constructed;
 
         g_object_class_install_property (gobject_class, PROP_SHEET_TYPE,
 		 g_param_spec_enum ("sheet-type", _("Sheet Type"),
@@ -1867,13 +1876,13 @@ GnmCell *
 sheet_cell_get (Sheet const *sheet, int col, int row)
 {
 	GnmCell *cell;
-	GnmCellPos pos;
+	GnmCell key;
 
 	g_return_val_if_fail (IS_SHEET (sheet), NULL);
 
-	pos.col = col;
-	pos.row = row;
-	cell = g_hash_table_lookup (sheet->cell_hash, &pos);
+	key.pos.col = col;
+	key.pos.row = row;
+	cell = g_hash_table_lookup (sheet->cell_hash, &key);
 
 	return cell;
 }
@@ -2008,6 +2017,7 @@ sheet_colrow_gutter (Sheet *sheet, gboolean is_cols, int max_outline)
 struct sheet_extent_data {
 	GnmRange range;
 	gboolean spans_and_merges_extend;
+	gboolean ignore_empties;
 };
 
 static void
@@ -2016,7 +2026,7 @@ cb_sheet_get_extent (gpointer ignored, gpointer value, gpointer data)
 	GnmCell const *cell = (GnmCell const *) value;
 	struct sheet_extent_data *res = data;
 
-	if (gnm_cell_is_empty (cell))
+	if (res->ignore_empties && gnm_cell_is_empty (cell))
 		return;
 
 	/* Remember the first cell is the min & max */
@@ -2061,6 +2071,9 @@ cb_sheet_get_extent (gpointer ignored, gpointer value, gpointer data)
  * NOTE: When spans_and_merges_extend is TRUE, this function will calculate
  * all spans.  That might be expensive.
  *
+ * NOTE: This refers to *visible* contents.  Cells with empty values, including
+ * formulas with such values, are *ignored.
+ *
  * Return value: the range.
  **/
 GnmRange
@@ -2078,6 +2091,7 @@ sheet_get_extent (Sheet const *sheet, gboolean spans_and_merges_extend)
 	closure.range.end.col   = 0;
 	closure.range.end.row   = 0;
 	closure.spans_and_merges_extend = spans_and_merges_extend;
+	closure.ignore_empties = TRUE;
 
 	sheet_cell_foreach (sheet, &cb_sheet_get_extent, &closure);
 
@@ -2105,6 +2119,35 @@ sheet_get_extent (Sheet const *sheet, gboolean spans_and_merges_extend)
 
 	return closure.range;
 }
+
+/**
+ * sheet_get_cells_extent:
+ * @sheet: the sheet
+ *
+ * calculates the area occupied by cells, including empty cells.
+ *
+ * Return value: the range.
+ **/
+GnmRange
+sheet_get_cells_extent (Sheet const *sheet)
+{
+	static GnmRange const dummy = { { 0,0 }, { 0,0 } };
+	struct sheet_extent_data closure;
+
+	g_return_val_if_fail (IS_SHEET (sheet), dummy);
+
+	closure.range.start.col = gnm_sheet_get_last_col (sheet);
+	closure.range.start.row = gnm_sheet_get_last_row (sheet);
+	closure.range.end.col   = 0;
+	closure.range.end.row   = 0;
+	closure.spans_and_merges_extend = FALSE;
+	closure.ignore_empties = FALSE;
+
+	sheet_cell_foreach (sheet, &cb_sheet_get_extent, &closure);
+
+	return closure.range;
+}
+
 
 GnmRange *
 sheet_get_nominal_printarea (Sheet const *sheet)
@@ -3382,7 +3425,7 @@ sheet_range_contains_region (Sheet const *sheet, GnmRange const *r,
 		cb_cell_is_array, NULL)) {
 		if (cc != NULL)
 			go_cmd_context_error_invalid (cc, cmd,
-				_("cannot operate on array formulae"));
+				_("cannot operate on array formul\303\246"));
 		return TRUE;
 	}
 
@@ -3402,6 +3445,62 @@ sheet_colrow_get_default (Sheet const *sheet, gboolean is_cols)
 	g_return_val_if_fail (IS_SHEET (sheet), NULL);
 
 	return is_cols ? &sheet->cols.default_style : &sheet->rows.default_style;
+}
+
+static void
+sheet_colrow_optimize1 (int max, int max_used, ColRowCollection *collection)
+{
+	int i;
+	int first_unused = max_used + 1;
+
+	for (i = COLROW_SEGMENT_START (first_unused);
+	     i < max;
+	     i += COLROW_SEGMENT_SIZE) {
+		ColRowSegment *segment = COLROW_GET_SEGMENT (collection, i);
+		int j;
+		gboolean any = FALSE;
+
+		if (!segment)
+			continue;
+		for (j = 0; j < COLROW_SEGMENT_SIZE; j++) {
+			ColRowInfo *info = segment->info[j];
+			if (!info)
+				continue;
+			if (i + j >= first_unused &&
+			    colrow_equal (&collection->default_style, info)) {
+				colrow_free (info);
+				segment->info[j] = NULL;
+			} else {
+				any = TRUE;
+				if (i + j >= first_unused)
+					max_used = i + j;
+			}
+		}
+
+		if (!any) {
+			g_free (segment);
+			COLROW_GET_SEGMENT (collection, i) = NULL;
+		}
+	}
+
+	collection->max_used = max_used;
+}
+
+void
+sheet_colrow_optimize (Sheet *sheet)
+{
+	GnmRange extent;
+
+	g_return_if_fail (IS_SHEET (sheet));
+
+	extent = sheet_get_cells_extent (sheet);
+
+	sheet_colrow_optimize1 (gnm_sheet_get_max_cols (sheet),
+				extent.end.col,
+				&sheet->cols);
+	sheet_colrow_optimize1 (gnm_sheet_get_max_rows (sheet),
+				extent.end.row,
+				&sheet->rows);
 }
 
 /**
@@ -3784,7 +3883,7 @@ sheet_cell_add_to_hash (Sheet *sheet, GnmCell *cell)
 
 	gnm_cell_unrender (cell);
 
-	g_hash_table_insert (sheet->cell_hash, &cell->pos, cell);
+	g_hash_table_insert (sheet->cell_hash, cell, cell);
 
 	if (gnm_sheet_merge_is_corner (sheet, &cell->pos))
 		cell->base.flags |= GNM_CELL_IS_MERGED;
@@ -3903,7 +4002,7 @@ sheet_cell_remove_from_hash (Sheet *sheet, GnmCell *cell)
 	cell_unregister_span (cell);
 	if (gnm_cell_expr_is_linked (cell))
 		dependent_unlink (GNM_CELL_TO_DEP (cell));
-	g_hash_table_remove (sheet->cell_hash, &cell->pos);
+	g_hash_table_remove (sheet->cell_hash, cell);
 	cell->base.flags &= ~(GNM_CELL_IN_SHEET_LIST|GNM_CELL_IS_MERGED);
 }
 

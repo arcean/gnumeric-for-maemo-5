@@ -96,14 +96,14 @@ gnm_pane_object_key_press (GnmPane *pane, GdkEventKey *ev)
 	double   const delta = 1.0 / GOC_CANVAS (pane)->pixels_per_unit;
 
 	switch (ev->keyval) {
-	case GDK_Escape:
+	case GDK_KEY_Escape:
 		scg_mode_edit (scg);
 		gnm_app_clipboard_unant ();
 		return TRUE;
 
-	case GDK_BackSpace: /* Ick! */
-	case GDK_KP_Delete:
-	case GDK_Delete:
+	case GDK_KEY_BackSpace: /* Ick! */
+	case GDK_KEY_KP_Delete:
+	case GDK_KEY_Delete:
 		if (scg->selected_objects != NULL) {
 			cmd_objects_delete (sc->wbc,
 					    go_hash_keys (scg->selected_objects), NULL);
@@ -112,28 +112,28 @@ gnm_pane_object_key_press (GnmPane *pane, GdkEventKey *ev)
 		sc_mode_edit (sc);
 		break;
 
-	case GDK_Tab:
-	case GDK_ISO_Left_Tab:
-	case GDK_KP_Tab:
+	case GDK_KEY_Tab:
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_KP_Tab:
 		if ((scg_sheet (scg))->sheet_objects != NULL) {
 			scg_object_select_next (scg, (ev->state & GDK_SHIFT_MASK) != 0);
 			return TRUE;
 		}
 		break;
 
-	case GDK_KP_Left: case GDK_Left:
+	case GDK_KEY_KP_Left: case GDK_KEY_Left:
 		scg_objects_nudge (scg, pane, (alt ? 4 : (control ? 3 : 8)), -delta , 0, symmetric, shift);
 		gnm_pane_display_obj_size_tip (pane, NULL);
 		return TRUE;
-	case GDK_KP_Right: case GDK_Right:
+	case GDK_KEY_KP_Right: case GDK_KEY_Right:
 		scg_objects_nudge (scg, pane, (alt ? 4 : (control ? 3 : 8)), delta, 0, symmetric, shift);
 		gnm_pane_display_obj_size_tip (pane, NULL);
 		return TRUE;
-	case GDK_KP_Up: case GDK_Up:
+	case GDK_KEY_KP_Up: case GDK_KEY_Up:
 		scg_objects_nudge (scg, pane, (alt ? 6 : (control ? 1 : 8)), 0, -delta, symmetric, shift);
 		gnm_pane_display_obj_size_tip (pane, NULL);
 		return TRUE;
-	case GDK_KP_Down: case GDK_Down:
+	case GDK_KEY_KP_Down: case GDK_KEY_Down:
 		scg_objects_nudge (scg, pane, (alt ? 6 : (control ? 1 : 8)), 0, delta, symmetric, shift);
 		gnm_pane_display_obj_size_tip (pane, NULL);
 		return TRUE;
@@ -164,7 +164,7 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 	gboolean const end_mode = wbcg->last_key_was_end;
 
 	/* Update end-mode for magic end key stuff. */
-	if (event->keyval != GDK_End && event->keyval != GDK_KP_End)
+	if (event->keyval != GDK_KEY_End && event->keyval != GDK_KEY_KP_End)
 		wbcg_set_end_mode (wbcg, FALSE);
 
 	if (allow_rangesel)
@@ -177,8 +177,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			: scg_cursor_move;
 
 	switch (event->keyval) {
-	case GDK_KP_Left:
-	case GDK_Left:
+	case GDK_KEY_KP_Left:
+	case GDK_KEY_Left:
 		//Maemo5 specific: for kbd with 2 arrows
 		//if (event->state & GDK_MOD1_MASK)
 		//	return TRUE; /* Alt is used for accelerators */
@@ -195,8 +195,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 				   jump_to_bounds || end_mode, TRUE);
 		break;
 
-	case GDK_KP_Right:
-	case GDK_Right:
+	case GDK_KEY_KP_Right:
+	case GDK_KEY_Right:
 		//Maemo5 specific: for kbd with 2 arrows
 		//if (event->state & GDK_MOD1_MASK)
 			//return TRUE; /* Alt is used for accelerators */
@@ -213,8 +213,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 				   jump_to_bounds || end_mode, TRUE);
 		break;
 
-	case GDK_KP_Up:
-	case GDK_Up:
+	case GDK_KEY_KP_Up:
+	case GDK_KEY_Up:
 		//Maemo5 specific: for kbd with 2 arrows
 		/*if (event->state & SCROLL_LOCK_MASK)
 			scg_set_top_row (scg, pane->first.row - 1);
@@ -227,8 +227,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			(*movefn) (scg, -1, jump_to_bounds || end_mode, FALSE);
 		break;
 
-	case GDK_KP_Down:
-	case GDK_Down:
+	case GDK_KEY_KP_Down:
+	case GDK_KEY_Down:
 		if (gnumeric_filter_modifiers (event->state) == GDK_MOD1_MASK) {
 			/* 1) Any in cell combos ? */
 			SheetObject *so = sv_wbv (sv)->in_cell_combo;
@@ -262,8 +262,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			(*movefn) (scg, 1, jump_to_bounds || end_mode, FALSE);
 		break;
 
-	case GDK_KP_Page_Up:
-	case GDK_Page_Up:
+	case GDK_KEY_KP_Page_Up:
+	case GDK_KEY_Page_Up:
 		if ((event->state & GDK_CONTROL_MASK) != 0)
 			gnm_notebook_prev_page (wbcg->bnotebook);
 		else if ((event->state & GDK_MOD1_MASK) == 0) {
@@ -279,8 +279,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 		}
 		break;
 
-	case GDK_KP_Page_Down:
-	case GDK_Page_Down:
+	case GDK_KEY_KP_Page_Down:
+	case GDK_KEY_Page_Down:
 		if ((event->state & GDK_CONTROL_MASK) != 0)
 			gnm_notebook_next_page (wbcg->bnotebook);
 		else if ((event->state & GDK_MOD1_MASK) == 0) {
@@ -296,8 +296,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 		}
 		break;
 
-	case GDK_KP_Home:
-	case GDK_Home:
+	case GDK_KEY_KP_Home:
+	case GDK_KEY_Home:
 		if (event->state & SCROLL_LOCK_MASK) {
 			scg_set_left_col (scg, sv->edit_pos.col);
 			scg_set_top_row (scg, sv->edit_pos.row);
@@ -314,8 +314,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 		}
 		break;
 
-	case GDK_KP_End:
-	case GDK_End:
+	case GDK_KEY_KP_End:
+	case GDK_KEY_End:
 		if (event->state & SCROLL_LOCK_MASK) {
 			int new_col = sv->edit_pos.col - (pane->last_full.col - pane->first.col);
 			int new_row = sv->edit_pos.row - (pane->last_full.row - pane->first.row);
@@ -331,8 +331,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			wbcg_set_end_mode (wbcg, !end_mode);
 		break;
 
-	case GDK_KP_Insert :
-	case GDK_Insert :
+	case GDK_KEY_KP_Insert :
+	case GDK_KEY_Insert :
 		if (gnm_pane_guru_key (wbcg, event))
 			break;
 		if (state == GDK_CONTROL_MASK)
@@ -341,7 +341,7 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			cmd_paste_to_selection (WORKBOOK_CONTROL (wbcg), sv, PASTE_DEFAULT);
 		break;
 
-	case GDK_BackSpace:
+	case GDK_KEY_BackSpace:
 		if (wbcg_is_editing (wbcg))
 			goto forward;
 		else if (!wbcg_is_editing (wbcg) && (event->state & GDK_CONTROL_MASK) != 0) {
@@ -352,8 +352,8 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 		}
 		/* Fall through */
 
-	case GDK_KP_Delete:
-	case GDK_Delete:
+	case GDK_KEY_KP_Delete:
+	case GDK_KEY_Delete:
 		if (wbcg_is_editing (wbcg)) {
 			/* stop auto-completion. then do a quick and cheesy update */
 			wbcg_auto_complete_destroy (wbcg);
@@ -377,7 +377,7 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 	 *        for tabs.
 	 */
 	case GDK_KP_Enter:
-	case GDK_Return:
+	case GDK_KEY_Return:
 		if (!wbcg_is_editing (wbcg)) {
 			//if ((event->state & (GDK_MOD1_MASK|GDK_CONTROL_MASK)) != 0)
 			//	return FALSE;
@@ -402,9 +402,9 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 			break;
 		}
 
-	case GDK_Tab:
-	case GDK_ISO_Left_Tab:
-	case GDK_KP_Tab:
+	case GDK_KEY_Tab:
+	case GDK_KEY_ISO_Left_Tab:
+	case GDK_KEY_KP_Tab:
 		if (gnm_pane_guru_key (wbcg, event))
 			break;
 
@@ -452,18 +452,18 @@ gnm_pane_key_mode_sheet (GnmPane *pane, GdkEventKey *event,
 		}
 		break;
 
-	case GDK_Escape:
+	case GDK_KEY_Escape:
 		wbcg_edit_finish (wbcg, WBC_EDIT_REJECT, NULL);
 		gnm_app_clipboard_unant ();
 		break;
 
-	case GDK_F4:
+	case GDK_KEY_F4:
 		if (wbcg_is_editing (wbcg))
 			return gtk_widget_event (
 				wbcg_get_entry_underlying (wbcg), (GdkEvent *) event);
 		return TRUE;
 
-	case GDK_F2:
+	case GDK_KEY_F2:
 		if (gnm_pane_guru_key (wbcg, event))
 			break;
 
@@ -572,9 +572,9 @@ gnm_pane_key_press (GtkWidget *widget, GdkEventKey *event)
 	gboolean	 allow_rangesel;
 
 	switch (event->keyval) {
-	case GDK_Shift_L:   case GDK_Shift_R:
-	case GDK_Alt_L:     case GDK_Alt_R:
-	case GDK_Control_L: case GDK_Control_R:
+	case GDK_KEY_Shift_L:   case GDK_KEY_Shift_R:
+	case GDK_KEY_Alt_L:     case GDK_KEY_Alt_R:
+	case GDK_KEY_Control_L: case GDK_KEY_Control_R:
 	return (*GTK_WIDGET_CLASS (parent_klass)->key_press_event) (widget, event);
 	}
 
@@ -594,13 +594,13 @@ gnm_pane_key_press (GtkWidget *widget, GdkEventKey *event)
 	allow_rangesel = wbcg_rangesel_possible (scg->wbcg);
 
 	/* handle ctrl/shift space before input-method filter steals it */
-	if (event->keyval == GDK_space &&
+	if (event->keyval == GDK_KEY_space &&
 	    gnm_pane_colrow_key_press (scg, event, allow_rangesel))
 		return TRUE;
 
 	pane->insert_decimal =
-		event->keyval == GDK_KP_Decimal ||
-		event->keyval == GDK_KP_Separator;
+		event->keyval == GDK_KEY_KP_Decimal ||
+		event->keyval == GDK_KEY_KP_Separator;
 
 	if (gtk_im_context_filter_keypress (pane->im_context, event))
 		return TRUE;
@@ -637,7 +637,7 @@ gnm_pane_key_release (GtkWidget *widget, GdkEventKey *event)
 	 * to displaying the edit pos.
 	 */
 	if (pane->simple.scg->selected_objects == NULL &&
-	    (event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R))
+	    (event->keyval == GDK_KEY_Shift_L || event->keyval == GDK_KEY_Shift_R))
 		wb_view_selection_desc (wb_control_view (sc->wbc), TRUE, NULL);
 
 	return (*GTK_WIDGET_CLASS (parent_klass)->key_release_event) (widget, event);
@@ -838,7 +838,7 @@ cb_pane_init_objs (GnmPane *pane)
 }
 
 static void
-cb_ctrl_pts_free (GtkObject **ctrl_pts)
+cb_ctrl_pts_free (GocItem **ctrl_pts)
 {
 	int i = 10;
 	while (i-- > 0)
@@ -853,12 +853,12 @@ gnm_pane_dispose (GObject *obj)
 	GnmPane *pane = GNM_PANE (obj);
 
 	if (pane->col.canvas != NULL) {
-		gtk_object_destroy (GTK_OBJECT (pane->col.canvas));
+		gtk_widget_destroy (GTK_WIDGET (pane->col.canvas));
 		pane->col.canvas = NULL;
 	}
 
 	if (pane->row.canvas != NULL) {
-		gtk_object_destroy (GTK_OBJECT (pane->row.canvas));
+		gtk_widget_destroy (GTK_WIDGET (pane->row.canvas));
 		pane->row.canvas = NULL;
 	}
 

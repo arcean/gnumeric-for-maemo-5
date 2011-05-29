@@ -967,7 +967,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(configexecincludedir)/gnumeric-features.h
 dist-hook:
 	mkdir $(distdir)/samples
-	cp $(srcdir)/samples/*gnumeric $(distdir)/samples	
+	cp $(srcdir)/samples/*gnumeric $(distdir)/samples
 
 # disable the check because the old perl plugin is hard to clean
 @WITH_PERL_TRUE@distuninstallcheck:

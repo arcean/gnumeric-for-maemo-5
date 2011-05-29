@@ -15,6 +15,7 @@
 #include <gnumeric-config.h>
 #include "gnumeric.h"
 #include "workbook-priv.h"
+#include "compilation.h"
 
 #include "workbook-view.h"
 #include "workbook-control.h"
@@ -172,7 +173,7 @@ workbook_init (GObject *object)
 	wb->sheet_hash_private = g_hash_table_new (g_str_hash, g_str_equal);
 	wb->sheet_order_dependents = NULL;
 	wb->sheet_local_functions = NULL;
-	wb->names        = NULL;
+	wb->names = gnm_named_expr_collection_new ();
 
 	/* Nothing to undo or redo */
 	wb->undo_commands = wb->redo_commands = NULL;
@@ -1331,6 +1332,7 @@ workbook_sheet_state_size (const WorkbookSheetState *wss)
 	return size;
 }
 
+GNM_BEGIN_KILL_SWITCH_WARNING
 char *
 workbook_sheet_state_diff (const WorkbookSheetState *wss_a, const WorkbookSheetState *wss_b)
 {
@@ -1430,6 +1432,7 @@ workbook_sheet_state_diff (const WorkbookSheetState *wss_a, const WorkbookSheetS
 		return g_strdup (_("Reorganizing Sheets"));
 	}
 }
+GNM_END_KILL_SWITCH_WARNING
 
 /* ------------------------------------------------------------------------- */
 

@@ -54,6 +54,8 @@
 #define FUNCTION_SELECT_PASTE_KEY "function-selector-dialog-paste-mode"
 #define FUNCTION_SELECT_DIALOG_KEY "function-selector-dialog"
 
+#define UNICODE_ELLIPSIS "\xe2\x80\xa6"
+
 typedef enum {
 	GURU_MODE = 0,
 	HELP_MODE,
@@ -64,6 +66,8 @@ typedef struct {
 	WBCGtk  *wbcg;
 	Workbook *wb;
 	Sheet *sheet;
+
+	gboolean localized_function_names;
 
 	GtkBuilder  *gui;
 	GtkWidget *dialog;
@@ -292,7 +296,9 @@ dialog_function_write_recent_func (FunctionSelectState *state, GnmFunc const *fd
 
 	for (rec_funcs = state->recent_funcs; rec_funcs; rec_funcs = rec_funcs->next) {
 		gconf_value_list = g_slist_prepend
-			(gconf_value_list, g_strdup (gnm_func_get_name (rec_funcs->data)));
+			(gconf_value_list,
+			 g_strdup (gnm_func_get_name (rec_funcs->data,
+						      state->localized_function_names)));
 	}
 	gnm_conf_set_functionselector_recentfunctions (gconf_value_list);
 	go_slist_free_custom (gconf_value_list, g_free);
@@ -440,12 +446,16 @@ cb_dialog_function_row_activated (GtkTreeView *tree_view,
 }
 
 static gint
-dialog_function_select_by_name (gconstpointer _a, gconstpointer _b)
+dialog_function_select_by_name (gconstpointer a_, gconstpointer b_,
+				gpointer user)
 {
-	GnmFunc const * const a = (GnmFunc const * const)_a;
-	GnmFunc const * const b = (GnmFunc const * const)_b;
+	GnmFunc const * const a = (GnmFunc const * const)a_;
+	GnmFunc const * const b = (GnmFunc const * const)b_;
+	FunctionSelectState const *state = user;
+	gboolean localized = state->localized_function_names;
 
-	return strcmp (gnm_func_get_name (a), gnm_func_get_name (b));
+	return g_utf8_collate (gnm_func_get_name (a, localized),
+			       gnm_func_get_name (b, localized));
 }
 
 /*************************************************************************/
@@ -673,6 +683,15 @@ make_expr_example (Sheet *sheet, const char *text, gboolean localized)
 #define ADD_TEXT_WITH_ARGS(text) { const char *t = text; while (*t) { const char *at = strstr (t, "@{"); \
 			if (at == NULL) { ADD_TEXT(t); break;} ADD_LTEXT(t, at - t); t = at + 2; at = strchr (t,'}'); \
 			if (at != NULL) { ADD_BOLD_TEXT(t, at - t); t = at + 1; } else {ADD_TEXT (t); break;}}}
+#define FINISH_ARGS if (seen_args && !args_finished) {\
+	gint min, max; \
+	function_def_count_args (func, &min, &max);\
+		if (max == G_MAXINT) {	\
+			ADD_BOLD_TEXT(UNICODE_ELLIPSIS, strlen(UNICODE_ELLIPSIS)); \
+			ADD_LTEXT("\n",1);				\
+			args_finished = TRUE;				\
+		}							\
+	}
 
 static void
 describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *sheet)
@@ -685,6 +704,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 		 "weight", PANGO_WEIGHT_BOLD,
 		 NULL);
 	gboolean seen_args = FALSE;
+	gboolean args_finished = FALSE;
 	gboolean seen_examples = FALSE;
 	gboolean seen_extref = FALSE;
 
@@ -723,6 +743,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 		}
 		case GNM_FUNC_HELP_DESCRIPTION: {
 			const char *text = F2 (func, help->text);
+			FINISH_ARGS;
 			ADD_TEXT ("\n");
 			ADD_TEXT_WITH_ARGS (text);
 			ADD_TEXT ("\n");
@@ -730,6 +751,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 		}
 		case GNM_FUNC_HELP_NOTE: {
 			const char *text = F2 (func, help->text);
+			FINISH_ARGS;
 			ADD_TEXT ("\n");
 			ADD_TEXT (_("Note: "));
 			ADD_TEXT_WITH_ARGS (text);
@@ -740,6 +762,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 			const char *text = F2 (func, help->text);
 			gboolean was_translated = (text != help->text);
 
+			FINISH_ARGS;
 			if (!seen_examples) {
 				seen_examples = TRUE;
 				ADD_TEXT ("\n");
@@ -763,6 +786,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 			GtkTextTag *link =
 				make_link (description, "LINK", NULL, NULL);
 
+			FINISH_ARGS;
 			ADD_TEXT ("\n");
 
 			while (*text) {
@@ -780,12 +804,14 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 			break;
 		}
 		case GNM_FUNC_HELP_END:
+			FINISH_ARGS;
 			return;
 		case GNM_FUNC_HELP_EXTREF: {
 			GtkTextTag *link;
 			char *uri, *tagname;
 			const char *text;
 
+			FINISH_ARGS;
 			/*
 			 * We put in just one link and let the web page handle
 			 * the rest.  In particular, we do not even look at
@@ -818,6 +844,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 		}
 		case GNM_FUNC_HELP_EXCEL: {
 			const char *text = F2 (func, help->text);
+			FINISH_ARGS;
 			ADD_TEXT ("\n");
 			ADD_TEXT (_("Microsoft Excel: "));
 			ADD_TEXT_WITH_ARGS (text);
@@ -826,6 +853,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 		}
 		case GNM_FUNC_HELP_ODF: {
 			const char *text = F2 (func, help->text);
+			FINISH_ARGS;
 			ADD_TEXT ("\n");
 			ADD_TEXT (_("ODF (OpenFormula): "));
 			ADD_TEXT_WITH_ARGS (text);
@@ -843,6 +871,7 @@ describe_new_style (GtkTextBuffer *description, GnmFunc const *func, Sheet *shee
 #undef ADD_LTEXT
 #undef ADD_BOLD_TEXT
 #undef ADD_LINK_TEXT
+#undef FINISH_ARGS
 
 typedef struct {
 	GnmFunc    *fd;
@@ -1105,8 +1134,9 @@ dialog_function_select_load_tree (FunctionSelectState *state)
 		funcs = g_slist_concat (funcs,
 					g_slist_copy (cat->functions));
 
-	funcs = g_slist_sort (funcs,
-			      dialog_function_select_by_name);
+	funcs = g_slist_sort_with_data (funcs,
+					dialog_function_select_by_name,
+					state);
 
 	for (ptr = funcs; ptr; ptr = ptr->next) {
 		func = ptr->data;
@@ -1117,7 +1147,7 @@ dialog_function_select_load_tree (FunctionSelectState *state)
 			desc = dialog_function_select_get_description (func, &pal);
 			gtk_list_store_set
 				(state->model_functions, &iter,
-				 FUN_NAME, gnm_func_get_name (func),
+				 FUN_NAME, gnm_func_get_name (func, state->localized_function_names),
 				 FUNCTION, func,
 				 FUNCTION_DESC, desc,
 				 FUNCTION_PAL, pal,
@@ -1352,6 +1382,7 @@ dialog_function_select_full (WBCGtk *wbcg, char const *guru_key,
 	state = g_new (FunctionSelectState, 1);
 	state->wbcg  = wbcg;
 	state->sheet = wb_control_cur_sheet (WORKBOOK_CONTROL (wbcg));
+	state->localized_function_names = state->sheet->convs->localized_function_names;
 	state->wb    = state->sheet->workbook;
         state->gui   = gui;
         state->dialog = go_gtk_builder_get_widget (state->gui, "selection_dialog");

@@ -297,7 +297,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-schema_in_files = gnumeric-dialogs.schemas.in gnumeric-general.schemas.in gnumeric-plugins.schemas.in 
+schema_in_files = gnumeric-dialogs.schemas.in gnumeric-general.schemas.in gnumeric-plugins.schemas.in
 @WITH_GCONF_TRUE@schemadir = @GCONF_SCHEMA_FILE_DIR@
 @WITH_GCONF_TRUE@schema_DATA = $(schema_in_files:.schemas.in=.schemas)
 EXTRA_DIST = $(schema_in_files) org.gnome.gnumeric.gschema.xml.in.in \
