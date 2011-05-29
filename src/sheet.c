@@ -645,10 +645,28 @@ gnm_sheet_get_property (GObject *object, guint property_id,
 	}
 }
 
-static void
-gnm_sheet_constructed (GObject *obj)
+//gnm 1.10.15: changes for Maemo 5:
+static GObject *
+gnm_sheet_constructor (GType type,
+		       guint n_construct_properties,
+		       GObjectConstructParam *construct_params)
 {
-	Sheet *sheet = SHEET (obj);
+	GObject *obj;
+	Sheet *sheet;
+	static gboolean warned = FALSE;
+
+	if (GNM_MAX_COLS > 364238 && !warned) {
+		/* Oh, yeah?  */
+		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
+			     "with support for a very large number of columns.  Access to the\n"
+			     "column named TRUE may conflict with the constant of the same\n"
+			     "name.  Expect weirdness."));
+		warned = TRUE;
+	}
+
+	obj = parent_class->constructor (type, n_construct_properties,
+					 construct_params);
+	sheet = SHEET (obj);
 
 	/* Now sheet_type, max_cols, and max_rows have been set.  */
 	sheet->being_constructed = FALSE;
@@ -701,7 +719,7 @@ gnm_sheet_constructed (GObject *obj)
 
 	sheet_scale_changed (sheet, TRUE, TRUE);
 
-	parent_class->constructed (obj);
+	return obj;
 }
 
 static guint
@@ -812,20 +830,12 @@ Sheet *invalid_sheet = &the_invalid_sheet;
 static void
 gnm_sheet_class_init (GObjectClass *gobject_class)
 {
-	if (GNM_MAX_COLS > 364238) {
-		/* Oh, yeah?  */
-		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
-			     "with support for a very large number of columns.  Access to the\n"
-			     "column named TRUE may conflict with the constant of the same\n"
-			     "name.  Expect weirdness."));
-	}
-
 	parent_class = g_type_class_peek_parent (gobject_class);
 
 	gobject_class->set_property	= gnm_sheet_set_property;
 	gobject_class->get_property	= gnm_sheet_get_property;
 	gobject_class->finalize         = gnm_sheet_finalize;
-	gobject_class->constructed      = gnm_sheet_constructed;
+	gobject_class->constructor      = gnm_sheet_constructor;
 
         g_object_class_install_property (gobject_class, PROP_SHEET_TYPE,
 		 g_param_spec_enum ("sheet-type", _("Sheet Type"),
