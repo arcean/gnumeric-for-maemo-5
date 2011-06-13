@@ -32,9 +32,6 @@ Sheet		*wbcg_cur_sheet	  (WBCGtk *wbcg);
 Sheet		*wbcg_focus_cur_scg (WBCGtk *wbcg);
 int              wbcg_get_n_scg   (WBCGtk const *wbcg);
 
-gboolean   wbcg_ui_update_begin	  (WBCGtk *wbcg);
-void	   wbcg_ui_update_end	  (WBCGtk *wbcg);
-
 gboolean   wbcg_rangesel_possible (WBCGtk const *wbcg);
 gboolean   wbcg_is_editing	  (WBCGtk const *wbcg);
 void	   wbcg_set_status_text	  (WBCGtk *wbcg,
@@ -76,7 +73,6 @@ void	    wbc_gtk_attach_guru_with_unfocused_rs (WBCGtk *wbcg, GtkWidget *guru,
 						   GnmExprEntry *gee);
 GtkWidget  *wbc_gtk_get_guru		(WBCGtk const *wbcg);
 
-gboolean    wbcg_auto_completing        (WBCGtk const *wbcg);
 void	    wbcg_auto_complete_destroy  (WBCGtk *wbcg);
 char const *wbcg_edit_get_display_text	(WBCGtk *wbcg);
 void	    wbcg_edit_add_markup	(WBCGtk *wbcg, PangoAttribute *attr);

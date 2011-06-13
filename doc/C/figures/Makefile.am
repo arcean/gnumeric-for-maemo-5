@@ -62,7 +62,16 @@ EXTRA_DIST = \
      analysistools-moving-average-formula-central.png \
      analysistools-moving-average-formula-spencer.png \
      analysistools-moving-average-formula-weighted.png \
+     analysistools-normality-ex1.png \
+     analysistools-normality-ex2.png \
+     analysistools-normality-ex3.png \
+     analysistools-normality-ex4.png \
+     analysistools-normality-testspec.png \
+     analysistools-normality.png \
      analysistools-outputoptions.png \
+     analysistools-pcanalysis.png \
+     analysistools-pcanalysis-ex1.png \
+     analysistools-pcanalysis-ex2.png \
      analysistools-random-ex1.png \
      analysistools-random-ex2.png \
      analysistools-random.png \
@@ -74,6 +83,10 @@ EXTRA_DIST = \
      analysistools-regression-ex2.png \
      analysistools-regression-ex3.png \
      analysistools-regression.png \
+     analysistools-signtest-ex1.png \
+     analysistools-signtest-ex2.png \
+     analysistools-signtest-ex3.png \
+     analysistools-signtest.png \
      analysistools-sampling-ex1.png \
      analysistools-sampling-ex2.png \
      analysistools-sampling.png \

@@ -35,6 +35,7 @@
 #include "value.h"
 #include "ranges.h"
 #include "expr-name.h"
+#include "expr.h"
 #include "command-context.h"
 #include <goffice/goffice.h>
 #include <gsf/gsf-impl-utils.h>
@@ -226,7 +227,7 @@ wb_create_name (WorkbookControl *wbc, char const *text, GnmParsePos *pp)
 /*
  * Select the given range and make the it visible.
  */
-static gboolean
+gboolean
 wb_control_jump (WorkbookControl *wbc, Sheet *sheet, const GnmRangeRef *r)
 {
 	SheetView *sv;
@@ -279,6 +280,29 @@ wb_control_parse_and_jump (WorkbookControl *wbc, char const *text)
 	parse_pos_init_editpos (&pp, sv);
 	target = value_new_cellrange_parsepos_str (&pp, text,
 						   GNM_EXPR_PARSE_DEFAULT);
+	if (target == NULL) {
+		GnmExprTop const *texpr;
+
+		texpr = gnm_expr_parse_str 
+			(text, &pp, GNM_EXPR_PARSE_DEFAULT, 
+			 gnm_conventions_xls_r1c1, NULL);
+		if (texpr != NULL)  {
+			target = gnm_expr_top_get_range (texpr);
+			gnm_expr_top_unref (texpr);
+		}
+	}
+	if (target == NULL) {
+		GnmExprTop const *texpr;
+
+		texpr = gnm_expr_parse_str 
+			(text, &pp, GNM_EXPR_PARSE_DEFAULT, 
+			 gnm_conventions_default, NULL);
+		if (texpr != NULL)  {
+			target = gnm_expr_top_get_range (texpr);
+			gnm_expr_top_unref (texpr);
+		}
+	}
+	
 	if (target == NULL) {
 		/* Not an address; is it a name? */
 		GnmParsePos pp;
@@ -486,8 +510,6 @@ wb_control_set_view (WorkbookControl *wbc,
 void
 wb_control_init_state (WorkbookControl *wbc)
 {
-	GSList *sheets, *ptr;
-	Sheet *sheet;
 	WorkbookView *wbv;
 	WorkbookControlClass *wbc_class;
 
@@ -498,15 +520,12 @@ wb_control_init_state (WorkbookControl *wbc)
 
 	/* Add views for all existing sheets */
 	wbv = wb_control_view (wbc);
-	sheets = workbook_sheets (wb_control_get_workbook (wbc));
-	for (ptr = sheets; ptr != NULL ; ptr = ptr->next) {
-		sheet = ptr->data;
+	WORKBOOK_FOREACH_SHEET(wb_control_get_workbook (wbc), sheet, {
 		SHEET_FOREACH_VIEW (sheet, view, {
 			if (sv_wbv (view) == wbv)
 				wb_control_sheet_add (wbc, view);
 		});
-	}
-	g_slist_free (sheets);
+	});
 
 	wbc_class = WBC_CLASS (wbc);
 	if (wbc_class != NULL && wbc_class->init_state != NULL)

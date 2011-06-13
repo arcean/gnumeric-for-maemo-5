@@ -34,6 +34,7 @@
 #include "gnm-format.h"
 #include "gnumeric-gconf.h"
 #include "xml-sax.h"
+#include "gutils.h"
 
 #include <goffice/goffice.h>
 #include <gsf/gsf-input-memory.h>
@@ -285,7 +286,6 @@ table_cellregion_read (WorkbookControl *wbc, char const *reader_id,
 {
 	WorkbookView *wb_view = NULL;
 	Workbook *wb = NULL;
-	GSList *sheets;
 	GnmCellRegion *ret = NULL;
 	const GOFileOpener *reader = go_file_opener_for_id (reader_id);
 	GOIOContext *ioc;
@@ -305,10 +305,9 @@ table_cellregion_read (WorkbookControl *wbc, char const *reader_id,
 	}
 
 	wb = wb_view_get_workbook (wb_view);
-	sheets = workbook_sheets (wb);
-	if (sheets) {
+	if (workbook_sheet_count (wb) > 0) {
 		GnmRange r;
-		Sheet *tmpsheet = sheets->data;
+		Sheet *tmpsheet = workbook_sheet_by_index (wb, 0);
 		GnmRange *rp = g_object_get_data (G_OBJECT (tmpsheet),
 						  "DIMENSION");
 		if (rp) {
@@ -321,7 +320,6 @@ table_cellregion_read (WorkbookControl *wbc, char const *reader_id,
 		}
 		ret = clipboard_copy_range (tmpsheet, &r);
 	}
-	g_slist_free (sheets);
 
 	/* This isn't particularly right, but we are going to delete
 	   the workbook shortly.  See #490479.  */
@@ -984,7 +982,7 @@ x_clipboard_clear_cb (GtkClipboard *clipboard,
 }
 
 void
-x_request_clipboard (WBCGtk *wbcg, GnmPasteTarget const *pt)
+gnm_x_request_clipboard (WBCGtk *wbcg, GnmPasteTarget const *pt)
 {
 	GnmGtkClipboardCtxt *ctxt;
 	GdkDisplay *display = gtk_widget_get_display (GTK_WIDGET (wbcg_toplevel (wbcg)));
@@ -1080,7 +1078,7 @@ set_clipman_targets (GdkDisplay *disp, GtkTargetEntry *targets, guint n_targets)
 }
 
 gboolean
-x_claim_clipboard (WBCGtk *wbcg)
+gnm_x_claim_clipboard (WBCGtk *wbcg)
 {
 	GdkDisplay *display = gtk_widget_get_display (GTK_WIDGET (wbcg_toplevel (wbcg)));
 	GnmCellRegion *content = gnm_app_clipboard_contents_get ();
@@ -1160,7 +1158,7 @@ x_claim_clipboard (WBCGtk *wbcg)
  * object is destroyed.
  */
 void
-x_store_clipboard_if_needed (Workbook *wb)
+gnm_x_store_clipboard_if_needed (Workbook *wb)
 {
 	Sheet *sheet = gnm_app_clipboard_sheet_get ();
 	WBCGtk *wbcg = NULL;

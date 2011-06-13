@@ -50,6 +50,7 @@
 #include "sheet-merge.h"
 #include "sheet-private.h"
 #include "expr-name.h"
+#include "expr.h"
 #include "expr-impl.h"
 #include "rendered-value.h"
 #include "gnumeric-gconf.h"
@@ -645,28 +646,10 @@ gnm_sheet_get_property (GObject *object, guint property_id,
 	}
 }
 
-//gnm 1.10.15: changes for Maemo 5:
-static GObject *
-gnm_sheet_constructor (GType type,
-		       guint n_construct_properties,
-		       GObjectConstructParam *construct_params)
+static void
+gnm_sheet_constructed (GObject *obj)
 {
-	GObject *obj;
-	Sheet *sheet;
-	static gboolean warned = FALSE;
-
-	if (GNM_MAX_COLS > 364238 && !warned) {
-		/* Oh, yeah?  */
-		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
-			     "with support for a very large number of columns.  Access to the\n"
-			     "column named TRUE may conflict with the constant of the same\n"
-			     "name.  Expect weirdness."));
-		warned = TRUE;
-	}
-
-	obj = parent_class->constructor (type, n_construct_properties,
-					 construct_params);
-	sheet = SHEET (obj);
+	Sheet *sheet = SHEET (obj);
 
 	/* Now sheet_type, max_cols, and max_rows have been set.  */
 	sheet->being_constructed = FALSE;
@@ -719,7 +702,8 @@ gnm_sheet_constructor (GType type,
 
 	sheet_scale_changed (sheet, TRUE, TRUE);
 
-	return obj;
+	if (parent_class->constructed)
+		parent_class->constructed (obj);
 }
 
 static guint
@@ -830,12 +814,20 @@ Sheet *invalid_sheet = &the_invalid_sheet;
 static void
 gnm_sheet_class_init (GObjectClass *gobject_class)
 {
+	if (GNM_MAX_COLS > 364238) {
+		/* Oh, yeah?  */
+		g_warning (_("This is a special version of Gnumeric.  It has been compiled\n"
+			     "with support for a very large number of columns.  Access to the\n"
+			     "column named TRUE may conflict with the constant of the same\n"
+			     "name.  Expect weirdness."));
+	}
+
 	parent_class = g_type_class_peek_parent (gobject_class);
 
 	gobject_class->set_property	= gnm_sheet_set_property;
 	gobject_class->get_property	= gnm_sheet_get_property;
 	gobject_class->finalize         = gnm_sheet_finalize;
-	gobject_class->constructor      = gnm_sheet_constructor;
+	gobject_class->constructed      = gnm_sheet_constructed;
 
         g_object_class_install_property (gobject_class, PROP_SHEET_TYPE,
 		 g_param_spec_enum ("sheet-type", _("Sheet Type"),
@@ -1431,6 +1423,34 @@ sheet_redraw_partial_row (Sheet const *sheet, int const row,
 	range_init (&r, start_col, row, end_col, row);
 	SHEET_FOREACH_CONTROL (sheet, view, control,
 		sc_redraw_range (control, &r););
+}
+
+static void
+sheet_redraw_cell (GnmCell const *cell)
+{
+	CellSpanInfo const * span;
+	int start_col, end_col;
+	GnmRange const *merged;
+
+	g_return_if_fail (cell != NULL);
+
+	merged = gnm_sheet_merge_is_corner (cell->base.sheet, &cell->pos);
+	if (merged != NULL) {
+		SHEET_FOREACH_CONTROL (cell->base.sheet, view, control,
+			sc_redraw_range (control, merged););
+		return;
+	}
+
+	start_col = end_col = cell->pos.col;
+	span = row_span_get (cell->row_info, start_col);
+
+	if (span) {
+		start_col = span->left;
+		end_col = span->right;
+	}
+
+	sheet_redraw_partial_row (cell->base.sheet, cell->pos.row,
+				  start_col, end_col);
 }
 
 void
@@ -2578,9 +2598,7 @@ sheet_range_set_text (GnmParsePos const *pos, GnmRange const *r, char const *str
 {
 	closure_set_cell_value	closure;
 	GSList *merged, *ptr;
-	GOFormat const *fmt;
 	Sheet *sheet;
-	GnmCell *cell;
 
 	g_return_if_fail (pos != NULL);
 	g_return_if_fail (r != NULL);
@@ -2588,14 +2606,8 @@ sheet_range_set_text (GnmParsePos const *pos, GnmRange const *r, char const *str
 
 	sheet = pos->sheet;
 
-	/* Arbitrarily Use the format from upper left cell.  */
-	cell = sheet_cell_get (sheet, r->start.col, r->start.row);
-	fmt = cell ? gnm_cell_get_format (cell) : NULL;
-
 	parse_text_value_or_expr (pos, str,
-				  &closure.val, &closure.texpr,
-				  fmt,
-				  workbook_date_conv (sheet->workbook));
+				  &closure.val, &closure.texpr);
 
 	if (closure.texpr) {
 		range_init_full_sheet (&closure.expr_bound, sheet);
@@ -2743,9 +2755,7 @@ sheet_cell_set_text (GnmCell *cell, char const *text, PangoAttrList *markup)
 	g_return_if_fail (!gnm_cell_is_nonsingleton_array (cell));
 
 	parse_text_value_or_expr (parse_pos_init_cell (&pp, cell),
-		text, &val, &texpr,
-		gnm_cell_get_format (cell),
-		workbook_date_conv (cell->base.sheet->workbook));
+		text, &val, &texpr);
 
 	/* Queue a redraw before in case the span changes */
 	sheet_redraw_cell (cell);
@@ -2938,34 +2948,6 @@ sheet_redraw_range (Sheet const *sheet, GnmRange const *range)
 	sheet_redraw_region (sheet,
 			     range->start.col, range->start.row,
 			     range->end.col, range->end.row);
-}
-
-void
-sheet_redraw_cell (GnmCell const *cell)
-{
-	CellSpanInfo const * span;
-	int start_col, end_col;
-	GnmRange const *merged;
-
-	g_return_if_fail (cell != NULL);
-
-	merged = gnm_sheet_merge_is_corner (cell->base.sheet, &cell->pos);
-	if (merged != NULL) {
-		SHEET_FOREACH_CONTROL (cell->base.sheet, view, control,
-			sc_redraw_range (control, merged););
-		return;
-	}
-
-	start_col = end_col = cell->pos.col;
-	span = row_span_get (cell->row_info, start_col);
-
-	if (span) {
-		start_col = span->left;
-		end_col = span->right;
-	}
-
-	sheet_redraw_partial_row (cell->base.sheet, cell->pos.row,
-				  start_col, end_col);
 }
 
 /****************************************************************************/

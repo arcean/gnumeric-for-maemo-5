@@ -1,0 +1,195 @@
+gnumeric (1.10.15-1) unstable; urgency=low
+
+  * Updated to 1.10.15
+  *
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sun, 29 May 2011 14:58:06
++0200
+
+gnumeric (1.10.14-2) unstable; urgency=low
+
+  * Fixed bug #6880
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Tue, 26 Apr 2011 22:38:00
++0200
+
+gnumeric (1.10.14-1) unstable; urgency=low
+
+  * Updated to 1.10.14
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sat, 2 Apr 2011 23:53:31
++0200
+
+gnumeric (1.10.13-1) unstable; urgency=low
+
+  * Updated to 1.10.13
+  * UI fixes.
+  * Proper icons associated with spreadsheet files.
+  * Added Launch Page. It's disabled by default. If you want to change
+that: Edit->Preferences->Windows->Use Launch Page.
+  * Small code optimizations.
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 17 Feb 2011 00:55:50
++0100
+
+gnumeric (1.10.12-2) unstable; urgency=low
+
+  * More UI fixes.
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Mon, 29 Nov 2010 00:27:16
++0100
+
+gnumeric (1.10.12-1) unstable; urgency=low
+
+  * Updated to 1.10.12
+  * Updated Italian translation. Thanks jurop88!
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sat, 27 Nov 2010 13:44:40
++0100
+
+gnumeric (1.10.11-1) unstable; urgency=low
+
+  * Updated to 1.10.11
+  * Fixed: Bug #6338
+  * Added: Portrait mode (only for viewing, disabled by default)
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sun, 3 Oct 2010 23:21:39
++0200
+
+gnumeric (1.10.10-8) unstable; urgency=low
+
+  * Fixed: 'Up' and 'Down' arrows don't work with some kbd layouts.
+  * Fixed: Broken 'Validation' page in 'Format' dialog.
+  * Added: List of recently used files.
+  * Added: Visibility of the toolbars is now saved,
+  * Updated: Czech and Italian translations.
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sat, 25 Sep 2010 19:24:24
++0200
+
+gnumeric (1.10.10-7) unstable; urgency=low
+
+  * New icons are properly installed
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Tue, 21 Sep 2010 01:30:42
++0200
+
+gnumeric (1.10.10-6) unstable; urgency=low
+
+  * Main menu improvements
+  * Updated translations (so they work better with the new main menu):
+    - Polish
+    - German
+    - Spanish
+    - Danish
+    - French
+    - Finnish
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Tue, 21 Sep 2010 00:39:24
++0200
+
+gnumeric (1.10.10-5) unstable; urgency=low
+
+  * Fixed 'View' submenu of the new main app menu
+  * Removed 'Insert Hyperlink' and 'Insert Formula' from Standard
+Toolbar.
+  * Restored 'Enter Moves Selection'.
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 16 Sep 2010 23:33:08
++0200
+
+gnumeric (1.10.10-4) unstable; urgency=low
+
+  * New main menu
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Tue, 14 Sep 2010 21:29:26
++0200
+
+gnumeric (1.10.10-3) unstable; urgency=low
+
+  * Object context menu: double tap on it
+  * Select an object: press SHIFT and tap on an object
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sun, 12 Sep 2010 18:46:45
++0200
+
+gnumeric (1.10.10-2) unstable; urgency=low
+
+  * New context menus:
+    - Tap and hold on the Accept Input Button
+    - Tap and hold on the Equal Button
+  * New option in Edit->Preferences->Tools (feature request #6345
+resolved):
+    "Use Ctrl+L to Toggle Fullscreen Mode"
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sat, 11 Sep 2010 22:20:03
++0200
+
+gnumeric (1.10.10-1) unstable; urgency=low
+
+  * Updated to 1.10.10
+  * Removed depracted "Enter Moves Selection" option from UI. Thanks
+WhiteWolf!
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sun, 5 Sep 2010 12:29:56
++0200
+
+gnumeric (1.10.9-3) unstable; urgency=low
+
+  * Some ui improvements
+  * Fixed autoformat crash
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Mon, 30 Aug 2010 23:34:27
++0200
+
+gnumeric (1.10.9-2) unstable; urgency=low
+
+  * Fixed problem with update-desktop-database
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 26 Aug 2010 00:00:10
++0200
+
+gnumeric (1.10.9-1) unstable; urgency=low
+
+  * Update to 1.10.9
+  * Resolved problems with insert chart dialog
+  * Fixed some issues with context menus
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Wed, 25 Aug 2010 22:10:23
++0200
+
+gnumeric (1.10.8-3) unstable; urgency=low
+
+  * Fixed issue with dbg symbols
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 5 Aug 2010 00:48:43
++0200
+
+gnumeric (1.10.8-2) unstable; urgency=low
+
+  * Fixed packaging problems
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 5 Aug 2010 00:23:38
++0200
+
+gnumeric (1.10.8-1) unstable; urgency=low
+
+  * Update to 1.10.8
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Sat, 31 Jul 2010 21:17:40
++0200
+
+gnumeric (1.10.7-1) unstable; urgency=low
+
+  * Update to 1.10.7
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Thu, 3 Jun 2010 14:18:49
++0200
+
+gnumeric (1.10.2-1) unstable; urgency=low
+
+  * Update to 1.10.2
+  * Initial release for fremantle
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl> Mon, 3 May 2010 14:41:04
++0200

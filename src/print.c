@@ -20,6 +20,7 @@
 #include "print.h"
 
 #include "gui-util.h"
+#include "gutils.h"
 #include "sheet-object.h"
 #include "sheet-object-impl.h"
 #include "selection.h"
@@ -1586,7 +1587,12 @@ gnm_print_uri_change_extension (char const *uri, GtkPrintSettings* settings)
 	gchar *res;
 	gint uri_len = strlen(uri);
 
-	g_return_val_if_fail (ext != NULL, NULL);
+	if (ext == NULL) {
+		ext = "pdf";
+		gtk_print_settings_set (settings, 
+					GTK_PRINT_SETTINGS_OUTPUT_FILE_FORMAT,
+					ext);
+	}
 	
 	base     = g_path_get_basename (uri);
 	used_ext = strrchr (base, '.');
@@ -1631,6 +1637,8 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 	if (preview)
 		g_return_if_fail (!export_dst && wbc);
 
+	doc = GO_DOC (sheet->workbook);
+
 	print = gtk_print_operation_new ();
 
 	pi = printing_instance_new ();
@@ -1640,10 +1648,7 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 
 	settings = gnm_conf_get_print_settings ();
 	if (default_range == PRINT_SAVED_INFO) {
-		gint dr = gtk_print_settings_get_int_with_default
-			(settings,
-			 GNUMERIC_PRINT_SETTING_PRINTRANGE_KEY,
-			 PRINT_ACTIVE_SHEET);
+		gint dr = print_info_get_printrange (sheet->print_info);
 		if (dr < 0 || dr >= (gint)G_N_ELEMENTS (pr_translator))
 			default_range = PRINT_ACTIVE_SHEET;
 		else 
@@ -1655,11 +1660,9 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 	pi->pr = default_range;
 	gtk_print_settings_set_use_color (settings,
 					  !sheet->print_info->print_black_and_white);
-
 	if (!export_dst && !preview_via_pdf && !preview) {
 		/* We should be setting the output file name to somethig */
 		/* reasonable */
-		doc = GO_DOC (sheet->workbook);
 		saved_uri = print_info_get_printtofile_uri (sheet->print_info);
 		if (saved_uri != NULL && 
 		    g_ascii_strncasecmp (doc->uri, "file:///", 8) == 0)
@@ -1742,7 +1745,7 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 			char const *printer;
 			settings = gtk_print_operation_get_print_settings (print);
 			gnm_conf_set_print_settings (settings);
-			gnm_insert_meta_date (GO_DOC (sheet->workbook), GSF_META_NAME_PRINT_DATE);
+			gnm_insert_meta_date (doc, GSF_META_NAME_PRINT_DATE);
 			printer = gtk_print_settings_get_printer (settings);
 			if (strcmp (printer, "Print to File") == 0 || 
 			    strcmp (printer, _("Print to File")) == 0) {
@@ -1754,6 +1757,8 @@ gnm_print_sheet (WorkbookControl *wbc, Sheet *sheet,
 				g_free (wb_output_uri);
 			}
 		}
+		print_info_set_from_settings 
+			(sheet->print_info, settings);
 		break;
 	case GTK_PRINT_OPERATION_RESULT_CANCEL:
 		printing_instance_delete (pi);

@@ -98,19 +98,41 @@ enum {
 	TARGET_SHEET
 };
 
-#ifndef HILDON
+#ifndef GNM_USE_HILDON
 static char const *uifilename = NULL;
 static GtkActionEntry const *extra_actions = NULL;
 static int extra_actions_nb;
 #endif
+
+#ifdef GNM_USE_HILDON
 //Special for ok_button context menu
 WBCGtk *wbcg_cm;
+#endif
+
 static guint wbc_gtk_signals[WBC_GTK_LAST_SIGNAL];
 static GObjectClass *parent_class = NULL;
 
+static gboolean
+wbcg_ui_update_begin (WBCGtk *wbcg)
+{
+	g_return_val_if_fail (IS_WBC_GTK (wbcg), FALSE);
+	g_return_val_if_fail (!wbcg->updating_ui, FALSE);
+
+	return (wbcg->updating_ui = TRUE);
+}
+
+static void
+wbcg_ui_update_end (WBCGtk *wbcg)
+{
+	g_return_if_fail (IS_WBC_GTK (wbcg));
+	g_return_if_fail (wbcg->updating_ui);
+
+	wbcg->updating_ui = FALSE;
+}
+
 /****************************************************************************/
 
-#ifndef HILDON
+#ifndef GNM_USE_HILDON
 G_MODULE_EXPORT void
 set_uifilename (char const *name, GtkActionEntry const *actions, int nb)
 {
@@ -1753,13 +1775,13 @@ wbcg_undo_redo_labels (WorkbookControl *wbc, char const *undo, char const *redo)
 static void
 wbcg_paste_from_selection (WorkbookControl *wbc, GnmPasteTarget const *pt)
 {
-	x_request_clipboard ((WBCGtk *)wbc, pt);
+	gnm_x_request_clipboard ((WBCGtk *)wbc, pt);
 }
 
 static gboolean
 wbcg_claim_selection (WorkbookControl *wbc)
 {
-	return x_claim_clipboard ((WBCGtk *)wbc);
+	return gnm_x_claim_clipboard ((WBCGtk *)wbc);
 }
 
 static int
@@ -1857,7 +1879,7 @@ wbcg_close_if_user_permits (WBCGtk *wbcg,
 	if (!ask_user) {
 		done = gui_file_save (wbcg, wb_view);
 		if (done) {
-			x_store_clipboard_if_needed (wb);
+			gnm_x_store_clipboard_if_needed (wb);
 			g_object_unref (wb);
 			return 3;
 		}
@@ -1895,7 +1917,7 @@ wbcg_close_if_user_permits (WBCGtk *wbcg,
 	in_can_close = FALSE;
 
 	if (can_close) {
-		x_store_clipboard_if_needed (wb);
+		gnm_x_store_clipboard_if_needed (wb);
 		g_object_unref (wb);
 		switch (button) {
 		case GNM_RESPONSE_SAVE_ALL:
@@ -2278,10 +2300,7 @@ cb_workbook_debug_info (WBCGtk *wbcg)
 	}
 
 	if (gnm_debug_flag ("style-optimize")) {
-		WORKBOOK_FOREACH_SHEET (wb, sheet, (
-			{
-				sheet_style_optimize (sheet);
-			}));
+		workbook_optimize_style (wb);
 	}
 }
 
@@ -6199,24 +6218,6 @@ wbc_gtk_new (WorkbookView *optional_view,
 
 	wb_control_init_state (wbc);
 	return wbcg;
-}
-
-gboolean
-wbcg_ui_update_begin (WBCGtk *wbcg)
-{
-	g_return_val_if_fail (IS_WBC_GTK (wbcg), FALSE);
-	g_return_val_if_fail (!wbcg->updating_ui, FALSE);
-
-	return (wbcg->updating_ui = TRUE);
-}
-
-void
-wbcg_ui_update_end (WBCGtk *wbcg)
-{
-	g_return_if_fail (IS_WBC_GTK (wbcg));
-	g_return_if_fail (wbcg->updating_ui);
-
-	wbcg->updating_ui = FALSE;
 }
 
 GtkWindow *

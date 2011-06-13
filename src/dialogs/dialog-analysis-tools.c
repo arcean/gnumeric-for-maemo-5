@@ -321,7 +321,7 @@ cb_tool_cancel_clicked (G_GNUC_UNUSED GtkWidget *button,
  * Setup the buttons
  *
  **/
-void
+static void
 dialog_tool_init_buttons (GenericToolState *state,
 			  GCallback ok_function,
 			  GCallback close_function)
@@ -526,7 +526,8 @@ tool_load_selection (GenericToolState *state, gboolean allow_multiple)
 
 	gtk_widget_show (state->dialog);
 	gnm_expr_entry_grab_focus (GNM_EXPR_ENTRY (state->input_entry),
-				   FALSE);
+				   TRUE);
+	
 }
 
 

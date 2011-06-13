@@ -44,6 +44,7 @@
 #include <expr.h>
 #include <expr-impl.h>
 #include <expr-name.h>
+#include <func.h>
 #include <value.h>
 #include <ranges.h>
 #include <mstyle.h>
@@ -2511,9 +2512,9 @@ odf_cell_is_covered (Sheet const *sheet, GnmCell *current_cell,
 static void
 odf_write_comment (GnmOOExport *state, GnmComment const *cc)
 {
-	char const *author;
-	char const *text;
-	const PangoAttrList * markup;
+	char *author = NULL;
+	char *text = NULL;
+	PangoAttrList * markup = NULL;
 	gboolean pp = TRUE;
 
 	g_object_get (G_OBJECT (state->xml), "pretty-print", &pp, NULL);
@@ -2526,16 +2527,21 @@ odf_write_comment (GnmOOExport *state, GnmComment const *cc)
 		gsf_xml_out_start_element (state->xml, DUBLINCORE "creator");
 		gsf_xml_out_add_cstr (state->xml, NULL, author);
 		gsf_xml_out_end_element (state->xml); /*  DUBLINCORE "creator" */;
+		g_free (author);
 	}
-	g_object_set (G_OBJECT (state->xml), "pretty-print", FALSE, NULL);
-	gsf_xml_out_start_element (state->xml, TEXT "p");
-	if (markup != NULL)
-		odf_new_markup (state, markup, text);
-	else {
-		gboolean white_written = TRUE;
-		odf_add_chars (state, text, strlen (text), &white_written);
+	if (text != NULL) {
+		g_object_set (G_OBJECT (state->xml), "pretty-print", FALSE, NULL);
+		gsf_xml_out_start_element (state->xml, TEXT "p");
+		if (markup != NULL) {
+			odf_new_markup (state, markup, text);
+			pango_attr_list_unref (markup);
+		} else {
+			gboolean white_written = TRUE;
+			odf_add_chars (state, text, strlen (text), &white_written);
+		}
+		gsf_xml_out_end_element (state->xml);   /* p */
+		g_free (text);
 	}
-	gsf_xml_out_end_element (state->xml);   /* p */
 	g_object_set (G_OBJECT (state->xml), "pretty-print", pp, NULL);
 	gsf_xml_out_end_element (state->xml); /*  OFFICE "annotation" */
 }
@@ -4268,13 +4274,13 @@ odf_write_content (GnmOOExport *state, GsfOutput *child)
 		has_autofilters |= (sheet->filters != NULL);
 		odf_update_progress (state, state->sheet_progress);
 	}
-	if (state->wb->names != NULL) {
-		gsf_xml_out_start_element (state->xml, TABLE "named-expressions");
-		workbook_foreach_name
-			(state->wb, (get_gsf_odf_version () > 101),
-			 (GHFunc)&odf_write_named_expression, state);
-		gsf_xml_out_end_element (state->xml); /* </table:named-expressions> */
-	}
+
+	gsf_xml_out_start_element (state->xml, TABLE "named-expressions");
+	workbook_foreach_name
+		(state->wb, (get_gsf_odf_version () > 101),
+		 (GHFunc)&odf_write_named_expression, state);
+	gsf_xml_out_end_element (state->xml); /* </table:named-expressions> */
+
 	if (has_autofilters) {
 		gsf_xml_out_start_element (state->xml, TABLE "database-ranges");
 		for (i = 0; i < workbook_sheet_count (state->wb); i++) {
@@ -4716,7 +4722,7 @@ odf_write_gnm_settings (GnmOOExport *state)
 static void
 odf_write_ooo_settings (GnmOOExport *state)
 {
-	GSList *l;
+	GSList *l, *sheets;
 
 	gsf_xml_out_start_element (state->xml, CONFIG "config-item-set");
 	gsf_xml_out_add_cstr_unchecked (state->xml, CONFIG "name", OOO "view-settings");
@@ -4733,7 +4739,8 @@ odf_write_ooo_settings (GnmOOExport *state)
 	gsf_xml_out_add_cstr_unchecked (state->xml, CONFIG "name",
 				        "Tables");
 
-	for (l = workbook_sheets (state->wb); l != NULL; l = l->next) {
+	sheets = workbook_sheets (state->wb);
+	for (l = sheets; l != NULL; l = l->next) {
 		Sheet *sheet = l->data;
 		gsf_xml_out_start_element (state->xml, CONFIG "config-item-map-entry");
 		gsf_xml_out_add_cstr (state->xml, CONFIG "name", sheet->name_unquoted);
@@ -4752,6 +4759,7 @@ odf_write_ooo_settings (GnmOOExport *state)
 
 		gsf_xml_out_end_element (state->xml); /* </config:config-item-map-entry> */
 	}
+	g_slist_free (sheets);
 
 	gsf_xml_out_end_element (state->xml); /* </config:config-item-map-named> */
 	gsf_xml_out_end_element (state->xml); /* </config:config-item-map-entry> */

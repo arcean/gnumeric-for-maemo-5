@@ -548,12 +548,6 @@ workbook_optimize_style (Workbook *wb)
 	});
 }
 
-GSList *
-workbook_local_functions (Workbook const *wb)
-{
-	return NULL;
-}
-
 void
 workbook_foreach_name (Workbook const *wb, gboolean globals_only,
 		       GHFunc func, gpointer data)
@@ -1326,7 +1320,7 @@ workbook_sheet_state_size (const WorkbookSheetState *wss)
 	int i;
 	for (i = 0; i < wss->n_sheets; i++) {
 		WorkbookSheetStateSheet *wsss = wss->sheets + i;
-		size += 50;  /* For ->sheet.  */
+		size += 5;  /* For ->sheet.  */
 		size += g_slist_length (wsss->properties);
 	}
 	return size;

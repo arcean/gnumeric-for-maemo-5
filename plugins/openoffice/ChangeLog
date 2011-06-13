@@ -1,3 +1,52 @@
+2011-06-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_fraction): handle absence of min_i_digits
+	correctly depending on ODF version
+	(odf_find_version): new
+	(styles_dtd): connect odf_find_version and add a bunch of stubs
+	(opendoc_content_dtd): connect odf_find_version
+	(openoffice_file_open): initialize new field ver_odf
+
+2011-05-28  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_comment): fix leak
+
+2011-05-27  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_comment): assume nothing
+
+2011-05-27  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_rangeref_parse): handle foreign workbooks
+
+2011-05-27  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_cellref_parse): add argument, change
+	all callers, don't create sheets that are in foreign workbooks
+	(odf_parse_external): new
+	(oo_rangeref_parse): add argument, change all callers, consider
+	foreign workbooks
+	(oo_conventions_new): add arguments and create augmented conventions
+	(oo_load_convention): add argument, change all callers
+	(oo_col_start): use oo_warning rather than g_warning
+	(odf_clear_conventions): new, use whenever xin changes
+	(opendoc_content_dtd): add table:table-source
+
+2011-05-22  Morten Welinder  <terra@gnome.org>
+
+	* openoffice-write.c (odf_write_ooo_settings): Plug leak.
+
+	* openoffice-read.c (openoffice_file_open): Plug leak during
+	debug.
+
+	* openoffice-write.c (odf_write_content): Remove test for
+	always-true condition.  If we must have that check, it should
+	check for an active global name that we intend to write.
+
+2011-05-21  Morten Welinder  <terra@gnome.org>
+
+	* openoffice-read.c (odf_fix_en_apply): Use expr_name_set_name.
+
 2011-05-21  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.15

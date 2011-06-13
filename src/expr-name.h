@@ -3,9 +3,7 @@
 # define _GNM_EXPR_NAME_H_
 
 #include "gnumeric.h"
-#include "expr.h"
-#include "func.h"
-#include "parse-util.h"
+#include "position.h"
 #include <goffice/goffice.h>
 
 G_BEGIN_DECLS
@@ -40,14 +38,19 @@ void	 expr_name_unref      (GnmNamedExpr *nexpr);
 void     expr_name_remove     (GnmNamedExpr *nexpr);
 GnmValue*expr_name_eval       (GnmNamedExpr const *ne, GnmEvalPos const *ep,
 			       GnmExprEvalFlags flags);
+
 const char *expr_name_name    (GnmNamedExpr const *nexpr);
+gboolean expr_name_set_name   (GnmNamedExpr *nexpr, const char *new_name);
+
+gboolean expr_name_is_placeholder (GnmNamedExpr const *ne);
+void expr_name_set_is_placeholder (GnmNamedExpr *ne, gboolean is_placeholder);
+
 char    *expr_name_as_string  (GnmNamedExpr const *ne, GnmParsePos const *pp,
 			       GnmConventions const *fmt);
-char    *expr_name_set_scope  (GnmNamedExpr *ne, Sheet *sheet);
+char    *expr_name_set_pos    (GnmNamedExpr *ne, GnmParsePos const *pp);
 void	 expr_name_set_expr   (GnmNamedExpr *ne, GnmExprTop const *texpr);
 void	 expr_name_add_dep    (GnmNamedExpr *ne, GnmDependent *dep);
 void	 expr_name_remove_dep (GnmNamedExpr *ne, GnmDependent *dep);
-gboolean expr_name_is_placeholder (GnmNamedExpr const *ne);
 gboolean expr_name_is_active  (GnmNamedExpr const *ne);
 void	 expr_name_downgrade_to_placeholder (GnmNamedExpr *nexpr);
 gboolean expr_name_in_use     (GnmNamedExpr *nexpr);
@@ -55,8 +58,6 @@ gboolean expr_name_in_use     (GnmNamedExpr *nexpr);
 int      expr_name_cmp_by_name    (GnmNamedExpr const *a, GnmNamedExpr const *b);
 gboolean expr_name_check_for_loop (char const *name, GnmExprTop const *texpr);
 
-GSList  *gnm_named_expr_collection_list (GnmNamedExprCollection const *scope);
-GList	   *sheet_names_get_available (Sheet const *sheet);
 char const *sheet_names_check	      (Sheet const *sheet, GnmRange const *r);
 
 GOUndo *expr_name_set_expr_undo_new (GnmNamedExpr *ne);
@@ -78,13 +79,10 @@ void gnm_named_expr_collection_relink (GnmNamedExprCollection *names);
 void gnm_named_expr_collection_foreach (GnmNamedExprCollection *names,
 					GHFunc func,
 					gpointer data);
+GSList  *gnm_named_expr_collection_list (GnmNamedExprCollection const *scope);
 
 GnmNamedExpr *gnm_named_expr_collection_lookup (GnmNamedExprCollection const *scope,
 						char const *name);
-void gnm_named_expr_collection_rename (GnmNamedExprCollection *names,
-				       gchar const *old_name,
-				       gchar const *new_name);
-
 G_END_DECLS
 
 #endif /* _GNM_EXPR_NAME_H_ */

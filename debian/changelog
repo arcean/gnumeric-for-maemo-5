@@ -1,3 +1,9 @@
+gnumeric (1.10.16-0.1) unstable; urgency=low
+
+  * synced with the master branch
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl>  Fri, 10 Jun 2011 17:39:58 +0200
+
 gnumeric (1.10.15-1) unstable; urgency=low
 
   * Updated to 1.10.15

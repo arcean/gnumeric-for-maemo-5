@@ -29,7 +29,6 @@
 #include <gnm-plugin.h>
 #include <workbook-view.h>
 #include <workbook.h>
-#include <workbook-priv.h>
 #include <sheet.h>
 #include <sheet-merge.h>
 #include <sheet-filter.h>
@@ -39,6 +38,7 @@
 #include <expr.h>
 #include <expr-impl.h>
 #include <expr-name.h>
+#include <func.h>
 #include <parse-util.h>
 #include <style-color.h>
 #include <sheet-style.h>
@@ -299,6 +299,7 @@ typedef struct {
 	GOIOContext	*context;	/* The IOcontext managing things */
 	WorkbookView	*wb_view;	/* View for the new workbook */
 	OOVer		 ver;		/* Its an OOo v1.0 or v2.0? */
+	gnm_float	 ver_odf;	/* specific ODF version */
 	GsfInfile	*zip;		/* Reference to the open file, to load graphs and images*/
 	OOChartInfo	 chart;
 	GnmParsePos	 pos;
@@ -372,6 +373,12 @@ typedef struct {
 } OOParseState;
 
 typedef struct {
+	GnmConventions base;
+	OOParseState *state;
+	GsfXMLIn *xin;
+} ODFConventions;
+
+typedef struct {
 	GOColor from;
 	GOColor to;
 	gnm_float brightness;
@@ -384,6 +391,9 @@ static GsfXMLInNode const * get_dtd (void);
 static GsfXMLInNode const * get_styles_dtd (void);
 static void oo_chart_style_free (OOChartStyle *pointer);
 static OOFormula odf_get_formula_type (GsfXMLIn *xin, char const **str);
+static char const *odf_strunescape (char const *string, GString *target,
+				    G_GNUC_UNUSED GnmConventions const *convs);
+
 
 /* Implementations */
 static void
@@ -1068,7 +1078,8 @@ oo_cellref_check_for_err (GnmCellRef *ref, char const **start)
 }
 
 static char const *
-oo_cellref_parse (GnmCellRef *ref, char const *start, GnmParsePos const *pp)
+oo_cellref_parse (GnmCellRef *ref, char const *start, GnmParsePos const *pp,
+		  gchar **foreign_sheet)
 {
 	char const *tmp, *ptr = start;
 	GnmSheetSize const *ss;
@@ -1120,18 +1131,24 @@ two_quotes :
 		if (name[0] == 0)
 			return start;
 
-		/* OpenCalc does not pre-declare its sheets, but it does have a
-		 * nice unambiguous format.  So if we find a name that has not
-		 * been added yet add it.  Reorder below. */
-		ref->sheet = workbook_sheet_by_name (pp->wb, name);
-		if (ref->sheet == NULL) {
-			if (strcmp (name, "#REF!") == 0) {
-				ref->sheet = invalid_sheet;
-			} else {
-				/* We can't add it yet since this whole ref */
-				/* may be invalid */
-				new_sheet_name = g_strdup (name);
-				ref->sheet = NULL;
+		if (foreign_sheet != NULL) {
+			/* This is a reference to a foreign workbook */
+			*foreign_sheet = g_strdup (name);
+			ref->sheet = NULL;
+		} else {
+			/* OpenCalc does not pre-declare its sheets, but it does have a
+			 * nice unambiguous format.  So if we find a name that has not
+			 * been added yet add it.  Reorder below. */
+			ref->sheet = workbook_sheet_by_name (pp->wb, name);
+			if (ref->sheet == NULL) {
+				if (strcmp (name, "#REF!") == 0) {
+					ref->sheet = invalid_sheet;
+				} else {
+					/* We can't add it yet since this whole ref */
+					/* may be invalid */
+					new_sheet_name = g_strdup (name);
+					ref->sheet = NULL;
+				}
 			}
 		}
 	} else {
@@ -1167,7 +1184,7 @@ two_quotes :
 	sheet = eval_sheet (ref->sheet, pp->sheet);
 	ss = gnm_sheet_get_size (sheet);
 
-	if (ss->max_cols <= ref->col || ss->max_rows <= ref->row) {
+	if (foreign_sheet == NULL && (ss->max_cols <= ref->col || ss->max_rows <= ref->row)) {
 		int new_cols = ref->col + 1, new_rows = ref->row + 1;
 		GOUndo   * goundo;
 		gboolean err;
@@ -1190,21 +1207,83 @@ two_quotes :
 }
 
 static char const *
-oo_rangeref_parse (GnmRangeRef *ref, char const *start, GnmParsePos const *pp)
+odf_parse_external (char const *start, gchar **external,
+		    GnmConventions const *convs)
 {
-	char const *ptr = oo_cellref_parse (&ref->a, start, pp);
+	char const *ptr;
+	GString *str;
+
+	/* Source ::= "'" IRI "'" "#" */
+	if (*start != '\'')
+		return start;
+	str = g_string_new (NULL);
+	ptr = odf_strunescape (start, str, convs);
+
+	if (ptr == NULL || *ptr != '#') {
+		g_string_free (str, TRUE);
+		return start;
+	}
+
+	*external = g_string_free (str, FALSE);
+	return (ptr + 1);
+}
+
+static char const *
+oo_rangeref_parse (GnmRangeRef *ref, char const *start, GnmParsePos const *pp,
+		   GnmConventions const *convs)
+{
+	char const *ptr;
+	char *external = NULL;
+	char *external_sheet_1 = NULL;
+	char *external_sheet_2 = NULL;
+	ODFConventions *oconv = (ODFConventions *)convs;
+
+	ptr = odf_parse_external (start, &external, convs);
+
+	ptr = oo_cellref_parse (&ref->a, ptr, pp, 
+				external == NULL ? NULL : &external_sheet_1);
 	if (*ptr == ':')
-		ptr = oo_cellref_parse (&ref->b, ptr+1, pp);
+		ptr = oo_cellref_parse (&ref->b, ptr+1, pp, 
+				external == NULL ? NULL : &external_sheet_2);
 	else
 		ref->b = ref->a;
 	if (ref->b.sheet == invalid_sheet)
 		ref->a.sheet = invalid_sheet;
+	if (external != NULL) {
+		Workbook *wb = pp->wb, *ext_wb;
+		Workbook *ref_wb = wb ? wb : pp->sheet->workbook;
+
+		ext_wb = (*convs->input.external_wb) (convs, ref_wb, external);
+		if (ext_wb == NULL) {
+			if (oconv != NULL)
+				oo_warning (oconv->xin, 
+					    _("Ignoring reference to unknown "
+					      "external workbook '%s'"), 
+					    external);
+			ref->a.sheet = invalid_sheet;
+		} else {
+			if (external_sheet_1 != NULL)
+				ref->a.sheet = workbook_sheet_by_name 
+					(ext_wb, external_sheet_1);
+			else 
+				ref->a.sheet = workbook_sheet_by_index
+					(ext_wb, 0);
+			if (external_sheet_2 != NULL)
+				ref->b.sheet = workbook_sheet_by_name 
+					(ext_wb, external_sheet_1);
+			else 
+				ref->b.sheet = NULL;
+		}
+		g_free (external);
+		g_free (external_sheet_1);
+		g_free (external_sheet_2);
+	}
 	return ptr;
 }
 
 static char const *
 oo_expr_rangeref_parse (GnmRangeRef *ref, char const *start, GnmParsePos const *pp,
-			G_GNUC_UNUSED GnmConventions const *convs)
+			GnmConventions const *convs)
 {
 	char const *ptr;
 	if (*start == '[') {
@@ -1212,7 +1291,7 @@ oo_expr_rangeref_parse (GnmRangeRef *ref, char const *start, GnmParsePos const *
 			ref->a.sheet = invalid_sheet;
 			return start + 7;
 		}
-		ptr = oo_rangeref_parse (ref, start+1, pp);
+		ptr = oo_rangeref_parse (ref, start+1, pp, convs);
 		if (*ptr == ']')
 			return ptr + 1;
 	}
@@ -1287,18 +1366,20 @@ odf_fix_expr_names_t_add (odf_fix_expr_names_t *fen, char const *orig, char *fix
 static gboolean
 odf_fix_en_validate (char const *name, odf_fix_expr_names_t *fen)
 {
-	GSList *sheets;
-
 	if (!expr_name_validate (name))
 		return FALSE;
 	if (NULL != g_hash_table_lookup (fen->fixed2orig, name))
 		return FALSE;
-	if (NULL != gnm_named_expr_collection_lookup (fen->state->pos.wb->names, name))
-		return FALSE;
-	for (sheets = workbook_sheets (fen->state->pos.wb); sheets != NULL; sheets = sheets->next)
-		if (NULL != gnm_named_expr_collection_lookup 
-		    (((Sheet *)(sheets->data))->names, name))
-			return FALSE;
+
+	WORKBOOK_FOREACH_SHEET
+		(fen->state->pos.wb, sheet,
+		 {
+			 GnmParsePos pp;
+			 parse_pos_init_sheet (&pp, sheet);
+			 if (expr_name_lookup (&pp, name))
+				 return FALSE;
+		 });
+
 	return TRUE;
 }
 
@@ -1321,14 +1402,11 @@ odf_fix_en_collect (gchar const *key, GnmNamedExpr *nexpr, odf_fix_expr_names_t 
 }
 
 static void 
-odf_fix_en_apply (gchar const *orig, gchar const *fixed, OOParseState *state)
+odf_fix_en_apply (const char *orig, GnmNamedExpr *nexpr, GHashTable *orig2fixed)
 {
-	GSList *sheets = workbook_sheets (state->pos.wb), *l;
-	gnm_named_expr_collection_rename (state->pos.wb->names, orig, fixed);
-	for (l = sheets; l != NULL; l = l->next) {
-		Sheet *sheet = l->data;
-		gnm_named_expr_collection_rename (sheet->names, orig, fixed);
-	}
+	const char *fixed = g_hash_table_lookup (orig2fixed, orig);
+	if (fixed)
+		expr_name_set_name (nexpr, fixed);
 }
 
 /**
@@ -1342,20 +1420,12 @@ static void
 odf_fix_expr_names (OOParseState *state)
 {
 	odf_fix_expr_names_t *fen = odf_fix_expr_names_t_new (state);
-	GSList *sheets = workbook_sheets (state->pos.wb), *l;
 
-	g_hash_table_foreach (state->pos.wb->names->names, 
-			      (GHFunc)odf_fix_en_collect, fen);
-	g_hash_table_foreach (state->pos.wb->names->placeholders, 
-			      (GHFunc)odf_fix_en_collect, fen);
-	for (l = sheets; l != NULL; l = l->next) {
-		Sheet *sheet = l->data;
-		g_hash_table_foreach (sheet->names->names, 
-				      (GHFunc) odf_fix_en_collect, fen);
-		g_hash_table_foreach (sheet->names->placeholders, 
-				      (GHFunc) odf_fix_en_collect, fen);
-	}
-	g_hash_table_foreach (fen->orig2fixed, (GHFunc) odf_fix_en_apply, state);
+	workbook_foreach_name (state->pos.wb, FALSE,
+			       (GHFunc)odf_fix_en_collect, fen);
+	workbook_foreach_name (state->pos.wb, FALSE,
+			       (GHFunc)odf_fix_en_apply, fen->orig2fixed);
+
 	odf_fix_expr_names_t_free (fen);
 }
 
@@ -1408,10 +1478,11 @@ oo_func_map_in (GnmConventions const *convs, Workbook *scope,
 		char const *name, GnmExprList *args);
 
 static GnmConventions *
-oo_conventions_new (void)
+oo_conventions_new (OOParseState *state, GsfXMLIn *xin)
 {
-	GnmConventions *conv = gnm_conventions_new ();
-
+	GnmConventions *conv = gnm_conventions_new_full 
+		(sizeof (ODFConventions));
+	ODFConventions *oconv = (ODFConventions *)conv;
 	conv->decode_ampersands	= TRUE;
 	conv->exp_is_left_associative = TRUE;
 
@@ -1426,12 +1497,14 @@ oo_conventions_new (void)
 	conv->input.range_ref	= oo_expr_rangeref_parse;
 	conv->input.name_validate    = odf_expr_name_validate;
 	conv->sheet_name_sep	= '.';
+	oconv->state            = state;
+	oconv->xin              = xin;
 
 	return conv;
 }
 
 static void
-oo_load_convention (OOParseState *state, OOFormula type)
+oo_load_convention (OOParseState *state, GsfXMLIn *xin, OOFormula type)
 {
 	GnmConventions *convs;
 
@@ -1443,13 +1516,13 @@ oo_load_convention (OOParseState *state, OOFormula type)
 		convs->exp_is_left_associative = TRUE;
 		break;
 	case FORMULA_OLD_OPENOFFICE:
-		convs = oo_conventions_new ();
+		convs = oo_conventions_new (state, xin);
 		convs->sheet_name_sep	= '!'; /* Note that we are using this also as a marker*/
 		                               /* in the function handlers */
 		break;
 	case FORMULA_OPENFORMULA:
 	default:
-		convs = oo_conventions_new ();
+		convs = oo_conventions_new (state, xin);
 		break;
 	}
 
@@ -1464,7 +1537,7 @@ oo_expr_parse_str_try (GsfXMLIn *xin, char const *str,
 	OOParseState *state = (OOParseState *)xin->user_state;
 
 	if (state->convs[type] == NULL)
-		oo_load_convention (state, type);
+		oo_load_convention (state, xin, type);
 	return gnm_expr_parse_str (str, pp, flags,
 				    state->convs[type], perr);
 }
@@ -2201,8 +2274,8 @@ oo_col_start (GsfXMLIn *xin, xmlChar const **attrs)
 		max_cols = oo_extent_sheet_cols (state->pos.sheet, state->pos.eval.col
 						 + repeat_count);
 		if (state->pos.eval.col + repeat_count > max_cols) {
-			g_warning ("Ignoring column information beyond"
-				   " the range we can handle.");
+			oo_warning (xin, _("Ignoring column information beyond"
+					   " column %i"), max_cols);
 			repeat_count = max_cols - state->pos.eval.col - 1;
 		}
 	}
@@ -3591,7 +3664,7 @@ odf_fraction (GsfXMLIn *xin, xmlChar const **attrs)
 	int denominator = 0;
 	int min_d_digits = 0;
 	int max_d_digits = 3;
-	int min_i_digits = 0;
+	int min_i_digits = -1;
 	int min_n_digits = 0;
 
 
@@ -3616,10 +3689,10 @@ odf_fraction (GsfXMLIn *xin, xmlChar const **attrs)
 					       "min-numerator-digits", &min_n_digits, 0, 30))
 			;
 
-	if (!no_int_part) {
+	if (!no_int_part && (state->ver_odf < 1.2 || min_i_digits >= 0)) {
 		g_string_append_c (state->cur_format.accum, '#');
 		odf_go_string_append_c_n (state->cur_format.accum, '0',
-					  min_i_digits);
+					  min_i_digits > 0 ? min_i_digits : 0);
 		g_string_append_c (state->cur_format.accum, ' ');
 	}
 	g_string_append_c (state->cur_format.accum, '?');
@@ -5243,10 +5316,11 @@ oo_db_range_start (GsfXMLIn *xin, xmlChar const **attrs)
 
 	for (; attrs != NULL && attrs[0] && attrs[1] ; attrs += 2)
 		if (gsf_xml_in_namecmp (xin, CXML2C (attrs[0]), OO_NS_TABLE, "target-range-address")) {
-			char const *ptr = oo_cellref_parse (&ref.a, CXML2C (attrs[1]), &state->pos);
+			char const *ptr = oo_cellref_parse 
+				(&ref.a, CXML2C (attrs[1]), &state->pos, NULL);
 			if (ref.a.sheet != invalid_sheet &&
 			    ':' == *ptr &&
-			    '\0' == *oo_cellref_parse (&ref.b, ptr+1, &state->pos) &&
+			    '\0' == *oo_cellref_parse (&ref.b, ptr+1, &state->pos, NULL) &&
 			    ref.b.sheet != invalid_sheet) {
 				state->filter = gnm_filter_new 
 					(ref.a.sheet, range_init_rangeref (&r, &ref));
@@ -5264,10 +5338,10 @@ oo_db_range_start (GsfXMLIn *xin, xmlChar const **attrs)
 	/* expression or range with that name. */
 	if (expr != NULL) {
 		GnmNamedExpr *nexpr = NULL;
-		if (name != NULL
-		    && (NULL == (nexpr = expr_name_lookup
-				 (parse_pos_init (&pp, state->pos.wb, NULL, 0, 0), name)) ||
-			nexpr->is_placeholder)) {
+		if (name != NULL &&
+		    (NULL == (nexpr = expr_name_lookup
+			      (parse_pos_init (&pp, state->pos.wb, NULL, 0, 0), name)) ||
+		     expr_name_is_placeholder (nexpr))) {
 			GnmExprTop const *texpr = gnm_expr_top_new (expr);
 			expr_name_add (&pp, name, texpr, NULL, TRUE, NULL);
 		} else
@@ -5565,7 +5639,8 @@ od_draw_control_start (GsfXMLIn *xin, xmlChar const **attrs)
 				GnmRangeRef ref;
 				char const *ptr = oo_rangeref_parse
 					(&ref, oc->linked_cell,
-					 parse_pos_init_sheet (&pp, state->pos.sheet));
+					 parse_pos_init_sheet (&pp, state->pos.sheet),
+					 NULL);
 				if (ptr != oc->linked_cell 
 				    && ref.a.sheet != invalid_sheet) {
 					GnmValue *v = value_new_cellrange
@@ -5603,7 +5678,8 @@ od_draw_control_start (GsfXMLIn *xin, xmlChar const **attrs)
 					GnmRangeRef ref;
 					char const *ptr = oo_rangeref_parse
 						(&ref, oc->source_cell_range,
-						 parse_pos_init_sheet (&pp, state->pos.sheet));
+						 parse_pos_init_sheet (&pp, state->pos.sheet),
+						 NULL);
 					if (ptr != oc->source_cell_range && 
 					    ref.a.sheet != invalid_sheet) {
 						GnmValue *v = value_new_cellrange
@@ -5637,6 +5713,17 @@ pop_hash (GSList **list, GHashTable **hash)
 		*hash = (*list)->data;
 		*list = g_slist_delete_link (*list, *list);
 	}
+}
+
+static void
+odf_clear_conventions (OOParseState *state)
+{
+	gint i;
+	for (i = 0; i < NUM_FORMULAE_SUPPORTED; i++)
+		if (state->convs[i] != NULL) {
+			gnm_conventions_unref (state->convs[i]);
+			state->convs[i] = NULL;
+		}
 }
 
 static void
@@ -5726,8 +5813,10 @@ od_draw_object (GsfXMLIn *xin, xmlChar const **attrs)
 	if (content != NULL) {
 		GsfXMLInDoc *doc =
 			gsf_xml_in_doc_new (get_styles_dtd (), gsf_ooo_ns);
+		odf_clear_conventions (state); /* contain references to xin */
 		gsf_xml_in_doc_parse (doc, content, state);
 		gsf_xml_in_doc_free (doc);
+		odf_clear_conventions (state); /* contain references to xin */
 		g_object_unref (content);
 	}
 
@@ -5735,8 +5824,10 @@ od_draw_object (GsfXMLIn *xin, xmlChar const **attrs)
 	if (content != NULL) {
 		GsfXMLInDoc *doc =
 			gsf_xml_in_doc_new (get_dtd (), gsf_ooo_ns);
+		odf_clear_conventions (state); /* contain references to xin */
 		gsf_xml_in_doc_parse (doc, content, state);
 		gsf_xml_in_doc_free (doc);
+		odf_clear_conventions (state); /* contain references to xin */
 		g_object_unref (content);
 	}
 	if (state->debug)
@@ -6073,8 +6164,10 @@ oo_plot_assign_dim (GsfXMLIn *xin, xmlChar const *range, int dim_type, char cons
 
 	if (NULL != range) {
 		GnmRangeRef ref;
-		char const *ptr = oo_rangeref_parse (&ref, CXML2C (range),
-			parse_pos_init_sheet (&pp, state->pos.sheet));
+		char const *ptr = oo_rangeref_parse 
+			(&ref, CXML2C (range),
+			 parse_pos_init_sheet (&pp, state->pos.sheet),
+			 NULL);
 		if (ptr == CXML2C (range) || ref.a.sheet == invalid_sheet)
 			return;
 		v = value_new_cellrange (&ref.a, &ref.b, 0, 0);
@@ -6210,8 +6303,9 @@ oo_plot_area (GsfXMLIn *xin, xmlChar const **attrs)
 		GnmEvalPos  ep;
 		GnmRangeRef ref;
 		Sheet	   *dummy;
-		char const *ptr = oo_rangeref_parse (&ref, CXML2C (source_range_str),
-			parse_pos_init_sheet (&pp, state->pos.sheet));
+		char const *ptr = oo_rangeref_parse 
+			(&ref, CXML2C (source_range_str),
+			 parse_pos_init_sheet (&pp, state->pos.sheet), NULL);
 		if (ptr != CXML2C (source_range_str) 
 		    && ref.a.sheet != invalid_sheet) {
 			gnm_rangeref_normalize (&ref,
@@ -6415,8 +6509,11 @@ oo_plot_series (GsfXMLIn *xin, xmlChar const **attrs)
 					GnmValue *v;
 					GnmExprTop const *texpr;
 					GnmParsePos pp;
-					char const *ptr = oo_rangeref_parse (&ref, CXML2C (attrs[1]),
-									     parse_pos_init_sheet (&pp, state->pos.sheet));
+					char const *ptr = oo_rangeref_parse 
+						(&ref, CXML2C (attrs[1]),
+						 parse_pos_init_sheet 
+						 (&pp, state->pos.sheet),
+						 NULL);
 					if (ptr == CXML2C (attrs[1]) || 
 					    ref.a.sheet == invalid_sheet)
 						return;
@@ -6463,7 +6560,8 @@ oo_plot_series (GsfXMLIn *xin, xmlChar const **attrs)
 			GnmRangeRef ref;
 			char const *ptr = oo_rangeref_parse
 				(&ref, CXML2C (label),
-				 parse_pos_init_sheet (&pp, state->pos.sheet));
+				 parse_pos_init_sheet (&pp, state->pos.sheet),
+				 NULL);
 			if (ptr == CXML2C (label) 
 			    || ref.a.sheet == invalid_sheet)
 				texpr = oo_expr_parse_str (xin, label,
@@ -6653,7 +6751,8 @@ odf_store_data (OOParseState *state, gchar const *str, GogObject *obj, int dim)
 		GnmRangeRef ref;
 		char const *ptr = oo_rangeref_parse
 			(&ref, CXML2C (str),
-			 parse_pos_init (&pp, state->pos.wb, NULL, 0, 0));
+			 parse_pos_init (&pp, state->pos.wb, NULL, 0, 0),
+			 NULL);
 		if (ptr != CXML2C (str) && ref.a.sheet != invalid_sheet) {
 			GnmValue *v = value_new_cellrange (&ref.a, &ref.b, 0, 0);
 			GnmExprTop const *texpr = gnm_expr_top_new_constant (v);
@@ -7119,7 +7218,8 @@ odf_line (GsfXMLIn *xin, xmlChar const **attrs)
 			GnmRangeRef ref;
 			char const *ptr = oo_rangeref_parse
 				(&ref, CXML2C (attrs[1]),
-				 parse_pos_init_sheet (&pp, state->pos.sheet));
+				 parse_pos_init_sheet (&pp, state->pos.sheet),
+				 NULL);
 			if (ptr != CXML2C (attrs[1]) 
 			    && ref.a.sheet != invalid_sheet) {
 				cell_base.end.col = ref.a.col;
@@ -7748,18 +7848,31 @@ oo_marker (GsfXMLIn *xin, xmlChar const **attrs)
 
 /**************************************************************************/
 
+static void
+odf_find_version (GsfXMLIn *xin, xmlChar const **attrs)
+{
+	OOParseState *state = (OOParseState *)xin->user_state;
+	
+	for (; attrs != NULL && attrs[0] && attrs[1] ; attrs += 2)
+		if (oo_attr_float (xin, attrs, OO_NS_OFFICE,
+					"version", &state->ver_odf));
+}
+
+/**************************************************************************/
+
 static GsfXMLInNode const styles_dtd[] = {
 GSF_XML_IN_NODE_FULL (START, START, -1, NULL, GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
 
 /* ooo-1.x */
-GSF_XML_IN_NODE (START, OFFICE_FONTS, OO_NS_OFFICE, "font-decls", GSF_XML_NO_CONTENT, NULL, NULL),
-  GSF_XML_IN_NODE (OFFICE_FONTS, FONT_DECL, OO_NS_STYLE, "font-decl", GSF_XML_NO_CONTENT, NULL, NULL),
+GSF_XML_IN_NODE (START, OFFICE_FONTS_OOO1, OO_NS_OFFICE, "font-decls", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (OFFICE_FONTS_OOO1, FONT_DECL_OOO1, OO_NS_STYLE, "font-decl", GSF_XML_NO_CONTENT, NULL, NULL),
 
-/* ooo-2.x */
-GSF_XML_IN_NODE (START, OFFICE_FONTS, OO_NS_OFFICE, "font-face-decls", GSF_XML_NO_CONTENT, NULL, NULL),
-  GSF_XML_IN_NODE (OFFICE_FONTS, FONT_DECL, OO_NS_STYLE, "font-face", GSF_XML_NO_CONTENT, NULL, NULL),
+/* ooo-2.x, ooo-3.x */
+GSF_XML_IN_NODE (START, OFFICE_DOC_STYLES, OO_NS_OFFICE, "document-styles", GSF_XML_NO_CONTENT, &odf_find_version, NULL),
+GSF_XML_IN_NODE (OFFICE_DOC_STYLES, OFFICE_FONTS, OO_NS_OFFICE, "font-face-decls", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (OFFICE_FONTS, FONT_DECL, OO_NS_STYLE, "font-face", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
 
-GSF_XML_IN_NODE (START, OFFICE_STYLES, OO_NS_OFFICE, "styles", GSF_XML_NO_CONTENT, NULL, NULL),
+GSF_XML_IN_NODE (OFFICE_DOC_STYLES, OFFICE_STYLES, OO_NS_OFFICE, "styles", GSF_XML_NO_CONTENT, NULL, NULL),
   GSF_XML_IN_NODE (OFFICE_STYLES, FILLIMAGE, OO_NS_DRAW, "fill-image", GSF_XML_NO_CONTENT, &oo_fill_image, NULL),
   GSF_XML_IN_NODE (OFFICE_STYLES, DASH, OO_NS_DRAW, "stroke-dash", GSF_XML_NO_CONTENT, &oo_dash, NULL),
   GSF_XML_IN_NODE (OFFICE_STYLES, HATCH, OO_NS_DRAW, "hatch", GSF_XML_NO_CONTENT, &oo_hatch, NULL),
@@ -7842,6 +7955,22 @@ GSF_XML_IN_NODE (START, OFFICE_STYLES, OO_NS_OFFICE, "styles", GSF_XML_NO_CONTEN
     GSF_XML_IN_NODE (STYLE_TEXT, STYLE_TEXT_MAP, OO_NS_STYLE,		"map", GSF_XML_NO_CONTENT, &odf_map, NULL),
     GSF_XML_IN_NODE (STYLE_TEXT, STYLE_TEXT_TEXT_PROP, OO_NS_STYLE,	"text-properties", GSF_XML_NO_CONTENT, &odf_number_color, NULL),
 
+GSF_XML_IN_NODE (OFFICE_DOC_STYLES, AUTOMATIC_STYLES, OO_NS_OFFICE, "automatic-styles", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, STYLE, OO_NS_STYLE, "style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, PAGE_LAYOUT, OO_NS_STYLE, "page-layout", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, NUMBER_STYLE, OO_NS_NUMBER, "number-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, DATE_STYLE, OO_NS_NUMBER, "date-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, TIME_STYLE, OO_NS_NUMBER, "time-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, STYLE_BOOL, OO_NS_NUMBER, "boolean-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, STYLE_CURRENCY, OO_NS_NUMBER,   "currency-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, STYLE_PERCENTAGE, OO_NS_NUMBER, "percentage-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+  GSF_XML_IN_NODE (AUTOMATIC_STYLES, STYLE_TEXT, OO_NS_NUMBER, "text-style", GSF_XML_NO_CONTENT, NULL, NULL), /* 2nd */
+
+GSF_XML_IN_NODE (OFFICE_DOC_STYLES, MASTER_STYLES, OO_NS_OFFICE, "master-styles", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (MASTER_STYLES, MASTER_PAGE, OO_NS_STYLE, "master-page", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (MASTER_PAGE, MASTER_PAGE_HEADER_LEFT, OO_NS_STYLE, "header-left", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (MASTER_PAGE, MASTER_PAGE_FOOTER_LEFT, OO_NS_STYLE, "footer-left", GSF_XML_NO_CONTENT, NULL, NULL),
+  GSF_XML_IN_NODE (MASTER_PAGE, MASTER_PAGE_FOOTER, OO_NS_STYLE, "footer", GSF_XML_NO_CONTENT, NULL, NULL),
 GSF_XML_IN_NODE_END
 };
 
@@ -7971,7 +8100,7 @@ GSF_XML_IN_NODE_END
 static GsfXMLInNode const opendoc_content_dtd [] =
 {
 	GSF_XML_IN_NODE_FULL (START, START, -1, NULL, GSF_XML_NO_CONTENT, FALSE, TRUE, NULL, NULL, 0),
-	GSF_XML_IN_NODE (START, OFFICE, OO_NS_OFFICE, "document-content", GSF_XML_NO_CONTENT, NULL, NULL),
+	GSF_XML_IN_NODE (START, OFFICE, OO_NS_OFFICE, "document-content", GSF_XML_NO_CONTENT, &odf_find_version, NULL),
 	  GSF_XML_IN_NODE (OFFICE, SCRIPT, OO_NS_OFFICE, "scripts", GSF_XML_NO_CONTENT, NULL, NULL),
 	  GSF_XML_IN_NODE (OFFICE, OFFICE_FONTS, OO_NS_OFFICE, "font-face-decls", GSF_XML_NO_CONTENT, NULL, NULL),
 	    GSF_XML_IN_NODE (OFFICE_FONTS, FONT_FACE, OO_NS_STYLE, "font-face", GSF_XML_NO_CONTENT, NULL, NULL),
@@ -8106,6 +8235,7 @@ static GsfXMLInNode const opendoc_content_dtd [] =
 	        GSF_XML_IN_NODE (CHART_PLOT_AREA, CHART_OOO_COORDINATE_REGION, OO_NS_CHART_OOO, "coordinate-region", GSF_XML_NO_CONTENT, NULL, NULL),
 #endif
 	    GSF_XML_IN_NODE (SPREADSHEET, TABLE, OO_NS_TABLE, "table", GSF_XML_NO_CONTENT, &oo_table_start, &oo_table_end),
+	      GSF_XML_IN_NODE (TABLE, TABLE_SOURCE, OO_NS_TABLE, "table-source", GSF_XML_NO_CONTENT, NULL, NULL),
 	      GSF_XML_IN_NODE (TABLE, FORMS, OO_NS_OFFICE, "forms", GSF_XML_NO_CONTENT, NULL, NULL),
 	        GSF_XML_IN_NODE (FORMS, FORM, OO_NS_FORM, "form", GSF_XML_NO_CONTENT, NULL, NULL),
 	          GSF_XML_IN_NODE (FORM, FORM_PROPERTIES, OO_NS_FORM, "properties", GSF_XML_NO_CONTENT, NULL, NULL),
@@ -9029,7 +9159,9 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 					     _("Unknown mimetype for openoffice file."));
 		g_object_unref (zip);
 		return;
-	}
+	} else if (state.ver == OOO_VER_OPENDOC)
+		state.ver_odf = 1.2; /* Probably most common at this time */
+	else  state.ver_odf = 0.;
 
 	contents = gsf_infile_child_by_name (zip, "content.xml");
 	if (contents == NULL) {
@@ -9165,6 +9297,7 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 		GsfXMLInDoc *doc = gsf_xml_in_doc_new (styles_dtd, gsf_ooo_ns);
 		gsf_xml_in_doc_parse (doc, styles, &state);
 		gsf_xml_in_doc_free (doc);
+		odf_clear_conventions (&state); /* contain references to xin */
 		g_object_unref (styles);
 	}
 
@@ -9180,17 +9313,19 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 		state.sheet_order = g_slist_reverse (state.sheet_order);
 
 		if (state.debug) {
-			GSList *l;
+			GSList *l, *sheets;
 			g_printerr ("Order we desire:\n");
 			for (l = state.sheet_order; l; l = l->next) {
 				Sheet *sheet = l->data;
 				g_printerr ("Sheet %s\n", sheet->name_unquoted);
 			}
 			g_printerr ("Order we have:\n");
-			for (l = workbook_sheets (state.pos.wb); l; l = l->next) {
+			sheets = workbook_sheets (state.pos.wb);
+			for (l = sheets; l; l = l->next) {
 				Sheet *sheet = l->data;
 				g_printerr ("Sheet %s\n", sheet->name_unquoted);
 			}
+			g_slist_free (sheets);
 		}
 
 		workbook_sheet_reorder (state.pos.wb, state.sheet_order);
@@ -9210,6 +9345,7 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 				(opendoc_settings_dtd, gsf_ooo_ns);
 			gsf_xml_in_doc_parse (sdoc, settings, &state);
 			gsf_xml_in_doc_free (sdoc);
+			odf_clear_conventions (&state); /* contain references to xin */
 			g_object_unref (settings);
 		}
 		if (state.settings.stack != NULL) {
@@ -9243,6 +9379,7 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 	} else
 		go_io_error_string (io_context, _("XML document not well formed!"));
 	gsf_xml_in_doc_free (doc);
+	odf_clear_conventions (&state);
 
 	go_io_progress_unset (state.context);
 	g_free (state.last_error);
@@ -9277,10 +9414,6 @@ openoffice_file_open (GOFileOpener const *fo, GOIOContext *io_context,
 	while (i-- > 0)
 		sheet_flag_recompute_spans (workbook_sheet_by_index (state.pos.wb, i));
 	workbook_queue_all_recalc (state.pos.wb);
-
-	for (i = 0; i < NUM_FORMULAE_SUPPORTED; i++)
-		if (state.convs[i] != NULL)
-			gnm_conventions_unref (state.convs[i]);
 
 	gnm_pop_C_locale (locale);
 }

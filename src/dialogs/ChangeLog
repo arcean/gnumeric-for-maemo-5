@@ -1,3 +1,47 @@
+2011-05-31  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* help.h (GNUMERIC_HELP_LINK_WILCOXON_MANN_WHITNEY): use
+	two-median-wilcoxon-mann-whitney-test-tool
+	(GNUMERIC_HELP_LINK_SIGN_TEST_TWO): new
+	* dialog-analysis-tool-sign-test.c (dialog_sign_test_two_tool):
+	use GNUMERIC_HELP_LINK_SIGN_TEST_TWO
+
+2011-05-31  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* help.h (GNUMERIC_HELP_LINK_SIGN_TEST): use "one-median-tool" since
+	the dialog is for various tests
+
+2011-05-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* dialog-analysis-tools.c (tool_load_selection): select the entered
+	range
+
+2011-05-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* help.h (GNUMERIC_HELP_LINK_GOTO_CELL): use a valid id
+	* goto.ui: add spin buttons
+	* dialog-goto-cell.c (dialog_goto_get_val): new
+	(cb_dialog_goto_go_clicked): handle names and row/column widths
+	(cb_dialog_goto_update_sensitivity): allow names and set the correct
+	limits for rows and columns
+	(dialog_goto_load_selection): new
+	(dialog_goto_init): setup spin buttons and prelaod info
+
+2011-05-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* dialog-preferences.c (pref_copypaste_page_initializer): hide under
+	G_OS_WIN32
+	(page_info): move N_("Copy and Paste") and hide under G_OS_WIN32
+
+2011-05-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* dialog-analysis-tools.c (dialog_tool_init_buttons): make static
+	* tool-dialogs.h (dialog_tool_init_buttons): deleted
+
+2011-05-22  Morten Welinder  <terra@gnome.org>
+
+	* dialog-define-names.c (name_guru_populate_list): Plug leak.
+
 2011-05-21  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.15

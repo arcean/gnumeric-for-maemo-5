@@ -190,7 +190,7 @@
     </autotools>
 
     <autotools id="atk">
-	<branch repo="gnome.org" module="sources/atk/1.30/atk-1.30.0.tar.bz2" version="1.30.0"/>
+	<branch repo="gnome.org" module="sources/atk/1.33/atk-1.33.6.tar.bz2" version="1.33.6"/>
 	<dependencies>
 	    <dep package="glib"/>
 	</dependencies>
@@ -328,7 +328,7 @@
 
 <!-- Gnumeric stack -->
     <autotools id="libgsf">
-	<branch repo="gnome.org" module="sources/libgsf/1.14/libgsf-1.14.20.tar.gz" version="1.14.20">
+	<branch repo="gnome.org" module="sources/libgsf/1.14/libgsf-1.14.21.tar.gz" version="1.14.21">
 	</branch>
 	<dependencies>
 	    <dep package="glib"/>

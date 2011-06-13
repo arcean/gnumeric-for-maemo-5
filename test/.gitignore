@@ -1,0 +1,8 @@
+Makefile.in
+Makefile
+.deps
+.libs
+import-db
+*~
+zzuftmp
+zzuf.log

@@ -19,6 +19,7 @@
 #include "expr.h"
 #include "expr-impl.h"
 #include "expr-name.h"
+#include "func.h"
 #include "workbook.h"
 #include "sheet.h"
 #include "gnm-format.h"
@@ -563,7 +564,7 @@ parser_sheet_by_name (Workbook *wb, GnmExpr *name_expr)
 }
 
 /* Make byacc happier */
-int yyparse (void);
+static int yyparse (void);
 
 %}
 

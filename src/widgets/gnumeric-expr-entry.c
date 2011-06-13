@@ -174,6 +174,7 @@ static void     gee_detach_scg (GnmExprEntry *gee);
 static void     gee_remove_update_timer (GnmExprEntry *range);
 static void     cb_gee_notify_cursor_position (GnmExprEntry *gee);
 
+static gboolean gee_debug;
 static GtkObjectClass *parent_class = NULL;
 
 static gboolean
@@ -271,7 +272,9 @@ cb_icon_clicked (GtkButton *icon,
 			gtk_window_get_size (GTK_WINDOW (toplevel), &width, &height);
 			g_object_set_data (G_OBJECT (entry), "old_window_width", GUINT_TO_POINTER (width));
 			g_object_set_data (G_OBJECT (entry), "old_window_height", GUINT_TO_POINTER (height));
-
+			g_object_set_data (G_OBJECT (entry), "old_default", 
+					   gtk_window_get_default_widget (GTK_WINDOW (toplevel)));
+	
 			container_props = NULL;
 
 			container_props_pspec = gtk_container_class_list_child_properties
@@ -304,10 +307,14 @@ cb_icon_clicked (GtkButton *icon,
 			gtk_widget_reparent (GTK_WIDGET (entry), toplevel);
 
 			gtk_widget_grab_focus (GTK_WIDGET (entry->entry));
+			gtk_widget_set_can_default (GTK_WIDGET (icon), TRUE);
+			gtk_widget_grab_default (GTK_WIDGET (icon));
+
 			gtk_window_resize (GTK_WINDOW (toplevel), 1, 1);
 
 		} else {
 			int i;
+			gpointer default_widget;
 
 			/* reset rolled-up window */
 
@@ -335,6 +342,11 @@ cb_icon_clicked (GtkButton *icon,
 			gtk_window_resize (GTK_WINDOW (toplevel),
 					   GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (entry), "old_window_width")),
 					   GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (entry), "old_window_height")));
+			default_widget = g_object_get_data (G_OBJECT (entry), "old_default");
+			if (default_widget != NULL) {
+				gtk_window_set_default (GTK_WINDOW (toplevel), GTK_WIDGET (default_widget));
+				g_object_set_data (G_OBJECT (entry), "old_default", NULL);
+			}
 
 			g_object_set_data (G_OBJECT (entry), "old_entry_parent", NULL);
 			g_object_set_data (G_OBJECT (entry), "old_toplevel_child", NULL);
@@ -411,9 +423,8 @@ gee_set_format (GnmExprEntry *gee, GOFormat const *fmt)
 	go_format_unref (gee->constant_format);
 	gee->constant_format = fmt;
 
-#if 0
-	g_printerr ("Setting format %s\n", fmt ? go_format_as_XL (fmt) : "-");
-#endif
+	if (gee_debug)
+		g_printerr ("Setting format %s\n", fmt ? go_format_as_XL (fmt) : "-");
 
 	if (fmt && go_format_is_date (fmt)) {
 		if (!gee->calendar_combo) {
@@ -440,6 +451,28 @@ gee_set_format (GnmExprEntry *gee, GOFormat const *fmt)
 }
 
 static void
+gee_set_with_icon (GnmExprEntry *gee, gboolean with_icon)
+{
+	gboolean has_icon = (gee->icon != NULL);
+	with_icon = !!with_icon;
+
+	if (has_icon == with_icon)
+		return;
+
+	if (with_icon) {
+		gee->icon = gtk_toggle_button_new ();
+		gtk_container_add (GTK_CONTAINER (gee->icon),
+				   gtk_image_new_from_stock ("Gnumeric_ExprEntry",
+							     GTK_ICON_SIZE_MENU));
+		gtk_box_pack_end (GTK_BOX (gee), gee->icon, FALSE, FALSE, 0);
+		gtk_widget_show_all (gee->icon);
+		g_signal_connect (gee->icon, "clicked",
+				  G_CALLBACK (cb_icon_clicked), gee);
+	} else
+		gtk_widget_destroy (gee->icon);
+}
+
+static void
 gee_set_property (GObject      *object,
 		  guint         prop_id,
 		  GValue const *value,
@@ -452,19 +485,7 @@ gee_set_property (GObject      *object,
 		break;
 
 	case PROP_WITH_ICON:
-		if (g_value_get_boolean (value)) {
-			if (gee->icon == NULL) {
-				gee->icon = gtk_toggle_button_new ();
-				gtk_container_add (GTK_CONTAINER (gee->icon),
-						   gtk_image_new_from_stock ("Gnumeric_ExprEntry",
-							   		     GTK_ICON_SIZE_MENU));
-				gtk_box_pack_end (GTK_BOX (gee), gee->icon, FALSE, FALSE, 0);
-				gtk_widget_show_all (gee->icon);
-				g_signal_connect (gee->icon, "clicked",
-						  G_CALLBACK (cb_icon_clicked), gee);
-			}
-		} else if (gee->icon != NULL)
-			gtk_widget_destroy (gee->icon);
+		gee_set_with_icon (gee, g_value_get_boolean (value));
 		break;
 
 	case PROP_TEXT: {
@@ -948,6 +969,7 @@ gee_check_tooltip (GnmExprEntry *gee)
 	char *str;
 	gboolean stuff = FALSE, completion_se_set = FALSE;
 	GnmLexerItem *gli, *gli_c;
+	int last_token = 0;
 
 	if (gee->lexer_items == NULL || !gee->tooltip.enabled ||
 	    (!gee->tooltip.is_expr && !gee->is_cell_renderer)) {
@@ -988,9 +1010,11 @@ gee_check_tooltip (GnmExprEntry *gee)
 	}
 	if (gli > gli_c)
 		gli--;
+	if (gli > gli_c)
+		last_token = (gli - 1)->token;
 
 	/* This creates the completion tooltip */
-	if (!stuff && gli->token == STRING) {
+	if (!stuff && gli->token == STRING && last_token != CONSTANT) {
 		guint start_t = gli->start;
 		char *prefix;
 		GSList *list;
@@ -1658,9 +1682,8 @@ gee_set_value_double (GogDataEditor *editor, double val,
 		txt = g_strdup_printf ("%g", val);
 	}
 
-#if 0
-	g_printerr ("Setting text %s\n", txt);
-#endif
+	if (gee_debug)
+		g_printerr ("Setting text %s\n", txt);
 
 	g_object_set (G_OBJECT (editor), "text", txt, NULL);
 
@@ -1794,6 +1817,8 @@ gee_class_init (GObjectClass *gobject_class)
 				       _("Constant Format"),
 				       _("Format for constants"),
 				       GSF_PARAM_STATIC | G_PARAM_READWRITE));
+
+	gee_debug = gnm_debug_flag ("gee");
 }
 
 /***************************************************************************/
@@ -2306,24 +2331,6 @@ gnm_expr_entry_new (WBCGtk *wbcg, gboolean with_icon)
 			     NULL);
 }
 
-/**
- * gnm_expr_entry_new_glade:
- *
- * Creates a new #GnmExprEntry, which is an entry widget with support
- * for range selections.
- * The entry is created with default flag settings which are suitable for use
- * in many dialogs, but see #gnm_expr_entry_set_flags.
- *
- * Useful for use in .glade files.  The user must assign a scg before use.
- *
- * Return value: a new #GnmExprEntry.
- **/
-GtkWidget *
-gnm_expr_entry_new_glade (void)
-{
-	return g_object_new (GNM_EXPR_ENTRY_TYPE, NULL);
-}
-
 void
 gnm_expr_entry_freeze (GnmExprEntry *gee)
 {
@@ -2409,10 +2416,10 @@ gnm_expr_entry_set_scg (GnmExprEntry *gee, SheetControlGUI *scg)
 		gee->wbcg = scg_wbcg (gee->scg);
 	} else
 		gee->sheet = NULL;
-#if 0
-	g_printerr ("Setting gee (%p)->sheet = %s\n",
-		    gee, gee->sheet->name_unquoted);
-#endif
+
+	if (gee_debug)
+		g_printerr ("Setting gee (%p)->sheet = %s\n",
+			    gee, gee->sheet->name_unquoted);
 }
 
 SheetControlGUI *
@@ -2434,6 +2441,10 @@ gnm_expr_entry_load_from_text (GnmExprEntry *gee, char const *txt)
 	g_return_if_fail (gee->freeze_count == 0);
 
 	gee_rangesel_reset (gee);
+
+	if (gee_debug)
+		g_printerr ("Setting entry text: [%s]\n", txt);
+
 	gtk_entry_set_text (gee->entry, txt);
 	gee_delete_tooltip (gee, TRUE);
 }
@@ -2494,6 +2505,8 @@ gnm_expr_entry_load_from_expr (GnmExprEntry *gee,
 		char *text = gnm_expr_top_as_string
 			(texpr, pp, gee_convs (gee));
 		gee_rangesel_reset (gee);
+		if (gee_debug)
+			g_printerr ("Setting entry text: [%s]\n", text);
 		gtk_entry_set_text (gee->entry, text);
 		gee->rangesel.text_end = strlen (text);
 		g_free (text);
@@ -2658,9 +2671,8 @@ gnm_expr_entry_parse (GnmExprEntry *gee, GnmParsePos const *pp,
 	if (text == NULL || text[0] == '\0')
 		return NULL;
 
-#if 0
-	g_printerr ("Parsing %s\n", text);
-#endif
+	if (gee_debug)
+		g_printerr ("Parsing %s\n", text);
 
 	if ((gee->flags & GNM_EE_FORCE_ABS_REF))
 		flags |= GNM_EXPR_PARSE_FORCE_ABSOLUTE_REFERENCES;
@@ -2669,20 +2681,25 @@ gnm_expr_entry_parse (GnmExprEntry *gee, GnmParsePos const *pp,
 	if (!(gee->flags & GNM_EE_SHEET_OPTIONAL))
 		flags |= GNM_EXPR_PARSE_FORCE_EXPLICIT_SHEET_REFERENCES;
 
-	texpr = NULL;
-
-	if (gee->constant_format) {
+	/* First try parsing as a value.  */
+	{
 		GnmValue *v = get_matched_value (gee);
 		if (v) {
-			texpr = gnm_expr_top_new_constant (v);
-			gtk_entry_set_text (gee->entry, text);
+			GODateConventions const *date_conv =
+				workbook_date_conv (gee->sheet->workbook);
+			GnmExprTop const *texpr = gnm_expr_top_new_constant (v);
+			char *str = format_value (gee->constant_format, v, NULL, -1, date_conv);
+			if (gee_debug)
+				g_printerr ("Setting entry text: [%s]\n", str);
+			gtk_entry_set_text (gee->entry, str);
+			g_free (str);
 			return texpr;
 		}
 	}
 
-	if (!texpr)
-		texpr = gnm_expr_parse_str (text, pp, flags,
-					    gee_convs (gee), perr);
+	/* Failing that, try as an expression.  */
+	texpr = gnm_expr_parse_str (text, pp, flags,
+				    gee_convs (gee), perr);
 
 	if (texpr == NULL)
 		return NULL;
@@ -2711,8 +2728,11 @@ gnm_expr_entry_parse (GnmExprEntry *gee, GnmParsePos const *pp,
 			scg_rangesel_bound (scg,
 				rs->ref.a.col, rs->ref.a.row,
 				rs->ref.b.col, rs->ref.b.row);
-		} else
+		} else {
+			if (gee_debug)
+				g_printerr ("Setting entry text: [%s]\n", str);
 			gtk_entry_set_text (gee->entry, str);
+		}
 	}
 	g_free (str);
 
@@ -2827,21 +2847,24 @@ gnm_expr_entry_is_cell_ref (GnmExprEntry *gee, Sheet *sheet,
 gboolean
 gnm_expr_entry_is_blank	(GnmExprEntry *gee)
 {
-	GtkEntry *entry = gnm_expr_entry_get_entry (gee);
-	char const *text = gtk_entry_get_text (entry);
-	char *new_text;
-	int len;
+	GtkEntry *entry;
+	char const *text;
 
 	g_return_val_if_fail (IS_GNM_EXPR_ENTRY (gee), FALSE);
 
+	entry = gnm_expr_entry_get_entry (gee);
+
+	text = gtk_entry_get_text (entry);
 	if (text == NULL)
 		return TRUE;
 
-	new_text = g_strdup (text);
-	len = strlen (g_strstrip(new_text));
-	g_free (new_text);
+	while (*text) {
+		if (!g_unichar_isspace (g_utf8_get_char (text)))
+			return FALSE;
+		text = g_utf8_next_char (text);
+	}
 
-	return (len == 0);
+	return TRUE;
 }
 
 char *
@@ -2869,9 +2892,8 @@ gnm_expr_entry_grab_focus (GnmExprEntry *gee, gboolean select_all)
 
 	gtk_widget_grab_focus (GTK_WIDGET (gee->entry));
 	if (select_all) {
-		gtk_editable_set_position (GTK_EDITABLE (gee->entry), 0);
-		gtk_editable_select_region (GTK_EDITABLE (gee->entry), 0,
-					    gtk_entry_get_text_length (gee->entry));
+		gtk_editable_set_position (GTK_EDITABLE (gee->entry), -1);
+		gtk_editable_select_region (GTK_EDITABLE (gee->entry), 0, -1);
 	}
 }
 

@@ -3,9 +3,6 @@
 # define _GNM_GUI_UTIL_H_
 
 #include "gui-gnumeric.h"
-#include "command-context.h"
-#include "gutils.h"
-
 #include <goffice/goffice.h>
 #include "numbers.h"
 #include <gtk/gtk.h>
@@ -18,7 +15,7 @@ G_BEGIN_DECLS
 GtkWidget* gnumeric_go_error_info_dialog_new (GOErrorInfo *error);
 GtkWidget* gnumeric_go_error_info_list_dialog_new (GSList *errs);
 void       gnumeric_go_error_info_dialog_show (GtkWindow *parent,
-                                            GOErrorInfo *error);
+					       GOErrorInfo *error);
 void       gnumeric_go_error_info_list_dialog_show (GtkWindow *parent,
 						    GSList *errs);
 void       gnumeric_restore_window_geometry (GtkWindow *dialog,
@@ -73,15 +70,14 @@ void gnumeric_create_popup_menu (GnumericPopupMenuElement const *elements,
 
 #define gnumeric_filter_modifiers(a) ((a) &(~(GDK_LOCK_MASK|GDK_MOD2_MASK|GDK_MOD5_MASK)))
 
-GnmColor *go_combo_color_get_style_color (GtkWidget *color_combo);
-
 void gnumeric_init_help_button	(GtkWidget *w, char const *link);
 
 char *gnumeric_textbuffer_get_text (GtkTextBuffer *buf);
 char *gnumeric_textview_get_text (GtkTextView *text_view);
 void  gnumeric_textview_set_text (GtkTextView *text_view, char const *txt);
 void  gnm_load_pango_attributes_into_buffer (PangoAttrList  *markup,
-					     GtkTextBuffer *buffer);
+					     GtkTextBuffer *buffer,
+					     gchar const *str);
 PangoAttrList *gnm_get_pango_attributes_from_buffer (GtkTextBuffer *buffer);
 void gnm_create_std_tags_for_buffer (GtkTextBuffer *buffer);
 

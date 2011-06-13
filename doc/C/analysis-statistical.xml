@@ -28,9 +28,9 @@
   </para>
 
   <para>All analysis tools also provide a choice whether
-    they will enter formulas or just values in the cells. By default 
-    &gnum; will usually enter formulas. These formulas will automatically
-    reevaluate when the data change. For some tools, the formulas also
+    they will enter formul&#xe6; or just values in the cells. By default 
+    &gnum; will usually enter formul&#xe6;. These formul&#xe6; will automatically
+    reevaluate when the data change. For some tools, the formul&#xe6; also
     permit modification of certain parameters. 
   </para> 
   
@@ -767,8 +767,12 @@
      </para>
      </listitem>
      <listitem>
-     <para> The <quote><guibutton>Cumulative percentages</guibutton></quote> option causes a cumulative 
-       frequency table to be created.  
+     <para> The <quote><guibutton>Cumulative answers</guibutton></quote> option causes a cumulative 
+       frequency table (either with counts or with pecentages) to be created.  
+     </para>
+     </listitem>
+     <listitem>
+     <para> The <quote><guibutton>Count numbers only</guibutton></quote> option determines whether only numbers are counted. If also non-numbers are counted they are first converted into numbers, usually into 0.  
      </para>
      </listitem>
      </itemizedlist>
@@ -1037,118 +1041,9 @@
   a rank of 2.   
   </para></note>
   </sect2>
-
-  <sect2 id="regression-tool">
-     <title>Regression Tool</title>
-  <figure id="regression-tool-dialog">
-    <title>Regression Tool Dialog</title>
-    <screenshot>
-	<mediaobject>
-            <imageobject>
-              <imagedata fileref="figures/analysistools-regression.png" 
-                  format="PNG" />
-            </imageobject>
-            <textobject>
-              <phrase>An image of the regression tool dialog.</phrase>
-            </textobject>
-           </mediaobject>
-    </screenshot>
-  </figure>
-  <para>The regression tool performs a multiple regression analysis.</para>
-  <para>Enter a range or list of ranges containing the independent variables 
-  into the <quote><guilabel>X Variables:</guilabel></quote> entry.</para>
-  <para>Enter a single range containing the dependent variable into the
-   <quote><guilabel>Y Variable:</guilabel></quote> entry.</para>
-  <para>If the ranges for the independent and dependent variables also contains 
-  labels in the first field of each row, column or area, select the <quote>
-  <guilabel>Labels</guilabel></quote> option.</para>
-  <para> Specify the confidence level in the <quote><guilabel>Confidence
-  Level:</guilabel></quote> entry. The default is 95&#037;.</para>
-  <para>To force the regression line or plane to pass through the origin, select the
-  <quote><guilabel>Force Intercept To Be Zero</guilabel></quote> option.</para>
-  <para>Specify the output options as described above. If the output is directed 
-  into a specific output range, that
-  range should contain at least seven columns and 17 rows more than there are 
-  independent variables.</para>
-
-  <figure id="regression-example-1">
-    <title>Regression Example Data</title>
-    <screenshot>
-	<mediaobject>
-            <imageobject>
-              <imagedata fileref="figures/analysistools-regression-ex1.png" 
-                  format="PNG" />
-            </imageobject>
-            <textobject>
-              <phrase>An image of example data for use with the
-              regression tool.</phrase>
-            </textobject>
-           </mediaobject>
-    </screenshot>
-  </figure>
-
- <example id="usingregressiontool">
- <title>Using the Regression Tool</title>
-
-  <para>
-    Suppose you want to perform a regression analysis on the data
-    given in <xref linkend="regression-example-1" /> using
-    <parameter>v</parameter> and <parameter>y</parameter> as
-    independent variables and <parameter>u</parameter> as dependent
-    variable.</para>
-<orderedlist>
-     <listitem><para>
-     Enter B1:C11 in the <quote><guilabel>X Variables:</guilabel></quote> 
-     entry by typing 
-     this directly into the entry or clicking in the entry field and 
-     then selecting the range on the sheet.</para></listitem>
-     <listitem><para>
-     Enter A1:A11  in the <quote><guilabel>Y Variable:</guilabel></quote> 
-     entry. </para></listitem>
-     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
-     option since the first row contains labels. (see 
-     <xref linkend="regression-example-2" />).</para></listitem>
-     <listitem><para> Specify the output 
-     options as described above.</para></listitem>
-     <listitem><para> Press the OK button. </para></listitem>
-</orderedlist>
-     <para> The output of this regression analysis is shown in
-     <xref linkend="regression-example-3" />.</para>
- </example>
-  <figure id="regression-example-2">
-    <title>Completed Regression Dialog</title>
-    <screenshot>
-	<mediaobject>
-            <imageobject>
-              <imagedata fileref="figures/analysistools-regression-ex2.png" 
-                  format="PNG" />
-            </imageobject>
-            <textobject>
-              <phrase>An image of the regression tool dialog with the
-              required fields completed.</phrase>
-            </textobject>
-           </mediaobject>
-    </screenshot>
-  </figure>
-  <figure id="regression-example-3">
-    <title>Regression Tool Output</title>
-    <screenshot>
-	<mediaobject>
-            <imageobject>
-              <imagedata fileref="figures/analysistools-regression-ex3.png" 
-                  format="PNG" />
-            </imageobject>
-            <textobject>
-              <phrase>An image of the output from a regression
-              analysis.</phrase>
-            </textobject>
-           </mediaobject>
-    </screenshot>
-  </figure>
-  </sect2>
 </sect1>
 
-  <sect1 id="sampling-tool">
+<sect1 id="sampling-tool">
      <title>Sampling Tool</title>
      <figure>
         <title>Sampling Tool Dialog</title>
@@ -1344,7 +1239,7 @@
      </para>
 
      <note><para>
-	 If you choose to have the tool enter formulas rather than values into the output region, 
+	 If you choose to have the tool enter formul&#xe6; rather than values into the output region, 
 	 then you can modify the damping factor &#x03b1; even after you executed the tool. 
      </para></note>
 
@@ -1449,7 +1344,7 @@
   </para>
 
      <note><para>
-	 If you choose to have the tool enter formulas rather than values into 
+	 If you choose to have the tool enter formul&#xe6; rather than values into 
 	 the output region, 
 	 then you can modify the damping factor &#x03b1; and the estimated value
 	 at time 0 after executing the tool. 
@@ -1502,7 +1397,7 @@
      <para> 
      <xref linkend="smoothing-example-4" /> shows example output for the exponential smoothing
      tool using the formula according to Roberts. Cell A4 contains the estimated level at time 0.
-     If you requested to have formulas rather than values entered into the sheet, then changing 
+     If you requested to have formul&#xe6; rather than values entered into the sheet, then changing 
      the estimate in A4 and/or the value for &#x03b1; in A2 will result in an immediate change to 
      the predicted values.
      </para>
@@ -1563,7 +1458,7 @@
   </figure>
 
      <note><para>
-	 If you choose to have the tool enter formulas rather than values into 
+	 If you choose to have the tool enter formul&#xe6; rather than values into 
 	 the output region, 
 	 then you can modify the damping factors &#x03b1; and &#x03b3; as well as the estimated level and growth rate
 	 at time 0 after executing the tool. 
@@ -1603,7 +1498,7 @@
      <xref linkend="smoothing-example-5" /> shows example output for Holt's trend corrected 
      exponential smoothing. Cell A4 contains the estimated level at time 0 and B4 the estimated 
      growth rate at time 0.
-     If you requested to have formulas rather than values entered into the sheet, then changing 
+     If you requested to have formul&#xe6; rather than values entered into the sheet, then changing 
      the estimates in A4, B4, the values for &#x03b1; in A2 and/or for &#x03b3; in B2 will result 
      in an immediate change to 
      the predicted values.
@@ -1681,7 +1576,7 @@
   </figure>
 
      <note><para>
-	 If you choose to have the tool enter formulas rather than values into 
+	 If you choose to have the tool enter formul&#xe6; rather than values into 
 	 the output region, 
 	 then you can modify the damping factors &#x03b1;, &#x03b3;  and  &#x03b4; as well as all
 	 estimates after executing the tool. 
@@ -1724,7 +1619,7 @@
      additive Holt-Winters method. Cell C7 contains the estimated level at time 0, D7 the 
      estimated growth rate at time 0, and E4 to E7 the initial seasonal adjustments for each 
      of the 4 seasons preceding our data time period.
-     If you requested to have formulas rather than values entered into the sheet, then changing
+     If you requested to have formul&#xe6; rather than values entered into the sheet, then changing
      any of these estimates, the values for &#x03b1; in A2, for &#x03b3; in B2 and/or for &#x03b4; 
      in C2 will result in an immediate change to the estimated values.
      </para>
@@ -1813,7 +1708,7 @@
   </figure>
 
      <note><para>
-	 If you choose to have the tool enter formulas rather than values into 
+	 If you choose to have the tool enter formul&#xe6; rather than values into 
 	 the output region, 
 	 then you can modify the damping factors &#x03b1;, &#x03b3;  and  &#x03b4; as well as all
 	 estimates after executing the tool. 
@@ -1853,7 +1748,7 @@
      multiplicative Holt-Winters method, assuming 4 seasons. Cell C7 contains the estimated level 
      at time 0, D7 the estimated growth rate at time 0, and E4 to E7 the initial seasonal 
      adjustments for each of the 4 seasons preceding our data time period.
-     If you requested to have formulas rather than values entered into the sheet, then changing
+     If you requested to have formul&#xe6; rather than values entered into the sheet, then changing
      any of these estimates, the values for &#x03b1; in A2, for &#x03b3; in B2 and/or for &#x03b4; 
      in C2 will result in an immediate change to the estimated values.
      </para>
@@ -1915,7 +1810,7 @@
      <para>Choose the type of moving average you would like to calculate. The tool can
        determine 4 types of moving averages:
      </para>
-     <orderedlist>
+     <orderedlist spacing="compact">
        <listitem><para>
 	   Simple moving average
        </para></listitem>
@@ -2419,9 +2314,205 @@
 
   <sect2 id="principal-component-tool">
       <title>Principal Component Analysis</title>
-      <para></para>
+   <figure id="pcanalysis-tool-dialog">
+    <title>Principal Component Analysis Tool Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-pcanalysis.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the principal component analysis tool dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+     <para>Principal Component Analysis Tool performs a principal component analysis (PCA). 
+           PCA is a useful statistical technique with application in
+	   fields such as face recognition and image compression. It is a common technique for
+           finding patterns in data of high dimension.
+     </para>
+
+     <para>Specify the cells containing the datasets in the
+     <quote><guilabel>Input Range</guilabel></quote> entry. The
+     entered range or ranges are grouped into the factors either by rows
+     or by columns.</para>
+
+     <para>If you have labels
+     in the first cell of each factor, select the
+     <quote><guilabel>Labels</guilabel></quote> option.</para>
+
+ <figure id="pcanalysis-example-1">
+    <title>Principal Component Analysis Example Data</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-pcanalysis-ex1.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of example data for use with the
+               principal component analysis tool.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+
+ <example id="usingpcanalysistool">
+ <title>Using the Principal Component Analysis Tool Tool</title>
+ <para>
+    Suppose you want to perform a principal component analysis on the data
+    given in <xref linkend="pcanalysis-example-1" /> having the two dimensions (factors) 
+    <inlineequation><mathphrase>x</mathphrase></inlineequation> and 
+    <inlineequation><mathphrase>y</mathphrase></inlineequation>.</para>
+<orderedlist>
+     <listitem><para>
+     Enter Sheet1!$A$1:$B$11 (or just A1:B11) in the <quote><guilabel>Input Range:</guilabel></quote> 
+     entry by typing 
+     this directly into the entry or clicking in the entry field and 
+     then selecting the range on the sheet.</para></listitem>
+     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
+     option since the first row contains labels. (see 
+     <xref linkend="pcanalysis-tool-dialog" />).</para></listitem>
+     <listitem><para> Specify the output 
+     options as described above.</para></listitem>
+     <listitem><para> Press the OK button. </para></listitem>
+</orderedlist>
+     <para> The output of this principal component analysis is shown in
+     <xref linkend="regression-example-3" />. The output shows the covariance matrix,
+     the eigenvalues and corresponding eigenvectors. The principal component is the 
+     constructed factor with the highest percent of trace, 
+     <inlineequation><mathphrase>&#x03be;1</mathphrase></inlineequation>.</para>
+ </example>
+
+   <figure id="pcanalysis-example-2">
+    <title>Principal Component Analysis Tool Output</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-pcanalysis-ex2.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the output from a principal component
+              analysis.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
   </sect2>
 
+
+
+  <sect2 id="regression-tool">
+     <title>Regression Tool</title>
+  <figure id="regression-tool-dialog">
+    <title>Regression Tool Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-regression.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the regression tool dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+  <para>The regression tool performs a multiple regression analysis.</para>
+  <para>Enter a range or list of ranges containing the independent variables 
+  into the <quote><guilabel>X Variables:</guilabel></quote> entry.</para>
+  <para>Enter a single range containing the dependent variable into the
+   <quote><guilabel>Y Variable:</guilabel></quote> entry.</para>
+  <para>If the ranges for the independent and dependent variables also contains 
+  labels in the first field of each row, column or area, select the <quote>
+  <guilabel>Labels</guilabel></quote> option.</para>
+  <para> Specify the confidence level in the <quote><guilabel>Confidence
+  Level:</guilabel></quote> entry. The default is 95&#037;.</para>
+  <para>To force the regression line or plane to pass through the origin, select the
+  <quote><guilabel>Force Intercept To Be Zero</guilabel></quote> option.</para>
+  <para>Specify the output options as described above. If the output is directed 
+  into a specific output range, that
+  range should contain at least seven columns and 17 rows more than there are 
+  independent variables.</para>
+
+  <figure id="regression-example-1">
+    <title>Regression Example Data</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-regression-ex1.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of example data for use with the
+              regression tool.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+
+ <example id="usingregressiontool">
+ <title>Using the Regression Tool</title>
+
+  <para>
+    Suppose you want to perform a regression analysis on the data
+    given in <xref linkend="regression-example-1" /> using
+    <parameter>v</parameter> and <parameter>y</parameter> as
+    independent variables and <parameter>u</parameter> as dependent
+    variable.</para>
+<orderedlist>
+     <listitem><para>
+     Enter B1:C11 in the <quote><guilabel>X Variables:</guilabel></quote> 
+     entry by typing 
+     this directly into the entry or clicking in the entry field and 
+     then selecting the range on the sheet.</para></listitem>
+     <listitem><para>
+     Enter A1:A11  in the <quote><guilabel>Y Variable:</guilabel></quote> 
+     entry. </para></listitem>
+     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
+     option since the first row contains labels. (see 
+     <xref linkend="regression-example-2" />).</para></listitem>
+     <listitem><para> Specify the output 
+     options as described above.</para></listitem>
+     <listitem><para> Press the OK button. </para></listitem>
+</orderedlist>
+     <para> The output of this regression analysis is shown in
+     <xref linkend="regression-example-3" />.</para>
+ </example>
+  <figure id="regression-example-2">
+    <title>Completed Regression Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-regression-ex2.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the regression tool dialog with the
+              required fields completed.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+  <figure id="regression-example-3">
+    <title>Regression Tool Output</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-regression-ex3.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the output from a regression
+              analysis.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+  </sect2>
 </sect1>
 
 <sect1 id="one_sample_tests">
@@ -2429,22 +2520,353 @@
 
   <sect2 id="normality-tool">
       <title>Normality Tests</title>
-      <para></para>
-  </sect2>
+<para>The normality test tool provides for four tests of normality.</para>
+<orderedlist spacing="compact">
+     <listitem><para>Anderson Darling Test</para></listitem>
+     <listitem><para>Cram&#xe9;r-von Mises Test</para></listitem>
+     <listitem><para>Lilliefors (Kolmogorov-Smirnov) Test</para></listitem>
+     <listitem><para>Shapiro-Francia Test</para></listitem>
+</orderedlist>
+   <figure id="normality-tool-dialog">
+    <title>Normality Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the normality test dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+      <para>The data range is specified via the <quote><guilabel>Input
+      Range:</guilabel></quote> entry 
+      (see <xref linkend="normality-tool-dialog" />).  The given range 
+      or list of ranges can be grouped into 
+      separate data sets by columns, rows, or areas. The tool performs a
+      separate test for each data set.</para>
+   <figure id="normality-tool-testspec-dialog">
+    <title>Test Tab of the Normality Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality-testspec.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the test tab of the normality 
+	      test dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+      <para>On the test tab one specifies which of the four tests to
+      perform, the significance level for the test and whether to include
+      a normal probability plot of the data 
+      (see <xref linkend="normality-tool-testspec-dialog" />).</para>
+   <figure id="normality-example-1">
+    <title>Normality Test Example Data</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality-ex1.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of example data for a normality test.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+
+ <example id="usingnormalitytesttool">
+ <title>Using the Normality Test Tool</title>
+
+  <para>
+    Suppose you want to perform a Lilliefors (Kolmogorov-Smirnov) Test
+    for Normality on the data
+    given in <xref linkend="normality-example-1" />.</para>
+<orderedlist>
+     <listitem><para>
+     Enter A1:A50 (or Sheet1!$A$1:$A$50) in the 
+     <quote><guilabel>Input Range:</guilabel></quote> 
+     entry by typing 
+     this directly into the entry or clicking in the entry field and 
+     then selecting the range on the sheet.</para></listitem>
+     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
+     option since the first row contains a label. (see 
+     <xref linkend="normality-example-2" />).</para></listitem>
+     <listitem><para> On the test tab of the dialog
+     (see <xref linkend="normality-example-3" />) select the
+     Lilliefors (Kolmogorov-Smirnov) Test.</para></listitem>
+     <listitem><para> Specify an appropriate significance level
+     Alpha, say 0.05.</para></listitem>
+     <listitem><para> Select the <quote><guibutton>Create Normal 
+     Probability Plot</guibutton></quote>
+     option to include a normal 
+     probability plot in the output.</para></listitem>
+     <listitem><para> Specify the output 
+     options as described above.</para></listitem>
+     <listitem><para> Press the OK button. </para></listitem>
+</orderedlist>
+     <para> The output of this normality test is shown in
+     <xref linkend="normality-example-4" />. Note that the graph appears 
+     initially on top of the output data and needs to be moved to make 
+     the data visible.</para>
+ </example>
+
+   <figure id="normality-example-2">
+    <title>Completed Input Tab of the Normality Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality-ex2.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the completed input tab of the normality 
+	      test dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+   <figure id="normality-example-3">
+    <title>Completed Test Tab of the Normality Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality-ex3.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the completed test tab of the normality 
+	      test dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+   <figure id="normality-example-4">
+    <title>Normality Test Output</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-normality-ex4.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the output from a normality test.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+ </sect2>
 
 
   <sect2 id="one-median-tool">
       <title>One Median</title>
-      
-      
+  
+      <para>The One Median test tool provides two non-parametric
+      tests that test the null hypothesis that the sample comes from a 
+      population with a given median:</para>
+      <orderedlist spacing="compact">
+	<listitem><para>Sign Test</para></listitem>
+	<listitem><para>Wilcoxon Signed Rank Test</para></listitem>
+      </orderedlist>
+      <para>Selecting the appropriate submenu item opens the dialog with
+      the respective test preselected.</para>
+
   <sect3 id="sign-test-tool">
       <title>Sign Test</title>
-      <para></para>
+  <note>
+    <para>
+      This section describes the one sample sign test to test the 
+      null hypothesis that the sample comes from a 
+      population with the given median. The tool to perform a sign test to
+      test the null hypothesis that two paired samples come from populations 
+      with the same median is in section  
+      <xref linkend="two-median-sign-test-tool" />.
+    </para>
+  </note>
+   <figure id="one-median-tool-dialog">
+    <title>One-Median Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-signtest.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the one-median test dialog used by 
+	      the Sign Test and the Wilcoxon Signed Rank Test.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+      <para>The Sign Test tool performs a one-sample sign test whether
+      the sample comes from a  population with a given median.</para>
+      <para>The sample data range is specified via the <quote><guilabel>Input
+      Range:</guilabel></quote> entry 
+      (see <xref linkend="one-median-tool-dialog" />).  The given range 
+      or list of ranges can be grouped into 
+      separate data sets by columns, rows, or areas. The tool performs a
+      separate test for each data set.</para>
+      <para>On the <quote><guilabel>Test</guilabel></quote>tab of the dialog
+      (see <xref linkend="one-median-tool-dialog-test-tab" />) the predicted 
+      median as well as the significance level are specified.</para>
+   <figure id="one-median-tool-dialog-test-tab">
+    <title>The Test Tab of the One-Median Test Dialog</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-signtest-ex1.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the test tab of the one-median test 
+	      dialog.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
+
+<example id="usingsigntesttool">
+ <title>Using the Sign Test Tool</title>
+
+  <para>
+    Suppose you want to perform a Sign Test
+    on the data
+    given in <xref linkend="one-median-tool-dialog" /> to determine whether
+    the sample comes from a population of mean 3.</para>
+<orderedlist>
+     <listitem><para>
+     Enter A1:A19 (or Sheet1!$A$1:$A$19) in the 
+     <quote><guilabel>Input Range:</guilabel></quote> 
+     entry by typing 
+     this directly into the entry or clicking in the entry field and 
+     then selecting the range on the sheet.</para></listitem>
+     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
+     option since the first row contains a label. (see 
+     <xref linkend="one-median-tool-dialog" />).</para></listitem>
+     <listitem><para> On the <quote><guibutton>Test</guibutton></quote> tab 
+     of the dialog
+     (see <xref linkend="one-median-tool-dialog-test-tab" />) select the
+     Sign Test.</para></listitem>
+     <listitem><para> Specify an appropriate significance level
+     Alpha, say 0.05.</para></listitem>
+     <listitem><para> Select thepecify the median of the null hypothesis (3)
+     in the <quote><guibutton>Predicted Median</guibutton></quote> entry.
+     </para></listitem>
+     <listitem><para> Specify the output 
+     options as described above.</para></listitem>
+     <listitem><para> Press the OK button. </para></listitem>
+</orderedlist>
+     <para> The output of this sign test is shown in
+     <xref linkend="sign-test-dialog-output" />.</para>
+ </example>
+
+   <figure id="sign-test-dialog-output">
+    <title>Output of a Sign Test</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-signtest-ex2.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the output of a Sign Test.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
   </sect3>
 
   <sect3 id="wilcoxon-sign-test-tool">
       <title>Wilcoxon Signed Rank Test</title>
-      <para></para>
+  <note>
+    <para>
+      This section describes the one sample Wilcoxon signed rank test to 
+      test the 
+      null hypothesis that the sample comes from a 
+      population with the given median. The tool to perform a Wilcoxon
+      signed rank test to
+      test the null hypothesis that two paired samples come from populations 
+      with the same median is in section  
+      <xref linkend="two-median-wilcoxon-sign-test-tool" />.
+    </para>
+  </note>
+       <para>The  Wilcoxon Signed Rank TTest tool performs a one-sample 
+      sign test whether
+      the sample comes from a  population with a given median.</para>
+      <para>The sample data range is specified via the <quote><guilabel>Input
+      Range:</guilabel></quote> entry 
+      (see <xref linkend="one-median-tool-dialog" />).  The given range 
+      or list of ranges can be grouped into 
+      separate data sets by columns, rows, or areas. The tool performs a
+      separate test for each data set.</para>
+      <para>On the <quote><guilabel>Test</guilabel></quote>tab of the dialog
+      (see <xref linkend="one-median-tool-dialog-test-tab" />) the predicted 
+      median as well as the significance level are specified.</para>
+ 
+  <note>
+    <para>
+      The p-values given by this tool are determined using a normal
+      approximation. This approximation is only valid if the sample 
+      size is at least 12.
+    </para>
+  </note>
+
+<example id="usingwilcoxonsignedranktesttool">
+ <title>Using the Wilcoxon Signed Rank Test Tool</title>
+  <para>
+    Suppose you want to perform a Wilcoxon Signed Rank Test
+    on the data
+    given in <xref linkend="one-median-tool-dialog" /> to determine whether
+    the sample comes from a population of mean 3.</para>
+<orderedlist>
+     <listitem><para>
+     Enter A1:A19 (or Sheet1!$A$1:$A$19) in the 
+     <quote><guilabel>Input Range:</guilabel></quote> 
+     entry by typing 
+     this directly into the entry or clicking in the entry field and 
+     then selecting the range on the sheet.</para></listitem>
+     <listitem><para> Select the <quote><guibutton>Labels</guibutton></quote>
+     option since the first row contains a label. (see 
+     <xref linkend="one-median-tool-dialog" />).</para></listitem>
+     <listitem><para> On the <quote><guibutton>Test</guibutton></quote> tab 
+     of the dialog
+     (see <xref linkend="one-median-tool-dialog-test-tab" />) select the
+     Wilcoxon Signed Rank Test.</para></listitem>
+     <listitem><para> Specify an appropriate significance level
+     Alpha, say 0.05.</para></listitem>
+     <listitem><para> Select thepecify the median of the null hypothesis (3)
+     in the <quote><guibutton>Predicted Median</guibutton></quote> entry.
+     </para></listitem>
+     <listitem><para> Specify the output 
+     options as described above.</para></listitem>
+     <listitem><para> Press the OK button. </para></listitem>
+</orderedlist>
+     <para> The output of this sign test is shown in
+     <xref linkend="wilcoxon-sign-test-dialog-output" />.</para>
+ </example>
+
+
+   <figure id="wilcoxon-sign-test-dialog-output">
+    <title>Output of a Wilcoxon Signed Rank Test</title>
+    <screenshot>
+	<mediaobject>
+            <imageobject>
+              <imagedata fileref="figures/analysistools-signtest-ex3.png" 
+                  format="PNG" />
+            </imageobject>
+            <textobject>
+              <phrase>An image of the output of a Wilcoxon Signed Rank 
+	      Test.</phrase>
+            </textobject>
+           </mediaobject>
+    </screenshot>
+  </figure>
   </sect3>
 
   </sect2>
@@ -2455,8 +2877,8 @@
   <title>Two Sample Tests</title>
 
 <sect2 id="t-test-tool">
-     <title>Comparing Means of 2 Populations</title>
-     <para>&gnum; provides 4 similar
+     <title>Comparing Means of Two Populations</title>
+     <para>&gnum; provides four similar
      tools to test whether the difference of two population means is
      equal to a hypothesized value. These four tools use the same
      dialog (see <xref linkend="ttest-dialog" />).</para>
@@ -2777,12 +3199,58 @@
   </sect3>
 </sect2>
 
-  <!--
-  <sect2 id="sign-test-tool">
-      <title>Sign Tests</title>
+  <sect2 id="two-medians-tool">
+      <title>Comparing Medians of Two Populations</title>
+
+      <para>&gnum; provides three non-parametric tests to test the null 
+      hypothesis that the two samples come from 
+      populations with the same median. Two tests, performed through the same
+      tool, apply in the case of paired samples:</para>
+      <itemizedlist spacing="compact">
+ 	<listitem><para>Sign Test</para></listitem>
+	<listitem><para>Wilcoxon Signed Rank Test</para></listitem>
+      </itemizedlist>
+      <para>One test applies in the case of unpaired samples:</para>
+      <itemizedlist spacing="compact">
+ 	<listitem><para>Wilcoxon-Mann-Whitney Test</para></listitem>
+      </itemizedlist>
+
       <para></para>
+  <sect3 id="two-median-sign-test-tool">
+      <title>Sign Test</title>
+  <note>
+    <para>
+      This section describes the two sample (paired) sign test to test the 
+      null hypothesis that the two samples come from 
+      populations with the same median. The tool to perform a sign test to
+      test the null hypothesis that the single sample comes from a  population 
+      with a given median is in section  <xref linkend="sign-test-tool" />.
+    </para>
+  </note>
+      <para>This section has not yet been written</para>
+  </sect3>
+  <sect3 id="two-median-wilcoxon-sign-test-tool">
+      <title>Wilcoxon Signed Rank Test</title>
+  <note>
+    <para>
+      This section describes the two sample (paired) Wilcoxon signed rank
+      test to test the 
+      null hypothesis that the two samples come from 
+      populations with the same median. The tool to perform a Wilcoxon 
+      signed rank test to
+      test the null hypothesis that the single sample comes from a  population 
+      with a given median is in section  
+      <xref linkend="wilcoxon-sign-test-tool" />.
+    </para>
+  </note>
+      <para>This section has not yet been written</para>
+  </sect3>
+  <sect3 id="two-median-wilcoxon-mann-whitney-test-tool">
+      <title>Wilcoxon-Mann-Whitney Test</title>
+      <para>This section has not yet been written</para>
+  </sect3>
+
   </sect2>
-  -->
 
   <sect2 id="ftest-two-sample-for-variances-tool">
      <title>F-Test: Two-Sample for Variances Tool</title>

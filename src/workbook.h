@@ -58,7 +58,6 @@ GnmValue   *workbook_foreach_cell_in_range (GnmEvalPos const  *pos,
 					    gpointer	    closure);
 GPtrArray  *workbook_cells               (Workbook *wb, gboolean comments,
 					  GnmSheetVisibility vis);
-GSList     *workbook_local_functions	 (Workbook const *wb);
 
 void workbook_foreach_name (Workbook const *wb, gboolean globals_only,
 			    GHFunc func, gpointer data);
@@ -89,6 +88,18 @@ void workbook_sheet_state_restore (Workbook *wb, WorkbookSheetState const *wss);
 int workbook_sheet_state_size	(WorkbookSheetState const *wss);
 char *workbook_sheet_state_diff (WorkbookSheetState const *wss_a,
 				 WorkbookSheetState const *wss_b);
+
+#define WORKBOOK_FOREACH_SHEET(wb, sheet, code)				\
+  do {									\
+	  const Workbook *wb_ = (wb);					\
+	  unsigned sheetno_;						\
+	  unsigned sheetcount_ = workbook_sheet_count (wb_);		\
+	  for (sheetno_ = 0; sheetno_ < sheetcount_; sheetno_++) {	\
+		  Sheet *sheet = workbook_sheet_by_index (wb_, sheetno_); \
+		  code;							\
+	  }								\
+  } while (0)
+
 
 G_END_DECLS
 

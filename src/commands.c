@@ -44,6 +44,7 @@
 #include "dependent.h"
 #include "value.h"
 #include "expr.h"
+#include "func.h"
 #include "expr-name.h"
 #include "cell.h"
 #include "sheet-merge.h"
@@ -4177,9 +4178,7 @@ cmd_search_replace_do_cell (CmdSearchReplace *me, GnmEvalPos *ep,
 		GnmParsePos pp;
 
 		parse_pos_init_evalpos (&pp, ep);
-		parse_text_value_or_expr (&pp, cell_res.new_text, &val, &texpr,
-			gnm_style_get_format (gnm_cell_get_style (cell_res.cell)),
-			workbook_date_conv (cell_res.cell->base.sheet->workbook));
+		parse_text_value_or_expr (&pp, cell_res.new_text, &val, &texpr);
 
 		/*
 		 * FIXME: this is a hack, but parse_text_value_or_expr
@@ -4877,7 +4876,8 @@ cmd_reorganize_sheets (WorkbookControl *wbc,
 	me->redo_sheet = wb_control_cur_sheet (wbc);
 
 	me->cmd.sheet = NULL;
-	me->cmd.size = 1;
+	me->cmd.size = workbook_sheet_state_size (me->old) +
+		workbook_sheet_state_size (me->new);
 	me->cmd.cmd_descriptor =
 		workbook_sheet_state_diff (me->old, me->new);
 
@@ -6167,8 +6167,10 @@ cmd_rescope_name_redo (GnmCommand *cmd, WorkbookControl *wbc)
 	CmdRescopeName *me = CMD_RESCOPE_NAME (cmd);
 	Sheet *old_scope = me->nexpr->pos.sheet;
 	char *err;
+	GnmParsePos pp = me->nexpr->pos;
 
-	err = expr_name_set_scope (me->nexpr, me->scope);
+	pp.sheet = me->scope;
+	err = expr_name_set_pos (me->nexpr, &pp);
 
 	if (err != NULL) {
 		go_cmd_context_error_invalid (GO_CMD_CONTEXT (wbc), _("Change Scope of Name"), err);

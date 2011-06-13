@@ -1,0 +1,100 @@
+diff -ur zlib-1.2.5/win32/Makefile.gcc zlib-1.2.5-fixed//win32/Makefile.gcc
+--- zlib-1.2.5/win32/Makefile.gcc	2010-04-18 21:35:55.000000000 -0400
++++ zlib-1.2.5-fixed//win32/Makefile.gcc	2010-07-10 08:31:00.000000000 -0400
+@@ -24,20 +24,20 @@
+ # the DLL name should be changed from "zlib1.dll".
+ 
+ STATICLIB = libz.a
+-SHAREDLIB = zlib1.dll
+-IMPLIB    = libzdll.a
++SHAREDLIB = libz.dll
++IMPLIB    = libz.dll.a
+ 
+ #
+ # Set to 1 if shared object needs to be installed
+ #
+-SHARED_MODE=0
++SHARED_MODE=1
+ 
+ #LOC = -DASMV
+ #LOC = -DDEBUG -g
+ 
+ PREFIX =
+-CC = $(PREFIX)gcc
+-CFLAGS = $(LOC) -O3 -Wall
++#CC = $(PREFIX)gcc
++#CFLAGS = $(LOC) -O3 -Wall
+ EXTRA_CFLAGS = -DNO_VIZ
+ 
+ AS = $(CC)
+@@ -49,7 +49,7 @@
+ AR = $(PREFIX)ar
+ ARFLAGS = rcs
+ 
+-RC = $(PREFIX)windres
++RC = $(WINDRES)
+ RCFLAGS = --define GCC_WINDRES
+ 
+ STRIP = $(PREFIX)strip
+@@ -59,14 +59,16 @@
+ INSTALL = $(CP)
+ RM = rm -f
+ 
+-prefix = /usr/local
+-exec_prefix = $(prefix)
++exec_prefix = $(prefix)/bin
++INCLUDE_PATH= $(prefix)/include
++LIBRARY_PATH= $(prefix)/lib
++BINARY_PATH=$(exec_prefix)
+ 
+ OBJS = adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o \
+        gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o
+ OBJA =
+ 
+-all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) example.exe minigzip.exe example_d.exe minigzip_d.exe
++all: $(SHAREDLIB) $(IMPLIB)
+ 
+ test: example.exe minigzip.exe
+ 	./example
+@@ -87,10 +89,10 @@
+ 
+ $(IMPLIB): $(SHAREDLIB)
+ 
+-$(SHAREDLIB): win32/zlib.def $(OBJS) $(OBJA) zlibrc.o
+-	$(CC) -shared -Wl,--out-implib,$(IMPLIB) $(LDFLAGS) \
+-	-o $@ win32/zlib.def $(OBJS) $(OBJA) zlibrc.o
+-	$(STRIP) $@
++$(SHAREDLIB) $(IMPLIB): win32/zlib.def $(OBJS) $(OBJA) zlibrc.o
++	$(CC) -shared -o $@ $(OBJS) $(OBJA) zlibrc.o
++	$(DLLTOOL) --def win32/zlib.def --dllname $(SHAREDLIB) --output-lib $(IMPLIB)
++	$(STRIP) $(SHAREDLIB)
+ 
+ example.exe: example.o $(STATICLIB)
+ 	$(LD) $(LDFLAGS) -o $@ example.o $(STATICLIB)
+@@ -116,7 +118,7 @@
+ 
+ .PHONY: install uninstall clean
+ 
+-install: zlib.h zconf.h $(STATICLIB) $(IMPLIB)
++install: zlib.h zconf.h $(IMPLIB)
+ 	-@mkdir -p $(INCLUDE_PATH)
+ 	-@mkdir -p $(LIBRARY_PATH)
+ 	-if [ "$(SHARED_MODE)" = "1" ]; then \
+@@ -126,7 +128,7 @@
+ 	fi
+ 	-$(INSTALL) zlib.h $(INCLUDE_PATH)
+ 	-$(INSTALL) zconf.h $(INCLUDE_PATH)
+-	-$(INSTALL) $(STATICLIB) $(LIBRARY_PATH)
++#	-$(INSTALL) $(STATICLIB) $(LIBRARY_PATH)
+ 
+ uninstall:
+ 	-if [ "$(SHARED_MODE)" = "1" ]; then \
+@@ -135,7 +137,7 @@
+ 	fi
+ 	-$(RM) $(INCLUDE_PATH)/zlib.h
+ 	-$(RM) $(INCLUDE_PATH)/zconf.h
+-	-$(RM) $(LIBRARY_PATH)/$(STATICLIB)
++#	-$(RM) $(LIBRARY_PATH)/$(STATICLIB)
+ 
+ clean:
+ 	-$(RM) $(STATICLIB)

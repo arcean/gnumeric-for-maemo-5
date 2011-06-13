@@ -1,2 +1,0 @@
-misc:Depends=debconf (>= 0.5) | debconf-2.0
-shlibs:Depends=libatk1.0-0 (>= 1.24.0), libc6 (>= 2.5.0-1), libcairo2, libglib2.0-0 (>= 2.20.0), libgoffice-0-8 (>= 0.8.14), libgsf-1, libgtk2.0-0 (>= 2:2.12.9-0osso1), libhildon1 (>= 2.2.22), libhildonfm2 (>= 1:2.28+0m5), libosso1 (>= 2.23), libpango1.0-0, libxml2 (>= 2.6.32), zlib1g (>= 1:1.2.1)

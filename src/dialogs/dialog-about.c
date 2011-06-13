@@ -71,6 +71,8 @@ static struct {
 	unsigned contributions;
 	char const *details; /* optionally NULL */
 } const contributors[] = {
+	{ N_("Tomasz Pieniążek"),		GNM_CORE,
+		N_("Maemo 5 port") },
 	{ N_("Harald Ashburner"),		GNM_ANALYTICS,
 		N_("Options pricers") },
 	{ N_("Sean Atkinson"),		GNM_ANALYTICS | GNM_IMPORT_EXPORT,
@@ -562,7 +564,7 @@ dialog_about (WBCGtk *wbcg)
 			  "website", "http://www.gnumeric.org/",
 			  "website-label", _("Visit the Gnumeric website"),
 			  "logo-icon-name", "gnumeric",
-			  "copyright", _("Copyright \xc2\xa9 1998-2010"),
+			  "copyright", _("Copyright \xc2\xa9 1998-2011"),
 			  "comments", _("Free, Fast, Accurate - Pick Any Three!"),
 			  NULL);
 	state->dialog = w;

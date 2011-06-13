@@ -1,3 +1,47 @@
+2011-05-31  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-statistical.xml: add documentation stubs for
+	two-sample median tests
+
+2011-05-31  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-statistical.xml: add brief documentation of
+	sign test and Wilcoxon signed rank test
+	* figures/analysistools-signtest-ex1.png: new
+	* figures/analysistools-signtest-ex2.png: new
+	* figures/analysistools-signtest-ex3.png: new
+	* figures/analysistools-signtest.png: new
+	* figures/Makefile.am: add the above image files
+
+2011-05-30  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-statistical.xml: add brief documentation of
+	the normality tests tool
+	* figures/analysistools-normality-ex1.png: new
+	* figures/analysistools-normality-ex2.png: new
+	* figures/analysistools-normality-ex3.png: new
+	* figures/analysistools-normality-ex4.png: new
+	* figures/analysistools-normality-testspec.png: new
+	* figures/analysistools-normality.png: new
+	* figures/Makefile.am: add the above image files
+
+2011-05-29  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-statistical.xml: add brief documentation of
+	principal component analysis
+	* figures/analysistools-pcanalysis.png: new
+	* figures/analysistools-pcanalysis-ex1.png: new
+	* figures/analysistools-pcanalysis-ex2.png: new
+	* Makefile.am: add the above image files
+	* textdefs.tex: add \textxi
+
+2011-05-29  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* analysis-statistical.xml: correct option tab description for
+	histogram tool
+	* analysistools-histogram-ex4.png: update
+	* analysistools-histogram-graphs.png: update
+
 2011-05-21  Morten Welinder <terra@gnome.org>
 
 	* Release 1.10.15
