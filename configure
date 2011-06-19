@@ -710,8 +710,8 @@ MAKEFLAGS=
 # Identity of this package.
 PACKAGE_NAME='gnumeric'
 PACKAGE_TARNAME='gnumeric'
-PACKAGE_VERSION='1.10.16pre'
-PACKAGE_STRING='gnumeric 1.10.16pre'
+PACKAGE_VERSION='1.10.16'
+PACKAGE_STRING='gnumeric 1.10.16'
 PACKAGE_BUGREPORT='http://bugzilla.gnome.org/enter_bug.cgi?product=gnumeric'
 PACKAGE_URL=''
 
@@ -3138,7 +3138,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE='gnumeric'
- VERSION='1.10.16pre'
+ VERSION='1.10.16'
 
 
 cat >>confdefs.h <<_ACEOF
@@ -17024,7 +17024,7 @@ YYYYMMDD=`date +%Y%m%d`
 
 
 
-$as_echo "#define GNM_VERSION_FULL \"1.10.16pre\"" >>confdefs.h
+$as_echo "#define GNM_VERSION_FULL \"1.10.16\"" >>confdefs.h
 
 
 $as_echo "#define GNM_VERSION_EPOCH 1" >>confdefs.h

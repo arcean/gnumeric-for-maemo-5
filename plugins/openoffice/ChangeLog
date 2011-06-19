@@ -1,3 +1,35 @@
+2011-06-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (oo_style_prop_cell): add fo:font-family
+	and simplify handling of fo:font-size
+	(oo_style_prop_cell): fix some typos in property names
+
+2011-06-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_plot): also write "xlink:type"
+	attribute in ODF 1.2
+
+2011-06-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (od_series_regression): fix spelling of
+	gnm:exponential-smoothed
+
+2011-06-13  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (od_series_regression): use "Trend line"
+	rather than "Regression curve".
+
+2011-06-12  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_regression_curve): new
+	(odf_write_standard_series): move some code to odf_write_regression_curve
+	and call it both for "Regression curve" and "Trend line"
+
+2011-06-12  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_sheet): we need the full extent not
+	just the cells-extent
+
 2011-06-09  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-read.c (odf_fraction): handle absence of min_i_digits

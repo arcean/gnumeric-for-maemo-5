@@ -90,6 +90,7 @@
 #include "expr.h"
 #include "expr-impl.h"
 #include "expr-name.h"
+#include "func.h"
 #include "workbook.h"
 #include "sheet.h"
 #include "gnm-format.h"
@@ -634,12 +635,12 @@ parser_sheet_by_name (Workbook *wb, GnmExpr *name_expr)
 }
 
 /* Make byacc happier */
-int yyparse (void);
+static int yyparse (void);
 
 
 
 /* Line 189 of yacc.c  */
-#line 643 "parser.c"
+#line 644 "parser.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -724,7 +725,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 570 "parser.y"
+#line 571 "parser.y"
 
 	GnmExpr		*expr;
 	GnmValue	*value;
@@ -736,7 +737,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 740 "parser.c"
+#line 741 "parser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -748,7 +749,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 752 "parser.c"
+#line 753 "parser.c"
 
 #ifdef short
 # undef short
@@ -1057,13 +1058,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   600,   600,   606,   614,   620,   623,   624,   625,   629,
-     630,   631,   632,   633,   634,   635,   636,   637,   638,   639,
-     640,   641,   642,   643,   644,   645,   650,   654,   658,   659,
-     661,   679,   686,   687,   705,   726,   743,   744,   747,   748,
-     751,   752,   780,   802,   811,   823,   824,   828,   832,   836,
-     842,   847,   858,   868,   871,   872,   877,   882,   886,   887,
-     892,   900,   905
+       0,   601,   601,   607,   615,   621,   624,   625,   626,   630,
+     631,   632,   633,   634,   635,   636,   637,   638,   639,   640,
+     641,   642,   643,   644,   645,   646,   651,   655,   659,   660,
+     662,   680,   687,   688,   706,   727,   744,   745,   748,   749,
+     752,   753,   781,   803,   812,   824,   825,   829,   833,   837,
+     843,   848,   859,   869,   872,   873,   878,   883,   887,   888,
+     893,   901,   906
 };
 #endif
 
@@ -2059,7 +2060,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 600 "parser.y"
+#line 601 "parser.y"
     {
 		unregister_allocation ((yyvsp[(2) - (2)].expr));
 		unregister_allocation ((yyvsp[(1) - (2)].list));
@@ -2070,7 +2071,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 606 "parser.y"
+#line 607 "parser.y"
     {
 		if (state->result != NULL) {
 			gnm_expr_list_unref (state->result);
@@ -2082,7 +2083,7 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 614 "parser.y"
+#line 615 "parser.y"
     {
 	       unregister_allocation ((yyvsp[(2) - (3)].expr));
 	       unregister_allocation ((yyvsp[(1) - (3)].list));
@@ -2094,28 +2095,28 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 620 "parser.y"
+#line 621 "parser.y"
     { (yyval.list) = NULL; register_expr_list_allocation ((yyval.list)); }
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 623 "parser.y"
+#line 624 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 624 "parser.y"
+#line 625 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 625 "parser.y"
+#line 626 "parser.y"
     {
 		(yyval.expr) = parser_simple_val_or_name ((yyvsp[(1) - (1)].expr));
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2125,119 +2126,119 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 629 "parser.y"
+#line 630 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 630 "parser.y"
+#line 631 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_ADD,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 631 "parser.y"
+#line 632 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_SUB,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 632 "parser.y"
+#line 633 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_MULT,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 633 "parser.y"
+#line 634 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_DIV,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 634 "parser.y"
+#line 635 "parser.y"
     { (yyval.expr) = build_exp ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 635 "parser.y"
+#line 636 "parser.y"
     { (yyval.expr) = build_exp ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 636 "parser.y"
+#line 637 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_CAT,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 637 "parser.y"
+#line 638 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_EQUAL,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 638 "parser.y"
+#line 639 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_LT,		(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 639 "parser.y"
+#line 640 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_GT,		(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 640 "parser.y"
+#line 641 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_GTE,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 641 "parser.y"
+#line 642 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_NOT_EQUAL,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 642 "parser.y"
+#line 643 "parser.y"
     { (yyval.expr) = build_binop ((yyvsp[(1) - (3)].expr), GNM_EXPR_OP_LTE,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 643 "parser.y"
+#line 644 "parser.y"
     { (yyval.expr) = build_logical ((yyvsp[(1) - (3)].expr), TRUE,	(yyvsp[(3) - (3)].expr)); }
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 644 "parser.y"
+#line 645 "parser.y"
     { (yyval.expr) = build_logical ((yyvsp[(1) - (3)].expr), FALSE, (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 645 "parser.y"
+#line 646 "parser.y"
     {
 		(yyval.expr) = build_intersect ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr));
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2247,7 +2248,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 650 "parser.y"
+#line 651 "parser.y"
     {
 		GnmExpr *tmp = fold_negative_constant ((yyvsp[(2) - (2)].expr));
 		(yyval.expr) = tmp ? tmp : build_unary_op (GNM_EXPR_OP_UNARY_NEG, (yyvsp[(2) - (2)].expr));
@@ -2257,7 +2258,7 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 654 "parser.y"
+#line 655 "parser.y"
     {
 		/* Don't fold here.  */
 		(yyval.expr) = build_unary_op (GNM_EXPR_OP_UNARY_PLUS, (yyvsp[(2) - (2)].expr));
@@ -2267,21 +2268,21 @@ yyreduce:
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 658 "parser.y"
+#line 659 "parser.y"
     { (yyval.expr) = build_not ((yyvsp[(2) - (2)].expr)); }
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 659 "parser.y"
+#line 660 "parser.y"
     { (yyval.expr) = build_unary_op (GNM_EXPR_OP_PERCENTAGE, (yyvsp[(1) - (2)].expr)); }
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 661 "parser.y"
+#line 662 "parser.y"
     {
 		if ((yyvsp[(2) - (3)].list) == NULL) {
 			report_err (state, g_error_new (1, PERR_INVALID_EMPTY,
@@ -2305,7 +2306,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 679 "parser.y"
+#line 680 "parser.y"
     {
 		unregister_allocation ((yyvsp[(2) - (3)].list));
 		(yyval.expr) = build_array ((yyvsp[(2) - (3)].list));
@@ -2317,7 +2318,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 687 "parser.y"
+#line 688 "parser.y"
     {
 		GnmNamedExpr *nexpr = NULL;
 		char const *name = value_peek_string ((yyvsp[(2) - (2)].expr)->constant.value);
@@ -2341,7 +2342,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 705 "parser.y"
+#line 706 "parser.y"
     {
 		GnmNamedExpr *nexpr = NULL;
 		char const *name = value_peek_string ((yyvsp[(2) - (2)].expr)->constant.value);
@@ -2366,7 +2367,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 726 "parser.y"
+#line 727 "parser.y"
     {
 		char const *name = value_peek_string ((yyvsp[(1) - (4)].expr)->constant.value);
 		GnmExpr const *f_call = (*state->convs->input.func) (
@@ -2387,7 +2388,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 752 "parser.y"
+#line 753 "parser.y"
     {
 		char const *wb_name = value_peek_string ((yyvsp[(2) - (3)].expr)->constant.value);
 		Workbook *ref_wb = state->pos
@@ -2421,7 +2422,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 780 "parser.y"
+#line 781 "parser.y"
     {
 		/* Special syntax for global names shadowed by sheet names.  */
 		Workbook *wb = state->pos
@@ -2444,7 +2445,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 802 "parser.y"
+#line 803 "parser.y"
     {
 		Sheet *sheet = parser_sheet_by_name (state->pos->wb, (yyvsp[(1) - (2)].expr));
 		if (sheet != NULL) {
@@ -2459,7 +2460,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 811 "parser.y"
+#line 812 "parser.y"
     {
 		Workbook *wb = (yyvsp[(1) - (3)].wb);
 		Sheet *sheet = parser_sheet_by_name (wb, (yyvsp[(2) - (3)].expr));
@@ -2475,14 +2476,14 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 823 "parser.y"
+#line 824 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 824 "parser.y"
+#line 825 "parser.y"
     {
 		(yyval.expr) = build_range_ctor ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr), NULL);
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2492,7 +2493,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 828 "parser.y"
+#line 829 "parser.y"
     {
 		(yyval.expr) = build_range_ctor ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr), (yyvsp[(1) - (3)].expr));
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2502,7 +2503,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 832 "parser.y"
+#line 833 "parser.y"
     {
 		(yyval.expr) = build_range_ctor ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr), (yyvsp[(3) - (3)].expr));
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2512,7 +2513,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 836 "parser.y"
+#line 837 "parser.y"
     {
 		(yyval.expr) = build_range_ctor ((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr), NULL);
 		if ((yyval.expr) == NULL) { YYERROR; }
@@ -2522,7 +2523,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 842 "parser.y"
+#line 843 "parser.y"
     {
 		unregister_allocation ((yyvsp[(1) - (1)].expr));
 		(yyval.list) = gnm_expr_list_prepend (NULL, (yyvsp[(1) - (1)].expr));
@@ -2533,7 +2534,7 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 847 "parser.y"
+#line 848 "parser.y"
     {
 		GSList *tmp = (yyvsp[(3) - (3)].list);
 		unregister_allocation ((yyvsp[(3) - (3)].list));
@@ -2550,7 +2551,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 858 "parser.y"
+#line 859 "parser.y"
     {
 		GSList *tmp = (yyvsp[(2) - (2)].list);
 		unregister_allocation ((yyvsp[(2) - (2)].list));
@@ -2566,21 +2567,21 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 868 "parser.y"
+#line 869 "parser.y"
     { (yyval.list) = NULL; }
     break;
 
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 871 "parser.y"
+#line 872 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 872 "parser.y"
+#line 873 "parser.y"
     {
 		GnmExpr *tmp = fold_negative_constant ((yyvsp[(2) - (2)].expr));
 		if (!tmp) { YYERROR; }
@@ -2591,7 +2592,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 877 "parser.y"
+#line 878 "parser.y"
     {
 		GnmExpr *tmp = fold_positive_constant ((yyvsp[(2) - (2)].expr));
 		if (!tmp) { YYERROR; }
@@ -2602,21 +2603,21 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 882 "parser.y"
+#line 883 "parser.y"
     { (yyval.expr) = parse_string_as_value ((yyvsp[(1) - (1)].expr)); }
     break;
 
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 886 "parser.y"
+#line 887 "parser.y"
     { (yyval.list) = NULL; }
     break;
 
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 887 "parser.y"
+#line 888 "parser.y"
     {
 		unregister_allocation ((yyvsp[(1) - (1)].expr));
 		(yyval.list) = g_slist_prepend (NULL, (yyvsp[(1) - (1)].expr));
@@ -2627,7 +2628,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 892 "parser.y"
+#line 893 "parser.y"
     {
 		unregister_allocation ((yyvsp[(3) - (3)].list));
 		unregister_allocation ((yyvsp[(1) - (3)].expr));
@@ -2639,7 +2640,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 900 "parser.y"
+#line 901 "parser.y"
     {
 		unregister_allocation ((yyvsp[(1) - (1)].list));
 		(yyval.list) = g_slist_prepend (NULL, (yyvsp[(1) - (1)].list));
@@ -2650,7 +2651,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 905 "parser.y"
+#line 906 "parser.y"
     {
 		unregister_allocation ((yyvsp[(3) - (3)].list));
 		unregister_allocation ((yyvsp[(1) - (3)].list));
@@ -2662,7 +2663,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2666 "parser.c"
+#line 2667 "parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2874,7 +2875,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 913 "parser.y"
+#line 914 "parser.y"
 
 
 static char const *
