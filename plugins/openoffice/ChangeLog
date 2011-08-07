@@ -1,3 +1,270 @@
+2011-07-31  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.17
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (styles_dtd): <style:background-image>
+	may appear in <style:page-layout-properties>
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_drop_line): drop unused argument
+	and change all callers
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c: use G_GNUC_UNUSED
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_page_layout): in ODF combine
+	PRINT_COMMENTS_IN_PLACE and PRINT_COMMENTS_AT_END
+	* openoffice-read.c (odf_page_layout_properties): do not count on the
+	order of the attributes.
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c: use G_GNUC_UNUSED
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_master_page): show warning on missing style
+	names
+
+2011-07-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_master_page): initialize pi
+
+2011-07-18  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_add_font_weight): new
+	(odf_write_style_text_properties): use odf_add_font_weight
+	(odf_write_character_styles): ditto
+	(odf_write_gog_style_text): ditto
+
+2011-07-18  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_sheet): do not use <table:table-columns>
+	and <table:table-rows> since MS Excel stumbles over them.
+
+2011-07-15  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_style_have_three_dimensional): replace
+	with oo_style_has_property
+	(oo_style_have_multi_series): ditto
+	(oo_style_has_property): new
+	(oo_style_has_plot_property): new
+	(oo_chart_axis): bar charts have differnt axes interpretaion than
+	column charts
+	* openoffice-write.c (odf_write_*_axes_styles): add arguments and
+	change all callers
+	(odf_write_axis_full): new
+	(odf_write_axis): use odf_write_axis_full
+	(odf_write_axis_no_cats): use odf_write_axis_full
+	(odf_write_plot): we need to distinguish column charts from bar charts
+
+2011-07-14  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_axis): do not confuse MS Excel by
+	writing categories for Bubble Plots
+
+2011-07-08  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_style): don't inherit style conditions
+
+2011-06-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_parse_range_address_or_expr): new, extracted from
+	oo_plot_series
+	(oo_table_start): read table:print and table:print-ranges
+	(odf_page_layout_properties): we will be using table:print instead of
+	do_not_print in gnm:style-print
+	* openoffice-write.c (odf_write_content): write table:print
+	(odf_write_page_layout): do not include do_not_print in gnm:style-print
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (opendoc_content_dtd): add more items
+	* openoffice-write.c (odf_write_sheet): write table:table-header-rows
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_table_end): we may have repeating rows w/o
+	repeating columns and vice versa
+	(opendoc_content_dtd): add more items
+	* openoffice-write.c (odf_write_style_cell_properties): don't write
+	attributes outside of elements
+	(odf_write_sheet): write table:table-header-columns as appropriate
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (OOParseState): add fields
+	(oo_table_start): initialize repeating rows/cols fields
+	(oo_table_end): save repeating rows/cols data
+	(odf_table_header_rows): new
+	(odf_table_header_rows_end): new
+	(odf_table_header_cols): new
+	(odf_table_header_cols_end): new
+	(opendoc_content_dtd): connect the last four
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (OOParseState): group print items into a struct and
+	change references throughout the file
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (opendoc_content_dtd): add more items
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_header_properties): new
+	(odf_footer_properties): new
+	(odf_header_footer): don't overwrite already set footer/header height
+	(styles_dtd): connect the above
+	* openoffice-write.c (odf_write_style_cell_properties): use style:repeat-content
+	(odf_write_style_paragraph_properties): HALIGN_FILL is recorded as
+	style:repeat-content
+
+2011-06-22  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (df_write_hf) change arguments and change all
+	callers, allow for hidden headers/footers
+	(odf_write_hf_style): new
+	(odf_write_page_layout): call odf_write_hf_style
+
+2011-06-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_page_layout_properties): read style:print and
+	gnm:style-print
+	* openoffice-write.c (odf_write_page_layout) write
+	style:print and gnm:style-print
+
+2011-06-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_get_paper_size): consider orientation
+	(odf_page_layout_properties): read style:print-page-order and
+	style:print-orientation
+	* openoffice-write.c (odf_write_page_layout) write
+	style:print-page-order, style:writing-mode and style:print-orientation
+
+2011-06-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_page_layout_properties): handle
+	style:table-centering
+	* openoffice-write.c (odf_write_page_layout) write
+	style:table-centering
+
+2011-06-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (odf_get_paper_size): new
+	(odf_page_layout_properties): new
+	(odf_page_layout): new
+	(odf_page_layout_end): new
+	(odf_master_page): use the specified page layout
+	(odf_header_footer): text:p may occur outside a style:region-*
+	(odf_hf_region): avoid null-dereference
+	(odf_hf_span): ditto
+	(odf_hf_item): ditto
+	(odf_hf_title): also write the title item, skip the
+	  warning since LO includes unused layouts with this item.
+	(styles_dtd): connect the above
+	(openoffice_file_open):initialize and finalize new page layout hash
+
+2011-06-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (page_layout_name): new
+	(odf_write_page_layout): new
+	(odf_write_automatic_styles): call odf_write_page_layout
+	(odf_write_master_styles): use page_layout_name
+
+2011-06-20  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_hf): turn the display of
+	header/footer on here, not in
+	(odf_write_hf_region)
+	(odf_write_master_styles): add the display name here, not in
+	(odf_write_table_style)
+
+2011-06-20  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_table_style): drop two args and
+	change all callers
+	(odf_render_cell): We want to show the value, not the formula
+	(odf_write_hf_region): explicitly turn the display of header/footer on.
+	* openoffice-read.c (odf_string_id): new
+	(odf_pi_parse_format_spec): new
+	(odf_pi_parse_format): new
+	(odf_pi_parse_hf): new
+	(odf_pi_parse_expressions): new
+	(oo_table_start): parse the embedded expressions in the hf info
+	(odf_hf_item): assume the tag is already translated and adjust all
+	callers
+	(odf_hf_item_w_data_style): new
+	(odf_hf_date): use odf_hf_item_w_data_style
+	(odf_hf_time): use odf_hf_item_w_data_style
+	(odf_hf_expression): implement
+	(openoffice_file_open): initialize and finalize new strings hash
+
+2011-06-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_table_start): handle master_page_name
+	(oo_style): handle master-page-name
+	(odf_master_page): new
+	(odf_master_page_end): new
+	(odf_header_footer): new
+	(odf_hf_*): new
+	(styles_dtd): connect the above
+
+2011-06-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (styles_dtd): add more elements
+	* openoffice-write.c (odf_write_hf_region): don't write empty
+	spans
+
+2011-06-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (xl_find_format_xl): new
+	(xl_find_format) split off xl_find_format_xl
+	(odf_render_date): write data style info
+	(odf_render_time): ditto
+	(odf_render_cell): skip non-formula part of the expression
+	(odf_render_ops_to_xl): new
+	(odf_render_opcode): add argument and change all callers
+	(odf_hf_region_to_xl_styles): new
+	(odf_master_styles_to_xl_styles): new
+	(odf_write_office_styles): new
+	(odf_write_styles): split off odf_write_office_styles and also
+	call odf_write_automatic_styles
+	(odf_write_automatic_styles): new
+
+2011-06-19  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-write.c (odf_write_table_style): add argument and
+	write the correct master page name
+	(table_master_page_style_name): new
+	(odf_write_table_styles): determine master page name and pass to
+	odf_write_table_style
+	(odf_render_*): new
+	(odf_write_hf_region): new
+	(odf_write_hf): new
+	(odf_write_master_styles): new
+	(odf_write_styles): call odf_write_master_styles
+
+2011-06-18  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (oo_cell_start): for merged cells extent any
+	style set by the row or column. Fixes [#652492]
+
+2011-06-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* openoffice-read.c (styles_dtd): add more elements
+
+2011-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.16
+
 2011-06-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* openoffice-write.c (oo_style_prop_cell): add fo:font-family

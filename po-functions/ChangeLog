@@ -1,3 +1,19 @@
+2011-07-31  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.17
+
+2011-07-09 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* POTFILES.in: remove cell-format-cond-def.ui
+
+2011-07-06 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* POTFILES.in: add forgotten file
+
+2011-07-06 Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* POTFILES.in: add new files
+
 2011-06-13  Valek Filippov <frob@df.ru>
 
 	* ru.po: Russian translation update

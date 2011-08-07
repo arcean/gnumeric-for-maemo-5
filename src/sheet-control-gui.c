@@ -1796,6 +1796,7 @@ enum {
 	CONTEXT_DELETE,
 	CONTEXT_CLEAR_CONTENT,
 	CONTEXT_FORMAT_CELL,
+	CONTEXT_FORMAT_CELL_COND,
 	CONTEXT_CELL_AUTOFIT_WIDTH,
 	CONTEXT_CELL_AUTOFIT_HEIGHT,
 	CONTEXT_CELL_MERGE,
@@ -1856,6 +1857,9 @@ context_menu_handler (GnumericPopupMenuElement const *element,
 		break;
 	case CONTEXT_FORMAT_CELL :
 		dialog_cell_format (wbcg, FD_CURRENT);
+		break;
+	case CONTEXT_FORMAT_CELL_COND :
+		dialog_cell_format_cond (wbcg);
 		break;
 	case CONTEXT_CELL_AUTOFIT_HEIGHT :
 		workbook_cmd_autofit_selection

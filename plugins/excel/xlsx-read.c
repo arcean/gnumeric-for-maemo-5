@@ -65,6 +65,10 @@
 #include <gsf/gsf-infile.h>
 #include <gsf/gsf-infile-zip.h>
 #include <gsf/gsf-open-pkg-utils.h>
+#include <gsf/gsf-meta-names.h>
+#include <gsf/gsf-doc-meta-data.h>
+#include <gsf/gsf-docprop-vector.h>
+#include <gsf/gsf-timestamp.h>
 
 #include <glib/gi18n-lib.h>
 #include <gmodule.h>
@@ -243,6 +247,10 @@ typedef struct {
 	GPtrArray	*authors;
 	GObject		*comment;
 	GString		*comment_text;
+
+	/* Document Properties */
+	GsfDocMetaData   *metadata;
+	char *meta_prop_name;
 } XLSXReadState;
 typedef struct {
 	GOString	*str;
@@ -258,7 +266,7 @@ static GsfXMLInNS const xlsx_ns[] = {
 	GSF_XML_IN_NS (XL_NS_SS_DRAW,	"http://schemas.openxmlformats.org/drawingml/2006/3/spreadsheetDrawing"), /* Office 12 BETA-2 Technical Refresh */
 	GSF_XML_IN_NS (XL_NS_CHART,	"http://schemas.openxmlformats.org/drawingml/2006/3/chart"),		  /* Office 12 BETA-2 */
 	GSF_XML_IN_NS (XL_NS_CHART,	"http://schemas.openxmlformats.org/drawingml/2006/chart"),		  /* Office 12 BETA-2 Technical Refresh */
-	GSF_XML_IN_NS (XL_NS_CHART_DRAW, "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing"),
+	GSF_XML_IN_NS (XL_NS_CHART_DRAW,    "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing"),
 	GSF_XML_IN_NS (XL_NS_DRAW,	"http://schemas.openxmlformats.org/drawingml/2006/3/main"),		  /* Office 12 BETA-2 */
 	GSF_XML_IN_NS (XL_NS_DRAW,	"http://schemas.openxmlformats.org/drawingml/2006/main"),		  /* Office 12 BETA-2 Technical Refresh */
 	GSF_XML_IN_NS (XL_NS_DOC_REL,	"http://schemas.openxmlformats.org/officeDocument/2006/relationships"),
@@ -266,6 +274,14 @@ static GsfXMLInNS const xlsx_ns[] = {
 	GSF_XML_IN_NS (XL_NS_LEG_OFF,   "urn:schemas-microsoft-com:office:office"),
 	GSF_XML_IN_NS (XL_NS_LEG_XL,    "urn:schemas-microsoft-com:office:excel"),
 	GSF_XML_IN_NS (XL_NS_LEG_VML,   "urn:schemas-microsoft-com:vml"),
+	GSF_XML_IN_NS (XL_NS_PROP_CP,   "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"),
+	GSF_XML_IN_NS (XL_NS_PROP_DC,   "http://purl.org/dc/elements/1.1/"),
+	GSF_XML_IN_NS (XL_NS_PROP_DCMITYPE, "http://purl.org/dc/dcmitype"),
+	GSF_XML_IN_NS (XL_NS_PROP_DCTERMS,  "http://purl.org/dc/terms/"),
+	GSF_XML_IN_NS (XL_NS_PROP_XSI,  "http://www.w3.org/2001/XMLSchema-instance"),
+	GSF_XML_IN_NS (XL_NS_PROP,      "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"),
+	GSF_XML_IN_NS (XL_NS_PROP_VT,   "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"),
+	GSF_XML_IN_NS (XL_NS_PROP_CUSTOM,   "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties"),
 	{ NULL }
 };
 
@@ -2846,9 +2862,18 @@ xlsx_wb_name_end (GsfXMLIn *xin, G_GNUC_UNUSED GsfXMLBlob *blob)
 	g_return_if_fail (state->defined_name != NULL);
 
 	parse_pos_init (&pp, state->wb, sheet, 0, 0);
-	nexpr = expr_name_add (&pp, state->defined_name,
-			       gnm_expr_top_new_constant (value_new_empty ()),
-			       &error_msg, TRUE, NULL);
+
+	if (g_str_has_prefix (state->defined_name, "_xlnm.")) {
+		gboolean editable = (0 == strcmp (state->defined_name + 6, "Sheet_Title"));
+		nexpr = expr_name_add (&pp, state->defined_name + 6,
+				       gnm_expr_top_new_constant (value_new_empty ()),
+				       &error_msg, TRUE, NULL);
+		nexpr->is_permanent = TRUE;
+		nexpr->is_editable = editable;
+	} else
+		nexpr = expr_name_add (&pp, state->defined_name,
+				       gnm_expr_top_new_constant (value_new_empty ()),
+				       &error_msg, TRUE, NULL);
 
 	if (nexpr) {
 		state->delayed_names =
@@ -4198,6 +4223,8 @@ xlsx_style_array_free (GPtrArray *styles)
 	}
 }
 
+#include "xlsx-read-docprops.c"
+
 G_MODULE_EXPORT void
 xlsx_file_open (GOFileOpener const *fo, GOIOContext *context,
 		WorkbookView *wb_view, GsfInput *input);
@@ -4255,6 +4282,8 @@ xlsx_file_open (GOFileOpener const *fo, GOIOContext *context,
 			xlsx_parse_stream (&state, in, xlsx_styles_dtd);
 
 			xlsx_parse_stream (&state, wb_part, xlsx_workbook_dtd);
+
+			xlsx_read_docprops (&state);
 		} else
 			go_cmd_context_error_import (GO_CMD_CONTEXT (context),
 				_("No workbook stream found."));

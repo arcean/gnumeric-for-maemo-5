@@ -400,6 +400,8 @@ excel_la_SOURCES = \
 xml_in_files = plugin.xml.in
 xml_DATA = $(xml_in_files:.xml.in=.xml)
 EXTRA_DIST = $(xml_in_files)	\
+	xlsx-read-docprops.c	\
+	xlsx-write-docprops.c	\
 	xlsx-read-pivot.c	\
 	xlsx-write-pivot.c	\
 	xlsx-read-drawing.c	\

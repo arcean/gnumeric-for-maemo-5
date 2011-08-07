@@ -23,6 +23,12 @@ void	 dialog_plugin_manager	(WBCGtk *wbcg);
 void	 dialog_goto_cell	(WBCGtk *wbcg);
 void	 dialog_cell_format	(WBCGtk *wbcg,
 				 FormatDialogPosition_t pageno);
+void	 dialog_cell_format_select_style (WBCGtk *wbcg,
+					  gint pages, GtkWindow *w,
+					  GnmStyle *style,
+					  gpointer closure);
+void	 dialog_cell_format_cond (WBCGtk *wbcg);
+void     dialog_cell_format_style_added (gpointer closure, GnmStyle *style);
 void	 dialog_paste_special	(WBCGtk *wbcg);
 void	 dialog_insert_cells	(WBCGtk *wbcg);
 void	 dialog_delete_cells	(WBCGtk *wbcg);
@@ -119,7 +125,7 @@ int dialog_ttest_tool    (WBCGtk *wbcg, Sheet *sheet, ttest_type test);
 char *dialog_get_password (GtkWindow *parent, char const *filename);
 
 /* Modeless dialogs */
-void	dialog_preferences (WBCGtk *wbcg, gint page);
+void	dialog_preferences (WBCGtk *wbcg, gchar const *page);
 void    dialog_recent_used (WBCGtk *wbcg);
 
 void	dialog_new_view (WBCGtk *wbcg);

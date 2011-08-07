@@ -65,7 +65,8 @@ am__libdialogs_la_SOURCES_DIST = help.h dao-gui-utils.c \
 	dialog-analysis-tool-sign-test.c \
 	dialog-analysis-tool-wilcoxon-mann-whitney.c \
 	dialog-autofilter.c dialog-autoformat.c dialog-autosave.c \
-	dialog-cell-comment.c dialog-cell-format.c dialog-cell-sort.c \
+	dialog-cell-comment.c dialog-cell-format.c \
+	dialog-cell-format-cond.c dialog-cell-sort.c \
 	dialog-col-width.c dialog-col-row.c dialog-consolidate.c \
 	dialog-data-slicer.c dialog-data-table.c dialog-fill-series.c \
 	dialog-function-select.c dialog-formula-guru.c \
@@ -97,18 +98,18 @@ am__objects_1 = dao-gui-utils.lo dialog-about.lo \
 	dialog-analysis-tool-wilcoxon-mann-whitney.lo \
 	dialog-autofilter.lo dialog-autoformat.lo dialog-autosave.lo \
 	dialog-cell-comment.lo dialog-cell-format.lo \
-	dialog-cell-sort.lo dialog-col-width.lo dialog-col-row.lo \
-	dialog-consolidate.lo dialog-data-slicer.lo \
-	dialog-data-table.lo dialog-fill-series.lo \
-	dialog-function-select.lo dialog-formula-guru.lo \
-	dialog-goal-seek.lo dialog-goto-cell.lo dialog-hyperlink.lo \
-	dialog-insert-cells.lo dialog-define-names.lo \
-	dialog-delete-cells.lo dialog-merge.lo dialog-password.lo \
-	dialog-paste-special.lo dialog-plugin-manager.lo \
-	dialog-preferences.lo dialog-random-generator.lo \
-	dialog-random-generator-cor.lo dialog-recent.lo \
-	dialog-row-height.lo dialog-quit.lo dialog-scenarios.lo \
-	dialog-search.lo dialog-search-replace.lo \
+	dialog-cell-format-cond.lo dialog-cell-sort.lo \
+	dialog-col-width.lo dialog-col-row.lo dialog-consolidate.lo \
+	dialog-data-slicer.lo dialog-data-table.lo \
+	dialog-fill-series.lo dialog-function-select.lo \
+	dialog-formula-guru.lo dialog-goal-seek.lo dialog-goto-cell.lo \
+	dialog-hyperlink.lo dialog-insert-cells.lo \
+	dialog-define-names.lo dialog-delete-cells.lo dialog-merge.lo \
+	dialog-password.lo dialog-paste-special.lo \
+	dialog-plugin-manager.lo dialog-preferences.lo \
+	dialog-random-generator.lo dialog-random-generator-cor.lo \
+	dialog-recent.lo dialog-row-height.lo dialog-quit.lo \
+	dialog-scenarios.lo dialog-search.lo dialog-search-replace.lo \
 	dialog-sheet-order.lo dialog-sheet-resize.lo \
 	dialog-sheetobject-size.lo dialog-shuffle.lo \
 	dialog-simulation.lo dialog-so-list.lo dialog-so-styled.lo \
@@ -441,6 +442,7 @@ base_files = \
 	dialog-autosave.c			\
 	dialog-cell-comment.c			\
 	dialog-cell-format.c			\
+	dialog-cell-format-cond.c		\
 	dialog-cell-sort.c			\
 	dialog-col-width.c			\
 	dialog-col-row.c			\
@@ -506,6 +508,7 @@ ui_DATA = \
 	autosave.ui			\
 	cell-comment.ui			\
 	cell-format.ui			\
+	cell-format-cond.ui		\
 	cell-sort.ui			\
 	chi-squared.ui			\
 	col-width.ui			\
@@ -644,6 +647,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-autoformat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-autosave.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-cell-comment.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-cell-format-cond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-cell-format.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-cell-sort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dialog-col-row.Plo@am__quote@

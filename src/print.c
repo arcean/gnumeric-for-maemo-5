@@ -196,13 +196,14 @@ gnm_print_sheet_objects (cairo_t *cr,
 }
 
 static void
-print_page_cells (GtkPrintContext   *context, PrintingInstance * pi,
+print_page_cells (G_GNUC_UNUSED GtkPrintContext   *context, 
+		  G_GNUC_UNUSED PrintingInstance * pi,
 		  cairo_t *cr, Sheet const *sheet, GnmRange *range,
 		  double base_x, double base_y)
-{	PrintInformation const *pinfo = sheet->print_info;
-
+{
 	gnm_gtk_print_cell_range (cr, sheet, range,
-				  base_x, base_y, !pinfo->print_grid_lines);
+				  base_x, base_y,
+				  (PrintInformation const *) sheet->print_info);
 	gnm_print_sheet_objects (cr, sheet, range, base_x, base_y);
 }
 
@@ -239,19 +240,22 @@ print_header_gtk (GtkPrintContext   *context, cairo_t *cr,
 }
 
 static void
-print_page_col_headers (GtkPrintContext   *context, PrintingInstance * pi,
-		  cairo_t *cr, Sheet const *sheet, GnmRange *range,
-		  double row_header_width, double col_header_height)
+print_page_col_headers (GtkPrintContext   *context, 
+			G_GNUC_UNUSED PrintingInstance * pi,
+			cairo_t *cr, Sheet const *sheet, GnmRange *range,
+			double row_header_width, double col_header_height)
 {
 	int start_col, end_col;
 	int col;
 	double x;
 	PangoFontDescription *desc;
+	double hscale;
 
 	g_return_if_fail (IS_SHEET (sheet));
 	g_return_if_fail (range != NULL);
 	g_return_if_fail (range->start.col <= range->end.col);
 
+	hscale = sheet->display_formulas ? 2 : 1;
 	desc = pango_font_description_from_string ("sans 12");
 
 	start_col = range->start.col;
@@ -264,16 +268,16 @@ print_page_col_headers (GtkPrintContext   *context, PrintingInstance * pi,
 
 		if (ci->visible) {
 			if (sheet->text_is_rtl)
-				x -= ci->size_pts;
+				x -= ci->size_pts * hscale;
 
 			print_header_gtk (context, cr,
 					  x + 0.5, 0,
-					  ci->size_pts - 1,
+					  ci->size_pts * hscale - 1,
 					  col_header_height - 0.5,
 					  col_name (col), desc);
 
 			if (!sheet->text_is_rtl)
-				x += ci->size_pts;
+				x += ci->size_pts * hscale;
 		}
 	}
 
@@ -281,9 +285,10 @@ print_page_col_headers (GtkPrintContext   *context, PrintingInstance * pi,
 }
 
 static void
-print_page_row_headers (GtkPrintContext   *context, PrintingInstance * pi,
-		  cairo_t *cr, Sheet const *sheet, GnmRange *range,
-		  double row_header_width, double col_header_height)
+print_page_row_headers (GtkPrintContext *context, 
+			G_GNUC_UNUSED PrintingInstance * pi,
+			cairo_t *cr, Sheet const *sheet, GnmRange *range,
+			double row_header_width, double col_header_height)
 {
 	int start_row, end_row;
 	int row;
@@ -349,7 +354,8 @@ ensure_decoration_layout (GtkPrintContext *context)
  * the rectangle.
  */
 static void
-print_hf_element (GtkPrintContext   *context, cairo_t *cr, Sheet const *sheet,
+print_hf_element (GtkPrintContext *context, cairo_t *cr, 
+		  G_GNUC_UNUSED Sheet const *sheet,
 		  char const *format,
 		  PangoAlignment side, gdouble width, gboolean align_bottom,
 		  HFRenderInfo *hfi)
@@ -417,7 +423,7 @@ print_hf_line (GtkPrintContext   *context, cairo_t *cr, Sheet const *sheet,
  * regular flow.
  */
 static gboolean
-print_page (GtkPrintOperation *operation,
+print_page (G_GNUC_UNUSED GtkPrintOperation *operation,
 	    GtkPrintContext   *context,
 	    PrintingInstance * pi,
 	    SheetPageRange *gsr)
@@ -900,27 +906,6 @@ compute_sheet_pages_across_then_down (PrintingInstance * pi,
 }
 
 
-static gboolean
-load_repeat_range (char const *str, GnmRange *r, Sheet *sheet)
-{
-	GnmParsePos pp;
-	GnmRangeRef res;
-
-	if (str == NULL || *str == '\0')
-		return FALSE;
-
-	if (str != rangeref_parse (&res, str,
-				   parse_pos_init_sheet (&pp, sheet),
-				   gnm_conventions_default)) {
-		Sheet *start_sheet = sheet, *end_sheet = sheet;
-		gnm_rangeref_normalize_pp (&res, &pp,
-					   &start_sheet, &end_sheet,
-					   r);
-		return TRUE;
-	} else
-		return FALSE;
-}
-
 /*
   return TRUE in case of trouble
 */
@@ -945,6 +930,7 @@ compute_sheet_pages (GtkPrintContext   *context,
 	GSList *row_pagination = NULL;
 	gboolean repeat_top_use, repeat_left_use;
 	int repeat_top_start, repeat_top_end, repeat_left_start, repeat_left_end;
+	double const hscale = sheet->display_formulas ? 2 : 1;
 
 	if (pinfo->print_titles) {
 		col_header_height = sheet->rows.default_style.size_pts;
@@ -976,11 +962,11 @@ compute_sheet_pages (GtkPrintContext   *context,
 	page_height -= ((edge_to_below_header - top_margin)
 			+ (edge_to_above_footer - bottom_margin));
 
-	repeat_top_use = load_repeat_range (pinfo->repeat_top, &r, sheet);
+	repeat_top_use = print_load_repeat_range (pinfo->repeat_top, &r, sheet);
 	repeat_top_start = repeat_top_use ? r.start.row : 0;
 	repeat_top_end = repeat_top_use ? r.end.row : 0;
 
-	repeat_left_use = load_repeat_range (pinfo->repeat_left, &r, sheet);
+	repeat_left_use = print_load_repeat_range (pinfo->repeat_left, &r, sheet);
 	repeat_left_start = repeat_left_use ? r.start.col : 0;
 	repeat_left_end = repeat_left_use ? r.end.col : 0;
 
@@ -1036,7 +1022,7 @@ compute_sheet_pages (GtkPrintContext   *context,
 	usable_y   = page_height / py;
 
 	paginate (&column_pagination, sheet, print_area.start.col, print_area.end.col,
-		  usable_x - row_header_width,
+		  (usable_x - row_header_width)/hscale,
 		  repeat_left_use, repeat_left_start, repeat_left_end,
 		  sheet_col_get_distance_pts, sheet_col_get_info,
 		  pi->ignore_pb ? NULL : pinfo->page_breaks.v, !pi->ignore_pb);
@@ -1064,7 +1050,7 @@ compute_sheet_pages (GtkPrintContext   *context,
  * print request.
  */
 static void
-compute_pages (GtkPrintOperation *operation,
+compute_pages (G_GNUC_UNUSED GtkPrintOperation *operation,
 	       PrintingInstance * pi,
 	       PrintRange pr,
 	       guint from,
@@ -1209,7 +1195,7 @@ gnm_paginate_cb (GtkPrintOperation *operation,
 
 static void
 gnm_begin_print_cb (GtkPrintOperation *operation,
-                    GtkPrintContext   *context,
+                    G_GNUC_UNUSED GtkPrintContext   *context,
 		    gpointer           user_data)
 {
 	PrintingInstance * pi = (PrintingInstance *) user_data;
@@ -1249,8 +1235,8 @@ gnm_begin_print_cb (GtkPrintOperation *operation,
 }
 
 static void
-gnm_end_print_cb (GtkPrintOperation *operation,
-                  GtkPrintContext   *context,
+gnm_end_print_cb (G_GNUC_UNUSED GtkPrintOperation *operation,
+                  G_GNUC_UNUSED GtkPrintContext   *context,
                   gpointer           user_data)
 {
 	PrintingInstance * pi = (PrintingInstance *) user_data;
@@ -1274,7 +1260,7 @@ cp_gtk_page_setup (GtkPageSetup *from, GtkPageSetup *to)
 
 static void
 gnm_request_page_setup_cb (GtkPrintOperation *operation,
-                           GtkPrintContext   *context,
+                           G_GNUC_UNUSED GtkPrintContext   *context,
 			   gint               page_nr,
 			   GtkPageSetup      *setup,
 			   gpointer           user_data)
@@ -1507,9 +1493,9 @@ gnm_create_widget_cb (GtkPrintOperation *operation, gpointer user_data)
 }
 
 static void
-gnm_custom_widget_apply_cb (GtkPrintOperation *operation,
-			    GtkWidget         *widget,
-			    gpointer           user_data)
+gnm_custom_widget_apply_cb (GtkPrintOperation       *operation,
+			    G_GNUC_UNUSED GtkWidget *widget,
+			    gpointer                 user_data)
 {
 	PrintingInstance * pi = (PrintingInstance *) user_data;
 	GtkPrintSettings * settings;

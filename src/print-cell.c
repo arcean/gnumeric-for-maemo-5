@@ -31,6 +31,7 @@
 #include "sheet-merge.h"
 #include "rendered-value.h"
 #include "cell-draw.h"
+#include "print-info.h"
 
 #include <string.h>
 #include <locale.h>
@@ -56,7 +57,8 @@ static void
 print_cell_gtk (GnmCell const *cell,
 		cairo_t *context,
 		double x1, double y1,
-		double width, double height, double h_center)
+		double width, double height, double h_center,
+		PrintInformation const *pinfo)
 {
 	GnmRenderedValue *rv, *rv100 = NULL;
 	GOColor fore_color;
@@ -64,6 +66,17 @@ print_cell_gtk (GnmCell const *cell,
 	Sheet *sheet = cell->base.sheet;
 	double const scale_h = 72. / gnm_app_display_dpi_get (TRUE);
 	double const scale_v = 72. / gnm_app_display_dpi_get (FALSE);
+
+	gboolean cell_shows_error;
+
+	if (cell->base.flags & GNM_CELL_HAS_NEW_EXPR)
+		gnm_cell_eval ((GnmCell *)cell);
+
+	cell_shows_error = (gnm_cell_is_error (cell) != NULL)
+		&& !(gnm_cell_has_expr (cell) && sheet->display_formulas);
+
+	if (cell_shows_error && pinfo->error_display == PRINT_ERRORS_AS_BLANK)
+		return;
 
 	/* Get the sizes exclusive of margins and grids */
 	/* Note: +1 because size_pixels includes leading gridline.  */
@@ -73,7 +86,25 @@ print_cell_gtk (GnmCell const *cell,
 	rv = gnm_cell_fetch_rendered_value (cell, TRUE);
 
 	/* Create a rendered value for printing */
-	if (sheet->last_zoom_factor_used != 1) {
+	if (cell_shows_error && (pinfo->error_display == PRINT_ERRORS_AS_NA
+				 || pinfo->error_display == PRINT_ERRORS_AS_DASHES)) {
+		GnmCell *t_cell = (GnmCell *)cell;
+		GnmValue *old = t_cell->value;
+		if (pinfo->error_display == PRINT_ERRORS_AS_NA)
+			t_cell->value = value_new_error_NA (NULL);
+		else
+			t_cell->value = value_new_error 
+				(NULL, 
+				 /* U+2014 U+200A U+2014 */
+				 "\342\200\224\342\200\212\342\200\224");
+		rv100 = gnm_rendered_value_new (t_cell,
+						pango_layout_get_context (rv->layout),
+						rv->variable_width,
+						1.0);
+		rv = rv100;
+		value_release (t_cell->value);
+		t_cell->value = old;
+	} else if (sheet->last_zoom_factor_used != 1) {
 		/*
 		 * We're zoomed and we don't want printing to reflect that.
 		 */
@@ -155,8 +186,9 @@ print_rectangle_gtk (cairo_t *context,
 
 static void
 print_cell_background_gtk (cairo_t *context,
-		       GnmStyle const *style, int col, int row,
-		       double x, double y, double w, double h)
+			   GnmStyle const *style, 
+			   G_GNUC_UNUSED int col, G_GNUC_UNUSED int row,
+			   double x, double y, double w, double h)
 {
 	if (gnumeric_background_set_gtk (style, context))
 		/* Remember api excludes the far pixels */
@@ -174,9 +206,10 @@ print_cell_background_gtk (cairo_t *context,
  */
 static void
 print_merged_range_gtk (cairo_t *context,
-		    Sheet const *sheet,
-		    double start_x, double start_y,
-		    GnmRange const *view, GnmRange const *range)
+			Sheet const *sheet,
+			double start_x, double start_y,
+			GnmRange const *view, GnmRange const *range,
+			PrintInformation const *pinfo)
 {
 	double l, r, t, b;
 	int last;
@@ -237,10 +270,10 @@ print_merged_range_gtk (cairo_t *context,
 
 		if (sheet->text_is_rtl)
 			print_cell_gtk (cell, context,
-				r, t, l - r, b - t, -1.);
+					r, t, l - r, b - t, -1., pinfo);
 		else
 			print_cell_gtk (cell, context,
-				l, t, r - l, b - t, -1.);
+					l, t, r - l, b - t, -1., pinfo);
 	}
 	gnm_style_border_print_diag_gtk (style, context, l, t, r, b);
 }
@@ -256,7 +289,7 @@ void
 gnm_gtk_print_cell_range (cairo_t *context,
 			  Sheet const *sheet, GnmRange *range,
 			  double base_x, double base_y,
-			  gboolean hide_grid)
+			  PrintInformation const *pinfo)
 {
 	ColRowInfo const *ri = NULL, *next_ri = NULL;
 	int const dir = sheet->text_is_rtl ? -1 : 1;
@@ -266,19 +299,23 @@ gnm_gtk_print_cell_range (cairo_t *context,
 	GnmStyleRow sr, next_sr;
 	GnmStyle const **styles;
 	GnmBorder const **borders, **prev_vert;
-	GnmBorder const *none =
-		hide_grid ? NULL : gnm_style_border_none ();
+	GnmBorder const *none;
 
 	int n, col, row;
 	double x, y, offset;
 	GnmRange     view;
 	GSList	 *merged_active, *merged_active_seen,
 		 *merged_used, *merged_unused, *ptr, **lag;
+	gboolean hide_grid;
 
 	g_return_if_fail (IS_SHEET (sheet));
 	g_return_if_fail (range != NULL);
 	g_return_if_fail (range->start.col <= range->end.col);
 	g_return_if_fail (range->start.row <= range->end.row);
+	g_return_if_fail (pinfo != NULL);
+
+	hide_grid = !pinfo->print_grid_lines;
+	none = hide_grid ? NULL : gnm_style_border_none ();
 
 	start_col = range->start.col;
 	start_row = range->start.row;
@@ -383,7 +420,8 @@ gnm_gtk_print_cell_range (cairo_t *context,
 
 				if (ci->visible)
 					print_merged_range_gtk (context, sheet,
-								base_x, y, &view, r);
+								base_x, y, &view, r,
+								pinfo);
 				}
 			} else {
 				lag = &(ptr->next);
@@ -483,7 +521,7 @@ gnm_gtk_print_cell_range (cairo_t *context,
 				if (!gnm_cell_is_empty (cell))
 					print_cell_gtk (cell, context, x, y,
 							ci->size_pts * hscale,
-							ri->size_pts, -1.);
+							ri->size_pts, -1., pinfo);
 
 			/* Only draw spaning cells after all the backgrounds
 			 * that we are going to draw have been drawn.  No need
@@ -529,7 +567,7 @@ gnm_gtk_print_cell_range (cairo_t *context,
 
 				print_cell_gtk (cell, context,
 						real_x, y, tmp_width, ri->size_pts,
-						center_offset);
+						center_offset, pinfo);
 			} else if (col != span->left)
 				sr.vertical [col] = NULL;
 

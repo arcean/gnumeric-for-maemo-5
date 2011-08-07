@@ -5,7 +5,7 @@
 
 Name:             gnumeric
 Epoch:            %epoch
-Version:          1.10.15
+Version:          1.10.17
 Release:          %rel
 Summary:          Spreadsheet program for GNOME
 Group:            Applications/Productivity

@@ -50,6 +50,8 @@
 #include "sheet-object-graph.h"
 #include "graph.h"
 #include "style-border.h"
+#include "gutils.h"
+#include "expr-name.h"
 
 #include "go-val.h"
 
@@ -62,6 +64,10 @@
 #include <gsf/gsf-utils.h>
 #include <gsf/gsf-libxml.h>
 #include <glib/gi18n-lib.h>
+#include <gsf/gsf-meta-names.h>
+#include <gsf/gsf-doc-meta-data.h>
+#include <gsf/gsf-docprop-vector.h>
+#include <gsf/gsf-timestamp.h>
 #include <gmodule.h>
 #include <string.h>
 
@@ -74,6 +80,14 @@ enum {
 
 static char const *ns_ss	 = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 static char const *ns_ss_drawing = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
+static char const *ns_docprops_core_cp       = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
+static char const *ns_docprops_core_dc       = "http://purl.org/dc/elements/1.1/";
+static char const *ns_docprops_core_dcmitype = "http://purl.org/dc/dcmitype/";
+static char const *ns_docprops_core_dcterms  = "http://purl.org/dc/terms/";
+static char const *ns_docprops_core_xsi      = "http://www.w3.org/2001/XMLSchema-instance";
+static char const *ns_docprops_extended      = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties";
+static char const *ns_docprops_extended_vt   = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes";
+static char const *ns_docprops_custom        = "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties";
 static char const *ns_drawing	 = "http://schemas.openxmlformats.org/drawingml/2006/main";
 static char const *ns_chart	 = "http://schemas.openxmlformats.org/drawingml/2006/chart";
 static char const *ns_rel	 = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -81,7 +95,6 @@ static char const *ns_rel_hlink	 = "http://schemas.openxmlformats.org/officeDocu
 static char const *ns_rel_draw	 = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
 static char const *ns_rel_chart	 = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
 static char const *ns_rel_com	 = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
-
 typedef struct {
 	XLExportBase base;
 
@@ -152,6 +165,68 @@ xlsx_add_range_list (GsfXMLOut *xml, char const *id, GSList const *ranges)
 
 /****************************************************************************/
 
+#define N_PREDEFINED_FILLS (G_N_ELEMENTS (pre_def_fills) - 1)
+
+static char const *pats[] = {
+	"solid",            /* 1 */
+	"darkGray",         /* 2 */
+	"mediumGray",       /* 3 */
+	"lightGray",        /* 4 */
+	"gray125",          /* 5 */
+	"gray0625",         /* 6 */
+	"darkHorizontal",   /* 7 */
+	"darkVertical",     /* 8 */
+	"darkUp",           /* 9 */
+	"darkDown",         /* 10 */
+	"darkGrid",         /* 11 */
+	"darkTrellis",      /* 12 */
+	"lightHorizontal",  /* 13 */
+	"lightVertical",    /* 14 */
+	"lightDown",        /* 15 */
+	"lightUp",          /* 16 */
+	"lightGrid",        /* 17 */
+	"lightTrellis",     /* 18 */
+};
+
+static char const *pre_def_fills[] = {
+	"none",
+	"gray125",
+	NULL
+};
+
+static void
+xlsx_write_predefined_fills (GsfXMLOut *xml)
+{
+	char const **f = pre_def_fills;
+
+	while (*f != NULL) {
+		gsf_xml_out_start_element (xml, "fill");
+		gsf_xml_out_start_element (xml, "patternFill");
+		gsf_xml_out_add_cstr_unchecked (xml, "patternType", *f++);
+		gsf_xml_out_end_element (xml);				
+		gsf_xml_out_end_element (xml);
+	}				
+}
+
+static gint
+xlsx_find_predefined_fill (GnmStyle const *style)
+{
+	if (gnm_style_is_element_set (style, MSTYLE_PATTERN) &&
+	    gnm_style_get_pattern (style) == 0 )
+		return 0;
+	if (gnm_style_is_element_set (style, MSTYLE_PATTERN) &&
+	    gnm_style_get_pattern (style) == 5 &&
+	    (!gnm_style_is_element_set (style, MSTYLE_COLOR_PATTERN) || 
+	     gnm_style_get_pattern_color (style)->go_color == GO_COLOR_BLACK) &&
+	    (!gnm_style_is_element_set (style, MSTYLE_COLOR_BACK) || 
+	     gnm_style_get_back_color (style)->go_color == GO_COLOR_WHITE))
+		return 1;
+	
+	return -1;
+}
+
+/****************************************************************************/
+
 static void
 xlsx_write_shared_strings (XLSXWriteState *state, GsfOutfile *wb_part)
 {
@@ -166,7 +241,7 @@ xlsx_write_shared_strings (XLSXWriteState *state, GsfOutfile *wb_part)
 
 		gsf_xml_out_start_element (xml, "sst");
 		gsf_xml_out_add_cstr_unchecked (xml, "xmlns", ns_ss);
-		gsf_xml_out_add_cstr_unchecked (xml, "xml:space", "preserve");
+		/* Note the schema does not allow the attribute xml:space */
 		gsf_xml_out_add_int (xml, "uniqueCount", state->shared_string_array->len);
 		gsf_xml_out_add_int (xml, "count", state->shared_string_array->len);
 
@@ -292,7 +367,7 @@ xlsx_write_num_formats (XLSXWriteState *state, GsfXMLOut *xml)
 		gsf_xml_out_add_int (xml, "count", count);
 		for (i = 0 , n = NUM_FORMAT_BASE; i < count ; i++, n++) {
 			gsf_xml_out_start_element (xml, "numFmt");
-			gsf_xml_out_add_cstr_unchecked 
+			gsf_xml_out_add_cstr 
 				(xml, "formatCode", 
 				 g_ptr_array_index (num_format_array, i));
 			gsf_xml_out_add_int (xml, "numFmtId", n);
@@ -396,7 +471,7 @@ xlsx_write_fonts (XLSXWriteState *state, GsfXMLOut *xml)
 					 gnm_style_get_font_color (style)->go_color);
 			if (gnm_style_is_element_set (style, MSTYLE_FONT_NAME)) {
 				gsf_xml_out_start_element (xml, "name");
-				gsf_xml_out_add_cstr_unchecked
+				gsf_xml_out_add_cstr
 					(xml, "val", gnm_style_get_font_name (style));
 				gsf_xml_out_end_element (xml);				
 			}
@@ -426,6 +501,11 @@ static gint
 xlsx_find_fill (GnmStyle const *style, GPtrArray  *styles)
 {
 	unsigned i;
+	int j;
+	
+	j = xlsx_find_predefined_fill (style);
+	if (j >= 0)
+		return j;
 	for (i = 0 ; i < styles->len ; i++) {
 		GnmStyle const *old_style = g_ptr_array_index (styles, i);
 		if (style == old_style)
@@ -444,7 +524,7 @@ xlsx_find_fill (GnmStyle const *style, GPtrArray  *styles)
 		      || (gnm_style_is_element_set (style, MSTYLE_COLOR_PATTERN) &&
 			  gnm_style_get_pattern_color (style)->go_color != 
 			  gnm_style_get_pattern_color (old_style)->go_color)))
-			return (gint) i;
+			return (gint) i + N_PREDEFINED_FILLS;
 	}
 	return -1;
 }
@@ -452,26 +532,6 @@ xlsx_find_fill (GnmStyle const *style, GPtrArray  *styles)
 static GHashTable *
 xlsx_write_fills (XLSXWriteState *state, GsfXMLOut *xml)
 {
-	static char const *pats[] = {
-		"solid",            /* 1 */
-		"darkGray",         /* 2 */
-		"mediumGray",       /* 3 */
-		"lightGray",        /* 4 */
-		"gray125",          /* 5 */
-		"gray0625",         /* 6 */
-		"darkHorizontal",   /* 7 */
-		"darkVertical",     /* 8 */
-		"darkUp",           /* 9 */
-		"darkDown",         /* 10 */
-		"darkGrid",         /* 11 */
-		"darkTrellis",      /* 12 */
-		"lightHorizontal",  /* 13 */
-		"lightVertical",    /* 14 */
-		"lightDown",        /* 15 */
-		"lightUp",          /* 16 */
-		"lightGrid",        /* 17 */
-		"lightTrellis",     /* 18 */
-	};
 	GHashTable *fills_hash =  g_hash_table_new (g_direct_hash, g_direct_equal);
 	GPtrArray  *styles_w_fills  = g_ptr_array_new ();
 	unsigned i;
@@ -484,62 +544,68 @@ xlsx_write_fills (XLSXWriteState *state, GsfXMLOut *xml)
 			gint fill_n = xlsx_find_fill (style, styles_w_fills);
 			if (fill_n < 0) {
 				g_ptr_array_add (styles_w_fills, (gpointer)style);
-				g_hash_table_insert (fills_hash, (gpointer)style, 
-						     GINT_TO_POINTER (styles_w_fills->len));
+				g_hash_table_insert 
+					(fills_hash, (gpointer)style, 
+					 GINT_TO_POINTER (styles_w_fills->len 
+							  + N_PREDEFINED_FILLS));
 			} else
-				g_hash_table_insert (fills_hash, (gpointer)style, 
-						     GINT_TO_POINTER (fill_n + 1));
+				g_hash_table_insert 
+					(fills_hash, (gpointer)style, 
+					 GINT_TO_POINTER 
+					 (fill_n + 1));
 		}
 	}
 
-	if (styles_w_fills->len > 0) {
-		gsf_xml_out_start_element (xml, "fills");
-		gsf_xml_out_add_int (xml, "count", styles_w_fills->len);
-		for (i = 0 ; i < styles_w_fills->len ; i++) {
-			GnmStyle const *style = g_ptr_array_index (styles_w_fills, i);
-			gsf_xml_out_start_element (xml, "fill");
-			gsf_xml_out_start_element (xml, "patternFill");
-			if (gnm_style_is_element_set (style, MSTYLE_PATTERN)) {
-				gint pattern = gnm_style_get_pattern (style);
-				switch (pattern) {
-				case 0:
+	gsf_xml_out_start_element (xml, "fills");
+	gsf_xml_out_add_int (xml, "count", styles_w_fills->len 
+			     + N_PREDEFINED_FILLS);
+	/* Excel considers the first few fills special (not according to */
+	/* ECMA)                            */
+	xlsx_write_predefined_fills (xml);
+	for (i = 0 ; i < styles_w_fills->len ; i++) {
+		GnmStyle const *style = g_ptr_array_index (styles_w_fills, i);
+		gsf_xml_out_start_element (xml, "fill");
+		gsf_xml_out_start_element (xml, "patternFill");
+		if (gnm_style_is_element_set (style, MSTYLE_PATTERN)) {
+			gint pattern = gnm_style_get_pattern (style);
+			switch (pattern) {
+			case 0:
+				gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
+								"none");
+				break;
+			case 1:
+				gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
+								"solid");
+				if (gnm_style_is_element_set (style, MSTYLE_COLOR_BACK)) {
+					xlsx_write_color_element 
+						(xml, "fgColor", 
+						 gnm_style_get_back_color (style)->go_color);
+				}
+				break;
+			default:
+				if (pattern < 2 || pattern > (gint)G_N_ELEMENTS (pats)) 
 					gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
 									"none");
-					break;
-				case 1:
+				else
 					gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
-									"solid");
-					if (gnm_style_is_element_set (style, MSTYLE_COLOR_BACK)) {
-						xlsx_write_color_element 
-							(xml, "fgColor", 
-							 gnm_style_get_back_color (style)->go_color);
-					}
-					break;
-				default:
-					if (pattern < 2 || pattern > (gint)G_N_ELEMENTS (pats)) 
-						gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
-										"none");
-					else
-						gsf_xml_out_add_cstr_unchecked (xml, "patternType", 
-										pats[pattern - 1]);
-					break;
-				}
-				if (pattern > 1) {
-					if (gnm_style_is_element_set (style, MSTYLE_COLOR_BACK))
-						xlsx_write_color_element 
-							(xml, "fgColor", 
-							 gnm_style_get_back_color (style)->go_color);
-					if (gnm_style_is_element_set (style, MSTYLE_COLOR_PATTERN))
-						xlsx_write_color_element 
-							(xml, "bgColor", 
-							 gnm_style_get_pattern_color (style)->go_color);
-				}
+									pats[pattern - 1]);
+				break;
 			}
-			gsf_xml_out_end_element (xml);				
-			gsf_xml_out_end_element (xml);				
+			if (pattern > 1) {
+				if (gnm_style_is_element_set (style, MSTYLE_COLOR_BACK))
+					xlsx_write_color_element 
+						(xml, "fgColor", 
+						 gnm_style_get_back_color (style)->go_color);
+				if (gnm_style_is_element_set (style, MSTYLE_COLOR_PATTERN))
+					xlsx_write_color_element 
+						(xml, "bgColor", 
+						 gnm_style_get_pattern_color (style)->go_color);
+			}
 		}
-		gsf_xml_out_end_element (xml);	
+		gsf_xml_out_end_element (xml);				
+		gsf_xml_out_end_element (xml);				
 	}
+	gsf_xml_out_end_element (xml);	
 	
 	g_ptr_array_free (styles_w_fills, TRUE);
 	return fills_hash;
@@ -709,16 +775,6 @@ xlsx_write_borders (XLSXWriteState *state, GsfXMLOut *xml)
 					(xml, "diagonalDown",
 					 (border->line_type != GNM_STYLE_BORDER_NONE));
 			}
-			if (gnm_style_is_element_set (style, MSTYLE_BORDER_TOP))
-				xlsx_write_border (state, xml, 
-						   gnm_style_get_border 
-						   (style, MSTYLE_BORDER_TOP), 
-						   MSTYLE_BORDER_TOP);
-			if (gnm_style_is_element_set (style, MSTYLE_BORDER_BOTTOM))
-				xlsx_write_border (state, xml,
-						   gnm_style_get_border 
-						   (style, MSTYLE_BORDER_BOTTOM),
-						   MSTYLE_BORDER_BOTTOM);
 			if (gnm_style_is_element_set (style, MSTYLE_BORDER_LEFT))
 				xlsx_write_border (state, xml,
 						   gnm_style_get_border 
@@ -729,6 +785,16 @@ xlsx_write_borders (XLSXWriteState *state, GsfXMLOut *xml)
 						   gnm_style_get_border 
 						   (style, MSTYLE_BORDER_RIGHT),
 						   MSTYLE_BORDER_RIGHT);
+			if (gnm_style_is_element_set (style, MSTYLE_BORDER_TOP))
+				xlsx_write_border (state, xml, 
+						   gnm_style_get_border 
+						   (style, MSTYLE_BORDER_TOP), 
+						   MSTYLE_BORDER_TOP);
+			if (gnm_style_is_element_set (style, MSTYLE_BORDER_BOTTOM))
+				xlsx_write_border (state, xml,
+						   gnm_style_get_border 
+						   (style, MSTYLE_BORDER_BOTTOM),
+						   MSTYLE_BORDER_BOTTOM);
 			if (gnm_style_is_element_set (style, MSTYLE_BORDER_DIAGONAL)) {
 				GnmBorder *border = gnm_style_get_border 
 					(style, MSTYLE_BORDER_DIAGONAL);
@@ -855,7 +921,7 @@ static void
 xlsx_write_style (XLSXWriteState *state, GsfXMLOut *xml, 
 		  GnmStyle const *style, GHashTable *fills_hash,
 		  GHashTable *num_format_hash, GHashTable *fonts_hash,
-		  GHashTable *border_hash)
+		  GHashTable *border_hash, gint id)
 {
 	gboolean alignment = xlsx_write_style_want_alignment (style);
 	gpointer tmp_fill, tmp_font, tmp_border;
@@ -864,11 +930,13 @@ xlsx_write_style (XLSXWriteState *state, GsfXMLOut *xml,
 	gboolean border = (NULL != (tmp_border = g_hash_table_lookup (border_hash, style)));
 	gboolean num_fmt = gnm_style_is_element_set (style, MSTYLE_FORMAT);
 
-	xlsx_add_bool (xml, "applyAlignment", alignment);
-	xlsx_add_bool (xml, "applyBorder", border);
-	xlsx_add_bool (xml, "applyFont", font);
-	xlsx_add_bool (xml, "applyFill", fill);
-	xlsx_add_bool (xml, "applyNumberFormat", num_fmt);
+	if (id >= 0) {
+		xlsx_add_bool (xml, "applyAlignment", alignment);
+		xlsx_add_bool (xml, "applyBorder", border);
+		xlsx_add_bool (xml, "applyFont", font);
+		xlsx_add_bool (xml, "applyFill", fill);
+		xlsx_add_bool (xml, "applyNumberFormat", num_fmt);
+	}
 	if (font)
 		gsf_xml_out_add_int (xml, "fontId", GPOINTER_TO_INT (tmp_font) - 1);
 	if (fill)
@@ -879,10 +947,29 @@ xlsx_write_style (XLSXWriteState *state, GsfXMLOut *xml,
 		gsf_xml_out_add_int 
 			(xml, "numFmtId", 
 			 GPOINTER_TO_INT (g_hash_table_lookup (num_format_hash, style)));
+	if (id >= 0)
+		gsf_xml_out_add_int (xml, "xfId", id);
 
 	if (alignment)
 		xlsx_write_style_write_alignment (state, xml, style);
 	
+}
+
+static void
+xlsx_write_cellStyleXfs (XLSXWriteState *state, GsfXMLOut *xml, 
+		    GHashTable *fills_hash, GHashTable *num_format_hash,
+		    GHashTable *fonts_hash, GHashTable *border_hash)
+{
+	gsf_xml_out_start_element (xml, "cellStyleXfs");
+	gsf_xml_out_add_int (xml, "count", 1);
+	gsf_xml_out_start_element (xml, "xf");
+	xlsx_write_style 
+		(state, xml, 
+		 g_ptr_array_index (state->styles_array, 0),
+		 fills_hash, num_format_hash, fonts_hash,
+		 border_hash, -1);
+	gsf_xml_out_end_element (xml);
+	gsf_xml_out_end_element (xml);
 }
 
 static void
@@ -900,7 +987,7 @@ xlsx_write_cellXfs (XLSXWriteState *state, GsfXMLOut *xml,
 				(state, xml, 
 				 g_ptr_array_index (state->styles_array, i),
 				 fills_hash, num_format_hash, fonts_hash,
-				 border_hash);
+				 border_hash, 0);
 			gsf_xml_out_end_element (xml);	
 		}
 		gsf_xml_out_end_element (xml);
@@ -919,14 +1006,14 @@ xlsx_write_styles (XLSXWriteState *state, GsfOutfile *wb_part)
 
 	gsf_xml_out_start_element (xml, "styleSheet");
 	gsf_xml_out_add_cstr_unchecked (xml, "xmlns", ns_ss);
-	gsf_xml_out_add_cstr_unchecked (xml, "xml:space", "preserve");
+	/* Note the schema does not allow the attribute xml:space */
 
 	/* The order of elements is fixed in the schema (xsd:sequence) */
 	num_format_hash = xlsx_write_num_formats (state, xml);
 	fonts_hash = xlsx_write_fonts (state, xml);
 	fills_hash = xlsx_write_fills (state, xml);
 	border_hash = xlsx_write_borders (state, xml);
-	/* <xsd:element name="cellStyleXfs" type="CT_CellStyleXfs" minOccurs="0" maxOccurs="1"/> */
+	xlsx_write_cellStyleXfs (state, xml, fills_hash, num_format_hash, fonts_hash, border_hash);
 	xlsx_write_cellXfs (state, xml, fills_hash, num_format_hash, fonts_hash, border_hash);
 	/* <xsd:element name="cellStyles" type="CT_CellStyles" minOccurs="0" maxOccurs="1"/> */
 	/* <xsd:element name="dxfs" type="CT_Dxfs" minOccurs="0" maxOccurs="1"/> */
@@ -1058,6 +1145,21 @@ xlsx_write_init_row (gboolean *needs_row, GsfXMLOut *xml, int r, char const *spa
 	}
 }
 
+static gint
+xlsx_get_style_id (XLSXWriteState *state, GnmStyle const *style)
+{
+	gpointer tmp;
+
+	g_return_val_if_fail (style != NULL, 0);
+
+	if (NULL == (tmp = g_hash_table_lookup (state->styles_hash, style))) {
+		g_ptr_array_add (state->styles_array, (gpointer) style);
+		tmp = GINT_TO_POINTER (state->styles_array->len);
+		g_hash_table_insert (state->styles_hash, (gpointer) style, tmp);
+	}
+	return GPOINTER_TO_INT (tmp) - 1;
+}
+
 static void
 xlsx_write_cells (XLSXWriteState *state, GsfXMLOut *xml, GnmRange const *extent)
 {
@@ -1099,15 +1201,8 @@ xlsx_write_cells (XLSXWriteState *state, GsfXMLOut *xml, GnmRange const *extent)
 
 		for (c = extent->start.col ; c <= extent->end.col ; c++) {
 			GnmStyle const *style  = sheet_style_get (state->sheet, c, r);
-			gint style_id = -1;
-			if (style != NULL) {
-				if (NULL == (tmp = g_hash_table_lookup (state->styles_hash, style))) {
-					g_ptr_array_add (state->styles_array, (gpointer) style);
-					tmp = GINT_TO_POINTER (state->styles_array->len);
-					g_hash_table_insert (state->styles_hash, (gpointer) style, tmp);
-				}
-				style_id = GPOINTER_TO_INT (tmp) - 1;
-			}
+			gint style_id = (style != NULL) ?
+				style_id = xlsx_get_style_id (state, style) : -1;
 			
 			if (NULL != (cell = sheet_cell_get (state->sheet, c, r))) {
 				xlsx_write_init_row (&needs_row, xml, r, cheesy_span);
@@ -1669,7 +1764,7 @@ xlsx_write_rich_text (GsfXMLOut *xml, char const *text, PangoAttrList *attrs)
 
 	if (attrs == NULL) {
 		gsf_xml_out_start_element (xml, "t");
-		gsf_xml_out_add_cstr_unchecked (xml, NULL, text);
+		gsf_xml_out_add_cstr (xml, NULL, text);
 		gsf_xml_out_end_element (xml); /* </t> */
 		return;
 	}
@@ -1738,7 +1833,7 @@ xlsx_write_rich_text (GsfXMLOut *xml, char const *text, PangoAttrList *attrs)
 		if (start > end)
 			start = end;
 		buf = g_strndup (text + start, end - start);
-		gsf_xml_out_add_cstr_unchecked (xml, NULL, buf);
+		gsf_xml_out_add_cstr (xml, NULL, buf);
 		g_free (buf);
 		gsf_xml_out_end_element (xml); /* </t> */
 		gsf_xml_out_end_element (xml); /* </r> */
@@ -1950,6 +2045,51 @@ xlsx_write_sheet (XLSXWriteState *state, GsfOutfile *dir, GsfOutfile *wb_part, u
 }
 
 static void
+xlsx_write_named_expression (gpointer key, GnmNamedExpr *nexpr, XLSXClosure *closure)
+{
+	char *formula;
+
+	g_return_if_fail (nexpr != NULL);
+	if (!expr_name_is_active (nexpr))
+		return;
+
+	gsf_xml_out_start_element (closure->xml, "definedName");
+
+	if (nexpr->is_permanent) {
+		char const *expr_name = expr_name_name (nexpr);
+		if (0 == strcmp (expr_name, "Print_Area"))
+			gsf_xml_out_add_cstr (closure->xml, "name", "_xlnm.Print_Area");
+		else if (0 == strcmp (expr_name, "Sheet_Title"))
+			gsf_xml_out_add_cstr (closure->xml, "name", "_xlnm.Sheet_Title");
+		else
+			gsf_xml_out_add_cstr (closure->xml, "name", expr_name);
+	} else {
+		gsf_xml_out_add_cstr (closure->xml, "name", expr_name_name (nexpr));
+	}
+	if (nexpr->pos.sheet != NULL)
+		gsf_xml_out_add_int (closure->xml, "localSheetId", 
+				     nexpr->pos.sheet->index_in_wb);
+
+	formula = expr_name_as_string (nexpr, NULL, closure->state->convs);
+	gsf_xml_out_add_cstr (closure->xml, NULL, formula);
+	g_free (formula);
+	
+	gsf_xml_out_end_element (closure->xml);	
+}
+
+static void
+xlsx_write_definedNames (XLSXWriteState *state, GsfXMLOut *xml)
+{
+	XLSXClosure closure = {state, xml};
+
+	gsf_xml_out_start_element (xml, "definedNames");
+	workbook_foreach_name
+		(state->base.wb, FALSE,
+		 (GHFunc)&xlsx_write_named_expression, &closure);
+	gsf_xml_out_end_element (xml);
+}
+
+static void
 xlsx_write_calcPR (XLSXWriteState *state, GsfXMLOut *xml)
 {
 	Workbook const *wb = state->base.wb;
@@ -1971,6 +2111,8 @@ xlsx_write_calcPR (XLSXWriteState *state, GsfXMLOut *xml)
 
 #include "xlsx-write-pivot.c"
 
+#include "xlsx-write-docprops.c"
+
 static void
 xlsx_write_workbook (XLSXWriteState *state, GsfOutfile *root_part)
 {
@@ -1984,12 +2126,17 @@ xlsx_write_workbook (XLSXWriteState *state, GsfOutfile *root_part)
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
 		root_part,
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+	GnmStyle *style = gnm_style_new_default ();
 
 	state->xl_dir = xl_dir;
 	state->shared_string_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	state->shared_string_array = g_ptr_array_new ();
 	state->styles_hash = g_hash_table_new (g_direct_hash, g_direct_equal);
 	state->styles_array = g_ptr_array_new ();
+
+	xlsx_get_style_id (state, style);
+	gnm_style_unref (style);
+
 	state->convs	 = xlsx_conventions_new ();
 	state->chart.dir   = state->drawing.dir   = NULL;
 	state->chart.count = state->drawing.count = 0;
@@ -2001,13 +2148,14 @@ xlsx_write_workbook (XLSXWriteState *state, GsfOutfile *root_part)
 
 	xlsx_write_shared_strings (state, wb_part);
 	xlsx_write_styles (state, wb_part);
+	xlsx_write_docprops (state, root_part);
 	cacheRefs = xlsx_write_pivots (state, wb_part);
 
 	xml = gsf_xml_out_new (GSF_OUTPUT (wb_part));
 	gsf_xml_out_start_element (xml, "workbook");
 	gsf_xml_out_add_cstr_unchecked (xml, "xmlns", ns_ss);
 	gsf_xml_out_add_cstr_unchecked (xml, "xmlns:r", ns_rel);
-	gsf_xml_out_add_cstr_unchecked (xml, "xml:space", "preserve");
+	/* Note the schema does not allow the attribute xml:space */
 
 	gsf_xml_out_start_element (xml, "fileVersion");
 	gsf_xml_out_add_int (xml, "lastEdited", 4);
@@ -2041,6 +2189,8 @@ xlsx_write_workbook (XLSXWriteState *state, GsfOutfile *root_part)
 		gsf_xml_out_end_element (xml); /* </sheet> */
 	}
 	gsf_xml_out_end_element (xml); /* </sheets> */
+
+	xlsx_write_definedNames (state, xml);
 
 	xlsx_write_calcPR (state, xml);
 

@@ -1,3 +1,208 @@
+2011-07-31  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.17
+
+2011-07-29  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* excel-xml-read.c: Use G_GNUC_UNUSED
+	(excel_xml_dtd): add PageMargins
+	(xl_xml_data_end): parse numbers carefully
+	(excel_xml_file_open): switch to C locale
+
+2011-07-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-read.c (xlsx_wb_name_end): check for "_xlnm." prefix
+	* xlsx-write.c (xlsx_write_named_expression): also write permanent
+	expressions
+
+2011-07-21  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_named_expression): new
+	(xlsx_write_definedNames): new
+	(xlsx_write_workbook): call xlsx_write_definedNames
+
+2011-07-03  Jean Brefort  <jean.brefort@normalesup.org>
+
+	* xlsx-read-drawing.c (xlsx_chart_text_start), (xlsx_chart_text),
+	(xlsx_read_chart): fixed loading xlsx files with empty chart titles.
+
+2011-07-01  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write-docprops.c (xlsx_map_prop_name_to_output_fun):
+	use GSF_META_NAME_MM_CLIP_COUNT
+	* xlsx-read-docprops.c: use GSF_META_NAME_MM_CLIP_COUNT
+
+2011-06-28  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write-docprops.c (xlsx_read_core_keys): implement
+
+2011-06-27  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write-docprops.c (xlsx_map_to_keys): new
+	(xlsx_map_prop_name_to_output_fun): connect xlsx_map_to_keys
+	(xlsx_meta_write_props): depend on xlsx_map_prop_name_to_output_fun
+	even for keywords
+
+2011-06-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-utils.h (XL_NS_PROP_CUSTOM): new
+	* xlsx-read.c (XLSXReadState): new field meta_prop_name
+	(XL_NS_PROP_CUSTOM): new namespace
+	* xlsx-read-docprops.c (xlsx_read_property_begin): new
+	(xlsx_read_property_end): new
+	(xlsx_read_custom_property_type): new
+	(xlsx_read_custom_property): new
+	(xlsx_read_property_date): new
+	(xlsx_docprops_custom_dtd): new
+	(xlsx_docprops_extended_dtd): add elements
+	(xlsx_read_docprops_custom): new
+	(xlsx_read_docprops): call xlsx_read_docprops_custom
+
+2011-06-26  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c: new includes (for xlsx-write-docprops.c)
+	* xlsx-write-docprops.c (xlsx_map_time_to_int): new
+	(xlsx_map_to_int): new
+	(xlsx_map_to_bool): new
+	(xlsx_map_to_date_core): new
+	(xlsx_map_prop_name_to_output_fun): new
+	(xlsx_meta_write_props_extended): use xlsx_map_prop_name_to_output_fun
+	(xlsx_map_prop_type): replaced by xlsx_map_prop_name_to_output_fun
+	(xlsx_meta_write_props): use xlsx_map_prop_name_to_output_fun
+	(xlsx_map_to_pid): new
+	(xlsx_meta_write_props_custom): new
+	(xlsx_write_docprops_custom): call xlsx_meta_write_props_custom
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write-docprops.c (xlsx_write_docprops_custom):
+	enable
+	* xlsx-write.c (ns_docprops_custom): new
+	(xlsx_write_fills): Kspread needs the formats implied by
+	Excel
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write-docprops.c (xlsx_write_docprops_app): The
+	AppVersion format should really be d.dddd.
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-read-docprops.c (xlsx_read_core_prop_type): renamed
+	to xlsx_read_prop_type
+	(xlsx_read_core_prop): renamed to xlsx_read_prop
+	(xlsx_read_core_prop_dt): renamed to xlsx_read_prop_dt
+	(xlsx_read_prop_int): new
+	(xlsx_read_prop_boolean): new
+	(xlsx_docprops_extended_dtd): new
+	(xlsx_read_docprops_extended): implement
+	* xlsx-read.c (xlsx_ns): add name spaces
+	* xlsx-utils.h (XL_NS_PROP): new
+	(XL_NS_PROP_VT): new
+	* xlsx-write-docprops.c (xlsx_write_docprops_app): The
+	AppVersion format is prescribed to d.dddd.
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (ns_docprops_extended_vt): new
+	* xlsx-write-docprops.c (xlsx_map_prop_name_extended): new
+	(xlsx_meta_write_props_extended): new
+	(xlsx_write_docprops_app): write more properties
+	(xlsx_write_docprops_core): no need to remove the generator
+	meta data, we only write selected props anyways.
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_predefined_fills): new
+	(xlsx_write_fills): use the above
+	(xlsx_find_predefined_fill): new
+	(xlsx_find_fill): use xlsx_find_predefined_fill
+
+2011-06-25  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-read-docprops.c (new)
+	* Makefile.am: add xlsx-read-docprops.c
+	* xlsx-utils.h: add XL_NS_PROP_*
+	* xlsx-write.c (xlsx_write_fills): start with some fills
+	expected by Excel
+	(xlsx_write_style): apparently Excel writes apply*
+	attributes always. So do we now.
+	* xlsx-read.c: add some includes, including
+	xlsx-read-docprops.c
+	(xlsx_ns): som emore namespaces
+	(xlsx_file_open): call xlsx_read_docprops from
+	xlsx-read-docprops.c
+
+2011-06-24  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_style): usually write an xfId,
+	write apply* attributes only if they are false (nobody
+	seems to write true ones)
+	(xlsx_write_cellStyleXfs): write a named style record to refer
+	to
+	(xlsx_write_cellXfs): adust call to xlsx_write_style
+	(xlsx_get_style_id): new, extracted from xlsx_write_cells
+	(xlsx_write_cells): use xlsx_get_style_id
+	(xlsx_write_workbook): make sure we write the default style
+	first
+
+2011-06-24  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c: add include
+	* xlsx-write-docprops.c (xlsx_map_prop_type): add more items
+	(xlsx_meta_write_props): also write keywords
+
+2011-06-24  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_shared_strings): xml:space is
+	not allowed
+	(xlsx_write_styles): ditto
+	(xlsx_write_workbook): ditto
+	* xlsx-write-docprops.c (xlsx_write_docprops_app): ditto
+	(xlsx_write_docprops_core): ditto
+
+2011-06-24  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_fonts): check the font names
+	just in case
+	(xlsx_write_rich_text): we definitely need to check the text
+
+2011-06-24  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_num_formats): the format strings
+	need to be properly encoded for xlm
+
+2011-06-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (xlsx_write_borders): fix element order
+
+2011-06-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-write.c (ns_docprops_core_cp): new
+	(ns_docprops_core_dc): new
+	(ns_docprops_core_dcmitype): new
+	(ns_docprops_core_dcterms): new
+	(ns_docprops_core_xsi): new
+	* xlsx-write-docprops.c (xlsx_map_prop_type): new
+	(xlsx_map_prop_name): new
+	(xlsx_meta_write_props): new
+	(xlsx_write_docprops_core): imlement
+
+2011-06-23  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* Makefile.am: add xlsx-write-docprops.c
+	* xlsx-write.c (ns_docprops_extended): new
+	(xlsx_write_workbook): call xlsx_write_docprops
+	* xlsx-write-docprops.c: new
+
+2011-06-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
+
+	* xlsx-read-drawing.c (xlsx_drawing_dtd): add srcRect
+
+2011-06-16  Morten Welinder <terra@gnome.org>
+
+	* Release 1.10.16
+
 2011-06-16  Andreas J. Guelzow <aguelzow@pyrshep.ca>
 
 	* xlsx-write.c (xlsx_write_border): use the appripriate

@@ -335,7 +335,7 @@ static GNM_ACTION_DEF (cb_file_print_preview)
 }
 
 static GNM_ACTION_DEF (cb_doc_meta_data)	{ dialog_doc_metadata_new (wbcg, 0); }
-static GNM_ACTION_DEF (cb_file_preferences)	{ dialog_preferences (wbcg, 0); }
+static GNM_ACTION_DEF (cb_file_preferences)	{ dialog_preferences (wbcg, NULL); }
 static GNM_ACTION_DEF (cb_file_history_full)    { dialog_recent_used (wbcg); }
 static GNM_ACTION_DEF (cb_file_close)		{ wbc_gtk_close (wbcg); }
 
@@ -951,10 +951,11 @@ static GNM_ACTION_DEF (cb_sheet_name)
 static GNM_ACTION_DEF (cb_sheet_order)		{ dialog_sheet_order (wbcg); }
 static GNM_ACTION_DEF (cb_sheet_resize)		{ dialog_sheet_resize (wbcg); }
 static GNM_ACTION_DEF (cb_format_cells)		{ dialog_cell_format (wbcg, FD_CURRENT); }
+static GNM_ACTION_DEF (cb_format_cells_cond)    { dialog_cell_format_cond (wbcg); }
 static GNM_ACTION_DEF (cb_autoformat)		{ dialog_autoformat (wbcg); }
 static GNM_ACTION_DEF (cb_workbook_attr)	{ dialog_workbook_attr (wbcg); }
 static GNM_ACTION_DEF (cb_tools_plugins)	{ dialog_plugin_manager (wbcg); }
-static GNM_ACTION_DEF (cb_tools_autocorrect)	{ dialog_preferences (wbcg, 1); }
+static GNM_ACTION_DEF (cb_tools_autocorrect)	{ dialog_preferences (wbcg, "Auto Correct"); }
 static GNM_ACTION_DEF (cb_tools_auto_save)	{ dialog_autosave (wbcg); }
 static GNM_ACTION_DEF (cb_tools_goal_seek)	{ dialog_goal_seek (wbcg, wbcg_cur_sheet (wbcg)); }
 static GNM_ACTION_DEF (cb_tools_tabulate)	{ dialog_tabulate (wbcg, wbcg_cur_sheet (wbcg)); }
@@ -2315,8 +2316,11 @@ static GtkActionEntry const actions[] = {
 
 /* Format -> Cells */
 	{ "FormatCells", NULL, N_("_Format..."),
-		"<control>1", N_("Modify the formatting of the selected cells"),
-		G_CALLBACK (cb_format_cells) },
+	  "<control>1", N_("Modify the formatting of the selected cells"),
+	  G_CALLBACK (cb_format_cells) },
+	{ "FormatCellsCond", NULL, N_("_Conditional Formating..."), NULL, 
+	  N_("Modify the conditional formatting of the selected cells"),
+	  G_CALLBACK (cb_format_cells_cond) },
 	{ "FormatCellsFitHeight", "Gnumeric_RowSize", N_("Auto Fit _Height"), NULL, 
 	  N_("Ensure rows are just tall enough to display content of selection"),
 	  G_CALLBACK (cb_format_cells_auto_fit_height) },
@@ -4105,18 +4109,21 @@ static GNM_ACTION_DEF (cb_format_cells_menu)
 	HildonButton *save;
 	HildonButton *save_as;
 	HildonButton *print_area;
+	HildonButton *cells_cond;
 
 	GtkWidget *im_close11;
 	GtkWidget *im_close12;
 	GtkWidget *im_close13;
 	GtkWidget *im_close14;
 	GtkWidget *im_close15;
+	GtkWidget *im_close16;
 
 	im_close11 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/space.png");
 	im_close12 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/space.png");
 	im_close13 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/space.png");
 	im_close14 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/space.png");
 	im_close15 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/control_personalization.png");
+	im_close16 = gtk_image_new_from_file("/usr/share/icons/hicolor/48x48/hildon/space.png");
 
 	new = HILDON_BUTTON(hildon_button_new((size), HILDON_BUTTON_ARRANGEMENT_HORIZONTAL));
 	hildon_button_set_image(new, GTK_WIDGET(im_close15));
@@ -4126,6 +4133,13 @@ static GNM_ACTION_DEF (cb_format_cells_menu)
 	hildon_button_set_value_alignment (new, 1, 0.5);
 	g_signal_connect_after (new, "clicked", G_CALLBACK (cb_format_cells), wbcg);
 	hildon_app_menu_append(app_menu, GTK_BUTTON(new));
+
+	cells_cond = HILDON_BUTTON(hildon_button_new((size), HILDON_BUTTON_ARRANGEMENT_HORIZONTAL));
+	hildon_button_set_image(cells_cond, GTK_WIDGET(im_close16));
+	hildon_button_set_title(cells_cond, _("Conditional Formatting"));
+	hildon_button_set_alignment (cells_cond, 0, 0.5, 1, 0.5);
+	g_signal_connect_after (cells_cond, "clicked", G_CALLBACK (cb_format_cells_cond), wbcg);
+	hildon_app_menu_append(app_menu, GTK_BUTTON(cells_cond));
 
 	open = HILDON_BUTTON(hildon_button_new((size), HILDON_BUTTON_ARRANGEMENT_HORIZONTAL));
 	hildon_button_set_image(open, GTK_WIDGET(im_close11));
